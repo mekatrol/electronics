@@ -1,0 +1,13 @@
+(version 1)
+(rule Minimum_thermal_relief_spoke_count_1
+	(constraint min_resolved_spokes 2)
+)
+(rule Copper_to_edge_clearance_1
+	(constraint edge_clearance (min 0.3mm))
+)
+(rule Minimum_drill_size_1
+	(constraint hole_size (min 0.3mm))
+)
+(rule Minimum_clearance_1
+	(constraint clearance (min 0.3mm))
+)

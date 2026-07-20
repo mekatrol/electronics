@@ -30,13 +30,14 @@ Each board directory contains its KiCad project (`.kicad_pro`), schematic (`.kic
 | Pico output controller | `hardware/pico/output_controller/` | Pico output controller with two output banks and supporting input and power circuitry. |
 | RS-485 board | `hardware/rs485_board/` | RS-485 interface board. |
 | Temperature controller | `hardware/temperature_controller/` | Temperature-control PCB and exported 3D model. |
+| Triac/FET module | `hardware/triac_fet_module/` | Mains-load switching module using an optically isolated zero-cross triac, with KiCad design rules and Gerber/CNC manufacturing files. |
 | WS2812 segment | `hardware/ws2812_segment/` | PCB segment for WS2812 addressable LEDs. |
 
 Shared hardware resources include:
 
 - `hardware/kicad_footprints/` — custom KiCad footprints.
-- `hardware/kicad_symbols/` — custom and legacy schematic-symbol libraries.
-- `hardware/kicad_libraries/` — bundled symbols and footprints for specific devices.
+- `hardware/kicad_symbols/` — custom and legacy schematic-symbol libraries, including the Mekatrol HXY2102EI N-channel MOSFET symbol.
+- `hardware/kicad_libraries/` — bundled symbols and footprints for specific devices, including a matching HXY2102EI SOT-323 footprint.
 - `hardware/kicad_models/` — STEP and WRL component models referenced by PCB designs.
 - `hardware/kicad_modules/` — KiCad Python utilities and action plugins, including layout, edge, dimension, and BOM helpers.
 - `hardware/fusion360_modules/` — Fusion 360 helper scripts.
@@ -127,7 +128,7 @@ python -m pip install -r software/mmwave_sensor/requirements.txt
 
 - `irrigation_wiring.txt` documents irrigation-system wiring.
 - Project-specific VS Code configuration and workspace files are retained where they provide useful build, debugging, or MicroPython tooling settings.
-- Fabrication ZIP files are retained where they represent deliberate manufacturing outputs; automatic KiCad backup archives are ignored.
+- Fabrication ZIP, Gerber, drill, and CNC files are retained where they represent deliberate manufacturing outputs; automatic KiCad backups, local history, lock files, and session state are ignored.
 
 ## Working in this repository
 
