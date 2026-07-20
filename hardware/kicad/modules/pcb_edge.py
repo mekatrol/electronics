@@ -10,7 +10,7 @@ import pcbnew
 # Board outline settings
 # ============================================================
 BOARD_WIDTH_MM = 50.0
-BOARD_HEIGHT_MM = 74.0
+BOARD_HEIGHT_MM = 70.0
 
 ORIGIN_X_MM = 120.0
 ORIGIN_Y_MM = 50.0
@@ -23,6 +23,12 @@ EDGE_LINE_WIDTH_MM = 0.10
 # When enabled, all existing items on Edge.Cuts are removed before the new
 # rectangular outline is created.
 DELETE_EXISTING_EDGE_CUTS = True
+
+# Replace the GND zones on both outer copper layers with rectangles matching
+# the configured board dimensions. Zone corners remain square even when the
+# Edge.Cuts outline has rounded corners.
+REPLACE_GROUND_ZONES = True
+GROUND_NET_NAME = "GND"
 
 
 def mm(value: float) -> int:
@@ -103,6 +109,82 @@ def remove_existing_edge_cuts(board):
 
     for item in items_to_remove:
         board.Remove(item)
+
+
+def get_zones_by_index(board):
+    """
+    Return board zones without iterating KiCad's SWIG zone collection.
+
+    Numeric access avoids the raw, non-iterable collection pointer returned
+    by some KiCad 10 builds.
+    """
+    return [board.GetArea(index) for index in range(board.GetAreaCount())]
+
+
+def remove_ground_zones_on_layers(board, layers):
+    """Remove existing GND zones from the requested copper layers."""
+    zones_to_remove = []
+
+    for zone in get_zones_by_index(board):
+        if zone.GetNetname() == GROUND_NET_NAME and zone.GetLayer() in layers:
+            zones_to_remove.append(zone)
+
+    for zone in zones_to_remove:
+        board.Remove(zone)
+
+    return len(zones_to_remove)
+
+
+def add_rectangular_zone(board, net, layer, x0, y0, x1, y1):
+    """Add one square-cornered rectangular copper zone."""
+    zone = pcbnew.ZONE(board)
+    zone.SetLayer(layer)
+    zone.SetNet(net)
+
+    corners = (
+        pt(x0, y0),
+        pt(x1, y0),
+        pt(x1, y1),
+        pt(x0, y1),
+    )
+
+    for corner in corners:
+        if not zone.AppendCorner(corner, -1, False):
+            raise RuntimeError(
+                f"Failed to append a corner to the {board.GetLayerName(layer)} zone."
+            )
+
+    board.Add(zone)
+    return zone
+
+
+def replace_ground_zones(board):
+    """Replace the front and back GND zones and refill all board zones."""
+    ground_net = board.FindNet(GROUND_NET_NAME)
+
+    if ground_net is None:
+        raise RuntimeError(f'Net "{GROUND_NET_NAME}" was not found on the board.')
+
+    layers = (pcbnew.F_Cu, pcbnew.B_Cu)
+    removed_count = remove_ground_zones_on_layers(board, layers)
+
+    x0 = ORIGIN_X_MM
+    y0 = ORIGIN_Y_MM
+    x1 = ORIGIN_X_MM + BOARD_WIDTH_MM
+    y1 = ORIGIN_Y_MM + BOARD_HEIGHT_MM
+
+    for layer in layers:
+        add_rectangular_zone(board, ground_net, layer, x0, y0, x1, y1)
+
+    # Refill after both replacements so the copper display is immediately
+    # updated and clearances are recalculated against the new rectangles.
+    filler = pcbnew.ZONE_FILLER(board)
+    filler.Fill(board.Zones())
+
+    print(
+        f'Replaced {removed_count} existing "{GROUND_NET_NAME}" zone(s) '
+        "with rectangular F.Cu and B.Cu zones."
+    )
 
 
 def validate_dimensions(width, height, radius, line_width):
@@ -273,8 +355,6 @@ def create_board_outline(board):
             line_width,
         )
 
-    pcbnew.Refresh()
-
     print("Created board outline")
     print(f"  width : {BOARD_WIDTH_MM:.3f} mm")
     print(f"  height: {BOARD_HEIGHT_MM:.3f} mm")
@@ -289,5 +369,10 @@ if board is None:
 else:
     try:
         create_board_outline(board)
+
+        if REPLACE_GROUND_ZONES:
+            replace_ground_zones(board)
+
+        pcbnew.Refresh()
     except Exception as error:
         print(f"Error: {error}")
