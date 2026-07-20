@@ -214,12 +214,15 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     output_dir = board.parent / "gerber"
     output_dir.mkdir(exist_ok=True)
     project_name = board.stem
+    erc_report = board.parent / f"{project_name}-erc.rpt"
+    drc_report = board.parent / f"{project_name}-drc.rpt"
 
     # KiCad calls its schematic design-rule check ERC.  Asking the CLI to use
     # a non-zero exit code for violations makes both checks hard release gates.
     run(
         [
             *kicad_cli, "sch", "erc",
+            "--output", str(erc_report),
             "--exit-code-violations",
             str(schematic),
         ]
@@ -227,6 +230,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     run(
         [
             *kicad_cli, "pcb", "drc",
+            "--output", str(drc_report),
             "--refill-zones",
             "--exit-code-violations",
             str(board),

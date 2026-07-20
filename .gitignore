@@ -23,6 +23,7 @@
 /hardware/**/*-gerbers/
 
 # Generated board reports
+/hardware/**/*.rpt
 /hardware/iw-8-expansion/iw-8-expansion.csv
 /hardware/iw-8-expansion/iw-8-expansion.xlsx
 /hardware/iw-8-expansion/iw-8-expansion.xml
