@@ -17,10 +17,10 @@ BOTTOM_RIGHT_HOLE_REF = "H4"
 # Offsets from board edges
 # =========================
 # Hole-centre distances from their corresponding board edges.
-LEFT_OFFSET_MM = 4.0
-RIGHT_OFFSET_MM = 4.0
-TOP_OFFSET_MM = 4.0
-BOTTOM_OFFSET_MM = 4.0
+LEFT_OFFSET_MM = 3.55
+RIGHT_OFFSET_MM = 3.55
+TOP_OFFSET_MM = 3.55
+BOTTOM_OFFSET_MM = 3.55
 
 DEBUG = True
 

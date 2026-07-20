@@ -16,7 +16,7 @@ ORIGIN_X_MM = 120.0
 ORIGIN_Y_MM = 50.0
 
 # Set to 0.0 for square corners.
-CORNER_RADIUS_MM = 3.0
+CORNER_RADIUS_MM = 2.0
 
 EDGE_LINE_WIDTH_MM = 0.10
 
