@@ -41,6 +41,61 @@ Shared hardware resources include:
 
 Open a hardware project by loading its `.kicad_pro` file in KiCad. Keep the repository layout intact so that relative library and 3D-model references continue to resolve.
 
+### Generating JLCPCB production files
+
+Use `hardware/kicad/modules/generate_jlcpcb.py` to generate the fabrication and
+assembly files for a board. Run it from the repository root and pass the name of
+the project under `hardware/`. For example, to generate the LED controller:
+
+```sh
+python3 hardware/kicad/modules/generate_jlcpcb.py led_controller
+```
+
+The project argument selects which board is generated; it is not hard-coded in
+the script. A full project directory, `.kicad_pro` file, or `.kicad_pcb` file
+can also be supplied, for example
+`hardware/led_controller/led_controller.kicad_pro`.
+
+The script requires KiCad 7 or newer. It automatically finds a native
+`kicad-cli` executable or the `org.kicad.KiCad` Flatpak. For another
+installation, provide the executable explicitly:
+
+```sh
+python3 hardware/kicad/modules/generate_jlcpcb.py \
+  --kicad-cli /path/to/kicad-cli led_controller
+```
+
+Files are written to a `gerber/` directory beside the board. For a project
+named `led_controller`, the upload files are:
+
+| File | JLCPCB upload field | Contents |
+| --- | --- | --- |
+| `gerber/led_controller-gerbers.zip` | PCB Gerber file | Copper, solder-mask, silkscreen, board-outline, paste, and drill files. |
+| `gerber/led_controller-bom.csv` | BOM file | Parts having a non-empty `LCSC Part #` schematic field. |
+| `gerber/led_controller-positions.csv` | CPL file | Component centroid/pick-and-place data. |
+
+The Gerber ZIP is generated automatically. Do not add the BOM and CPL to that
+ZIP: JLCPCB expects the fabrication ZIP, BOM, and CPL as three separate uploads
+when ordering assembled boards. For a bare PCB order, only the Gerber ZIP is
+required.
+
+The generator uses these JLCPCB-compatible export settings:
+
+- One Gerber file per enabled copper layer, including all inner copper layers.
+- Front and back solder mask, silkscreen, and paste layers, plus `Edge.Cuts`.
+- KiCad's Protel-style Gerber extensions and Gerber X2/netlist attributes.
+- Excellon drill format in millimetres, with plated and non-plated holes in the
+  KiCad default combined drill output.
+- CPL output in millimetres for both board sides, using the board's absolute
+  origin. KiCad's columns are converted to `Designator`, `Mid X`, `Mid Y`,
+  `Rotation`, and `Layer`, with the sides written as `Top` and `Bottom`.
+- BOM columns `Comment`, `Designator`, `Footprint`, and `LCSC Part #`.
+  Identical parts are grouped, and symbols without an `LCSC Part #` are omitted.
+
+Always inspect the uploaded board preview, part matches, placement rotations,
+and board side in JLCPCB before submitting an order. Component-specific rotation
+corrections are not applied automatically by this script.
+
 ## Firmware projects
 
 ### Raspberry Pi Pico SDK

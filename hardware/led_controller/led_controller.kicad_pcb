@@ -137,6 +137,7 @@
 		(property "Reference" "FID1"
 			(at 0 -1.95 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "2407dd3d-8457-447f-9cdf-9cdac720e9a4")
 			(effects
 				(font
@@ -243,6 +244,7 @@
 		(property "Reference" "FID2"
 			(at 0 -1.95 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "964285e8-4bbe-4f81-8c0d-240ee213360b")
 			(effects
 				(font
@@ -1019,6 +1021,7 @@
 		(property "Reference" "FID3"
 			(at 0 -1.95 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "bce9989e-b7f7-4aa1-aeee-f58e1980cf5d")
 			(effects
 				(font
