@@ -4403,7 +4403,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MPT-0,5-2-2.54_1x02_P2.54mm_Horizontal"
+		(property "Footprint" "TerminalBlock:TerminalBlock_Xinya_XY308-2.54-2P_1x02_P2.54mm_Horizontal"
 			(at 201.93 143.51 0)
 			(hide yes)
 			(show_name no)
