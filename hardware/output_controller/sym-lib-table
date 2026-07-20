@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name "MCU_RaspberryPi_and_Boards")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/MCU_RaspberryPi_and_Boards.kicad_sym")(options "")(descr "Shared repository symbols"))
+  (lib (name "pico")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/pico.kicad_sym")(options "")(descr "Shared repository symbols"))
+)

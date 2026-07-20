@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "ImpressionWorks")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/ImpressionWorks.kicad_sym")(options "")(descr "Shared repository symbols"))
+  (lib (name "MCU_RaspberryPi_and_Boards")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/MCU_RaspberryPi_and_Boards.kicad_sym")(options "")(descr "Shared repository symbols"))
+)

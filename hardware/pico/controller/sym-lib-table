@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name "Raspberry_Pi_Pico_W_SC0918")(type "KiCad")(uri "${KIPRJMOD}/../../kicad/symbols/Raspberry_Pi_Pico_W_SC0918.kicad_sym")(options "")(descr "External library; source not present in this repository"))
-)
