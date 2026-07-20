@@ -101,6 +101,22 @@ def find_project_files(source: Path) -> tuple[Path, Path | None]:
     return board, schematic if schematic.is_file() else None
 
 
+def reject_newer_autosaves(files: Sequence[Path]) -> None:
+    """Refuse to manufacture from files older than KiCad's autosaved state."""
+    newer_autosaves = []
+    for source in files:
+        autosave = source.with_name(f"_autosave-{source.name}")
+        if autosave.is_file() and autosave.stat().st_mtime > source.stat().st_mtime:
+            newer_autosaves.append(autosave)
+
+    if newer_autosaves:
+        paths = ", ".join(str(path) for path in newer_autosaves)
+        raise RuntimeError(
+            "newer KiCad autosave file(s) found; save the open project before "
+            f"generating manufacturing files: {paths}"
+        )
+
+
 def copper_layers(board: Path) -> list[str]:
     """Read enabled copper layer names without requiring the pcbnew Python API."""
     layers: list[str] = []
@@ -193,6 +209,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
         raise FileNotFoundError(
             f"root schematic not found: {board.with_suffix('.kicad_sch')}"
         )
+    reject_newer_autosaves([schematic, board])
 
     output_dir = board.parent / "gerber"
     output_dir.mkdir(exist_ok=True)
