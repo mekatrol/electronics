@@ -10,6 +10,7 @@
 # KiCad automatic backups, caches, and local session state
 /hardware/**/*-backups/
 /hardware/**/.history/
+/hardware/**/_autosave-*
 /hardware/**/fp-info-cache
 /hardware/**/*.lck
 /hardware/**/*.kicad_prl

@@ -189,9 +189,32 @@ def archive_fabrication_files(output_dir: Path, archive: Path) -> None:
 
 def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     board, schematic = find_project_files(source)
+    if schematic is None:
+        raise FileNotFoundError(
+            f"root schematic not found: {board.with_suffix('.kicad_sch')}"
+        )
+
     output_dir = board.parent / "gerber"
     output_dir.mkdir(exist_ok=True)
     project_name = board.stem
+
+    # KiCad calls its schematic design-rule check ERC.  Asking the CLI to use
+    # a non-zero exit code for violations makes both checks hard release gates.
+    run(
+        [
+            *kicad_cli, "sch", "erc",
+            "--exit-code-violations",
+            str(schematic),
+        ]
+    )
+    run(
+        [
+            *kicad_cli, "pcb", "drc",
+            "--refill-zones",
+            "--exit-code-violations",
+            str(board),
+        ]
+    )
 
     layers = copper_layers(board) + list(GERBER_LAYERS[2:])
     run(
@@ -199,6 +222,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
             *kicad_cli, "pcb", "export", "gerbers",
             "--output", str(output_dir),
             "--layers", ",".join(layers),
+            "--check-zones",
             str(board),
         ]
     )
@@ -226,20 +250,17 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     finally:
         raw_positions.unlink(missing_ok=True)
 
-    if schematic:
-        netlist = output_dir / f".{project_name}-bom-kicad.xml"
-        try:
-            run(
-                [
-                    *kicad_cli, "sch", "export", "python-bom",
-                    "--output", str(netlist), str(schematic),
-                ]
-            )
-            write_bom(netlist, output_dir / f"{project_name}-bom.csv")
-        finally:
-            netlist.unlink(missing_ok=True)
-    else:
-        print("warning: root schematic not found; BOM was not generated", file=sys.stderr)
+    netlist = output_dir / f".{project_name}-bom-kicad.xml"
+    try:
+        run(
+            [
+                *kicad_cli, "sch", "export", "python-bom",
+                "--output", str(netlist), str(schematic),
+            ]
+        )
+        write_bom(netlist, output_dir / f"{project_name}-bom.csv")
+    finally:
+        netlist.unlink(missing_ok=True)
 
     archive_fabrication_files(output_dir, output_dir / f"{project_name}-gerbers.zip")
     return output_dir
