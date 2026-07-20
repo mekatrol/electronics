@@ -1,5 +1,5 @@
 # Run with:
-# exec(open("/home/dad/.var/app/org.kicad.KiCad/data/kicad/10.0/scripting/plugins/align_holes.py").read())
+# exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_holes.py").read())
 
 import pcbnew
 
@@ -16,10 +16,11 @@ BOTTOM_RIGHT_HOLE_REF = "H4"
 # =========================
 # Offsets from board edges
 # =========================
-LEFT_OFFSET_MM = 8.5
-RIGHT_OFFSET_MM = 8.5
-TOP_OFFSET_MM = 3.0
-BOTTOM_OFFSET_MM = 3.0
+# Hole-centre distances from their corresponding board edges.
+LEFT_OFFSET_MM = 4.0
+RIGHT_OFFSET_MM = 4.0
+TOP_OFFSET_MM = 4.0
+BOTTOM_OFFSET_MM = 4.0
 
 DEBUG = True
 

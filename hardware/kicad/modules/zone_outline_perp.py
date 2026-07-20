@@ -1,4 +1,4 @@
-# Run with exec(open("/home/dad/.var/app/org.kicad.KiCad/data/kicad/10.0/scripting/plugins/zone_outline_perp.py").read())
+# Run with exec(open("/home/dad/repos/electronics/hardware/kicad/modules/zone_outline_perp.py").read())
 
 import pcbnew
 

@@ -1,14 +1,16 @@
+# Run with:
+# exec(open("/home/dad/repos/electronics/hardware/kicad/modules/pcb_edge.py").read())
+
 import math
-import os
 
 import pcbnew
 
 
-# =========================
-# User constants
-# =========================
+# ============================================================
+# Board outline settings
+# ============================================================
 BOARD_WIDTH_MM = 50.0
-BOARD_HEIGHT_MM = 70.0
+BOARD_HEIGHT_MM = 74.0
 
 ORIGIN_X_MM = 120.0
 ORIGIN_Y_MM = 50.0
@@ -18,8 +20,9 @@ CORNER_RADIUS_MM = 3.0
 
 EDGE_LINE_WIDTH_MM = 0.10
 
+# When enabled, all existing items on Edge.Cuts are removed before the new
+# rectangular outline is created.
 DELETE_EXISTING_EDGE_CUTS = True
-PLUGIN_NAME = "Create Rectangular Edge Cuts"
 
 
 def mm(value: float) -> int:
@@ -28,6 +31,34 @@ def mm(value: float) -> int:
 
 def pt(x_mm: float, y_mm: float):
     return pcbnew.VECTOR2I(mm(x_mm), mm(y_mm))
+
+
+def get_current_board():
+    """
+    Return the open board as a pcbnew.BOARD Python proxy.
+
+    Some KiCad 10 SWIG builds return the underlying SwigPyObject pointer from
+    pcbnew.GetBoard() instead of its Python BOARD wrapper. Reattach that raw
+    pointer to a non-owning BOARD proxy when necessary. The proxy must not own
+    the object because KiCad itself owns the currently open board.
+    """
+    current_board = pcbnew.GetBoard()
+
+    if current_board is None or hasattr(current_board, "GetDrawings"):
+        return current_board
+
+    if type(current_board).__name__ != "SwigPyObject":
+        return current_board
+
+    wrapped_board = pcbnew.BOARD.__new__(pcbnew.BOARD)
+    wrapped_board.this = current_board
+
+    try:
+        wrapped_board.this.own(False)
+    except AttributeError:
+        pass
+
+    return wrapped_board
 
 
 def add_edge_segment(board, start, end, line_width):
@@ -53,6 +84,14 @@ def add_edge_arc(board, start, mid, end, line_width):
 
 
 def remove_existing_edge_cuts(board):
+    # KiCad 10 can remove a complete layer natively. Besides being simpler,
+    # this avoids a SWIG issue in some builds where GetDrawings() returns a
+    # raw, non-iterable collection pointer.
+    if hasattr(board, "RemoveAllItemsOnLayer"):
+        board.RemoveAllItemsOnLayer(pcbnew.Edge_Cuts)
+        return
+
+    # Compatibility fallback for older KiCad releases.
     items_to_remove = []
 
     for item in board.GetDrawings():
@@ -66,7 +105,7 @@ def remove_existing_edge_cuts(board):
         board.Remove(item)
 
 
-def validate_dimensions(width, height, radius):
+def validate_dimensions(width, height, radius, line_width):
     if width <= 0:
         raise ValueError("BOARD_WIDTH_MM must be greater than zero.")
 
@@ -75,6 +114,14 @@ def validate_dimensions(width, height, radius):
 
     if radius < 0:
         raise ValueError("CORNER_RADIUS_MM cannot be negative.")
+
+    if line_width <= 0:
+        raise ValueError("EDGE_LINE_WIDTH_MM must be greater than zero.")
+
+    if line_width >= min(width, height):
+        raise ValueError(
+            "EDGE_LINE_WIDTH_MM must be smaller than both board dimensions."
+        )
 
     maximum_radius = min(width, height) / 2.0
 
@@ -184,66 +231,63 @@ def create_rounded_rectangle(
     )
 
 
-class CreateRectangularEdgeCutsPlugin(pcbnew.ActionPlugin):
-    def defaults(self):
-        self.name = PLUGIN_NAME
-        self.category = "Board Outline"
-        self.description = (
-            "Create a rectangular Edge.Cuts outline with configurable corner radius"
+def create_board_outline(board):
+    """Create the configured rectangular outline on the open board."""
+    validate_dimensions(
+        BOARD_WIDTH_MM,
+        BOARD_HEIGHT_MM,
+        CORNER_RADIUS_MM,
+        EDGE_LINE_WIDTH_MM,
+    )
+
+    if DELETE_EXISTING_EDGE_CUTS:
+        remove_existing_edge_cuts(board)
+
+    # KiCad fabricates the board at the Edge.Cuts centreline. Keep that
+    # centreline at the exact configured origin and dimensions; the visual
+    # stroke extends equally inside and outside this boundary.
+    x0 = ORIGIN_X_MM
+    y0 = ORIGIN_Y_MM
+    x1 = ORIGIN_X_MM + BOARD_WIDTH_MM
+    y1 = ORIGIN_Y_MM + BOARD_HEIGHT_MM
+
+    line_width = mm(EDGE_LINE_WIDTH_MM)
+
+    if CORNER_RADIUS_MM == 0:
+        create_square_rectangle(
+            board,
+            x0,
+            y0,
+            x1,
+            y1,
+            line_width,
         )
-        self.show_toolbar_button = False
-
-        icon_path = os.path.join(
-            os.path.dirname(__file__),
-            "create_rect_edge_cuts.png",
-        )
-
-        if os.path.exists(icon_path):
-            self.icon_file_name = icon_path
-
-    def Run(self):
-        board = pcbnew.GetBoard()
-
-        if board is None:
-            raise RuntimeError("No board is open.")
-
-        validate_dimensions(
-            BOARD_WIDTH_MM,
-            BOARD_HEIGHT_MM,
+    else:
+        create_rounded_rectangle(
+            board,
+            x0,
+            y0,
+            x1,
+            y1,
             CORNER_RADIUS_MM,
+            line_width,
         )
 
-        if DELETE_EXISTING_EDGE_CUTS:
-            remove_existing_edge_cuts(board)
+    pcbnew.Refresh()
 
-        x0 = ORIGIN_X_MM
-        y0 = ORIGIN_Y_MM
-        x1 = x0 + BOARD_WIDTH_MM
-        y1 = y0 + BOARD_HEIGHT_MM
-
-        line_width = mm(EDGE_LINE_WIDTH_MM)
-
-        if CORNER_RADIUS_MM == 0:
-            create_square_rectangle(
-                board,
-                x0,
-                y0,
-                x1,
-                y1,
-                line_width,
-            )
-        else:
-            create_rounded_rectangle(
-                board,
-                x0,
-                y0,
-                x1,
-                y1,
-                CORNER_RADIUS_MM,
-                line_width,
-            )
-
-        pcbnew.Refresh()
+    print("Created board outline")
+    print(f"  width : {BOARD_WIDTH_MM:.3f} mm")
+    print(f"  height: {BOARD_HEIGHT_MM:.3f} mm")
+    print(f"  origin: X={ORIGIN_X_MM:.3f} mm, Y={ORIGIN_Y_MM:.3f} mm")
+    print(f"  radius: {CORNER_RADIUS_MM:.3f} mm")
 
 
-CreateRectangularEdgeCutsPlugin().register()
+board = get_current_board()
+
+if board is None:
+    print("Error: no board is currently open.")
+else:
+    try:
+        create_board_outline(board)
+    except Exception as error:
+        print(f"Error: {error}")
