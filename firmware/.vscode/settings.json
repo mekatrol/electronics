@@ -1,0 +1,38 @@
+{
+    "files.associations": {
+        "*.h": "cpp",
+        "cstdint": "cpp",
+        "tuple": "cpp",
+        "array": "cpp",
+        "compare": "cpp",
+        "functional": "cpp",
+        "ostream": "cpp",
+        "ranges": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "memory": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp"
+    },
+    "cmake.statusbar.advanced": {
+        "debug": {
+            "visibility": "hidden"
+        },
+        "launch": {
+            "visibility": "hidden"
+        },
+        "build": {
+            "visibility": "default"
+        },
+        "buildTarget": {
+            "visibility": "hidden"
+        }
+    },
+    "cmake.buildBeforeRun": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "cortex-debug.openocdPath": "C:/msys64/home/Dad/openocd/src/openocd.exe",
+}

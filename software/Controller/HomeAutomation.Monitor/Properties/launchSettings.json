@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "HomeAutomation.Monitor": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "HOST_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

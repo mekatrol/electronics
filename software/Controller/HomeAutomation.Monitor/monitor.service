@@ -1,0 +1,22 @@
+﻿
+# systemctl stop monitor.service
+# systemctl daemon-reload
+# systemctl enable monitor.service
+# systemctl start monitor.service
+
+[Unit]
+Description=homeautomation.monitor
+
+
+[Service]
+WorkingDirectory=/home/pi/HomeAutomation/software/Controller/HomeAutomation.Monitor/bin/Debug/net6.0
+ExecStart=/home/pi/.dotnet/dotnet /home/pi/HomeAutomation/software/Controller/HomeAutomation.Monitor/bin/Debug/net6.0/HomeAutomation.Monitor.dll
+Restart=always
+RestartSec=10
+SyslogIdentifier=homeautomation.monitor
+User=root
+Environment=HOST_ENVIRONMENT=Production
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/pi/.dotnet:/home/pi/.dotnet/tools
+
+[Install]
+WantedBy=multi-user.target

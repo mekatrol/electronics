@@ -1,0 +1,52 @@
+.program shift_register_pio
+.side_set 2                            ; Stealing 2 bits of delay (delay now 0-7 or 3 bits)
+                                       ; 1 bit for clock and 1 bit for latch
+
+.wrap_target
+    pull block          side 0x0 [0]   ; Wait for FIFO TX -> OSR, clock set low, latch set low
+
+bitloop:
+    out pins, 1         side 0x0 [1]   ; Shift 1 bit from OSR to the data pin, clock low high, latch set low
+    nop                 side 0x1 [1]   ; Clock data (clock set high), latch set low
+    nop                 side 0x0 [1]   ; Set clock low again, latch set low
+    jmp !OSRE bitloop   side 0x0 [0]   ; Loop if all bits not yet sent
+    nop                 side 0x2 [1]   ; Latch data (latch set high), clock set low
+    nop                 side 0x0 [1]   ; Set latch low again, clock set low
+.wrap                                  ; Loop to program start
+
+
+% c-sdk {
+// Helper to init Serial to Parallel IO 
+
+void sn74hc595_program_init(PIO pio, uint sm, uint offset, uint pin_base, uint side_base) {          
+    // Data pin
+    pio_gpio_init(pio, pin_base);
+    pio_sm_set_consecutive_pindirs(pio, sm, pin_base, 1, true);
+
+    // Clock and latch pins
+    pio_gpio_init(pio, side_base);
+    pio_gpio_init(pio, side_base + 1); 
+    pio_sm_set_consecutive_pindirs(pio, sm, side_base, 2, true);
+    
+    // Get config at offset    
+    pio_sm_config c = shift_register_pio_program_get_default_config(offset);
+
+    // Set data pin as out pin
+     sm_config_set_out_pins(&c, pin_base, 1);
+
+    // Set side set base pin (clock pin is base, followed by latch pin)
+     sm_config_set_sideset_pins(&c, side_base);
+
+    // !shift right, autopull, pull threshold == 16 bits
+    sm_config_set_out_shift(&c, false, false, 16);
+
+    // Join FIFOs as we only transmit data
+    sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_TX);
+
+    // Set SM clock frequency 
+    float div = (float)clock_get_hz(clk_sys) / (32 * 100000);
+    sm_config_set_clkdiv(&c, div);
+ 
+    pio_sm_init(pio, sm, offset, &c);
+}
+%}

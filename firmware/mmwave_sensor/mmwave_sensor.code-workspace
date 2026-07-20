@@ -1,0 +1,17 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "name": "Mpy Remote Workspace",
+      "uri": "pico:"
+    }
+  ],
+  "settings": {
+    "python.languageServer": "Pylance",
+    "micropico.manualComDevice": "COM6",
+    "cSpell.words": ["mmwave", "Wlan", "mqtt", "clientid"],
+    "micropico.autoConnect": false
+  }
+}

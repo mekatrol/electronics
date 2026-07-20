@@ -1,0 +1,42 @@
+# Firmware build and editor-generated files
+/firmware/**/build/
+/firmware/.vscode/*.log
+/firmware/.vscode/.cortex-debug.*.state.json
+
+# Python caches
+**/__pycache__/
+*.py[cod]
+
+# KiCad automatic backups, caches, and local session state
+/hardware/**/*-backups/
+/hardware/**/fp-info-cache
+/hardware/**/*.kicad_prl
+/hardware/**/*.kicad_sch-bak
+/hardware/**/*.bak
+/hardware/**/plots/
+
+# Generated KiCad fabrication and BOM directories
+/hardware/**/*-gerber/
+/hardware/**/*-gerbers/
+
+# Generated board reports
+/hardware/iw-8-expansion/iw-8-expansion.csv
+/hardware/iw-8-expansion/iw-8-expansion.xlsx
+/hardware/iw-8-expansion/iw-8-expansion.xml
+/hardware/pico/iw-8-controller/iw-8-controller.csv
+/hardware/pico/iw-8-controller/iw-8-controller.xlsx
+/hardware/pico/iw-8-controller/iw-8-controller.xml
+/hardware/rs485_board/rs485_board.csv
+/hardware/rs485_board/rs485_board.xlsx
+/hardware/rs485_board/rs485_board.xml
+
+# Project-specific generated archives
+/hardware/basic_controller/*.zip
+/hardware/ws2812_segment/*.zip
+
+# .NET and Visual Studio build/user files
+/software/**/.vs/
+/software/**/bin/
+/software/**/obj/
+/software/**/x64/
+/software/**/*.vcxproj.user

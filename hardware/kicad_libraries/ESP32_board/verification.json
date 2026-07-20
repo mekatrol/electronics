@@ -1,0 +1,14 @@
+{
+  "status": "fixed malformed trailing block",
+  "footprint_parenthesis_balance": 0,
+  "references": [
+    {
+      "reference": "ESP32_board:Waveshare_ESP32_S3_C6_Zero_THT",
+      "exists": true
+    },
+    {
+      "reference": "ESP32_board:LOLIN_ESP32_S2_Mini_Socket",
+      "exists": true
+    }
+  ]
+}

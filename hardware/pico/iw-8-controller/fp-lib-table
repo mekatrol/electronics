@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name "FootprintLibrary")(type "KiCad")(uri "D:/repos/HomeAutomation/hardware/kicad_footprints/FootprintLibrary.pretty")(options "")(descr ""))
+)

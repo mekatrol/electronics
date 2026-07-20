@@ -1,0 +1,16 @@
+{
+  "symbol_footprint_references": [
+    {
+      "reference": "WS2812_ESP32:Waveshare_ESP32_S3_C6_Zero_THT",
+      "exists": true,
+      "path": "/mnt/data/WS2812_ESP32_KiCad10_v2/WS2812_ESP32.pretty/Waveshare_ESP32_S3_C6_Zero_THT.kicad_mod"
+    },
+    {
+      "reference": "WS2812_ESP32:LOLIN_ESP32_S2_Mini_Socket",
+      "exists": true,
+      "path": "/mnt/data/WS2812_ESP32_KiCad10_v2/WS2812_ESP32.pretty/LOLIN_ESP32_S2_Mini_Socket.kicad_mod"
+    }
+  ],
+  "library_nickname": "WS2812_ESP32",
+  "status": "all referenced footprint files present"
+}
