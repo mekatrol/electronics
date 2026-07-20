@@ -1,5 +1,5 @@
 (fp_lib_table
   (version 7)
-  (lib (name "FootprintLibrary")(type "KiCad")(uri "D:/repos/HomeAutomation/hardware/kicad_footprints/FootprintLibrary.pretty")(options "")(descr ""))
-  (lib (name "MCU_RaspberryPi_and_Boards")(type "KiCad")(uri "D:/repos/HomeAutomation/hardware/kicad_footprints/MCU_RaspberryPi_and_Boards.pretty")(options "")(descr ""))
+  (lib (name "FootprintLibrary")(type "KiCad")(uri "${KIPRJMOD}/../kicad/footprints/FootprintLibrary.pretty")(options "")(descr "External library; source not present in this repository"))
+  (lib (name "MCU_RaspberryPi_and_Boards")(type "KiCad")(uri "${KIPRJMOD}/../kicad/footprints/MCU_RaspberryPi_and_Boards.pretty")(options "")(descr "Shared repository footprints"))
 )

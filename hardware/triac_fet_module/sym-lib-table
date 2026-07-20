@@ -1,4 +1,4 @@
 (sym_lib_table
   (version 7)
-  (lib (name "Mekatrol")(type "KiCad")(uri "${KIPRJMOD}/../libraries/symbols/Mekatrol.kicad_sym")(options "")(descr ""))
+  (lib (name "Mekatrol")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/Mekatrol.kicad_sym")(options "")(descr "Shared repository symbols"))
 )

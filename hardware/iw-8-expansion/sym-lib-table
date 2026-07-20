@@ -1,4 +1,4 @@
 (sym_lib_table
-  (lib (name "Raspberry_Pi_Pico_W_SC0918")(type "KiCad")(uri "D:/Temp/Raspberry_Pi_Pico_W_Kicad_Files/Raspberry_Pi_Pico_W_SC0918.kicad_sym")(options "")(descr ""))
-  (lib (name "ImpressionWorks")(type "KiCad")(uri "D:/repos/HomeAutomation/hardware/kicad_symbols/ImpressionWorks.kicad_sym")(options "")(descr ""))
+  (lib (name "Raspberry_Pi_Pico_W_SC0918")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/Raspberry_Pi_Pico_W_SC0918.kicad_sym")(options "")(descr "External library; source not present in this repository"))
+  (lib (name "ImpressionWorks")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/ImpressionWorks.kicad_sym")(options "")(descr "Shared repository symbols"))
 )

@@ -1,4 +1,0 @@
-(sym_lib_table
-  (version 7)
-  (lib (name "WS2812_ESP32")(type "KiCad")(uri "${KIPRJMOD}/WS2812_ESP32.kicad_sym")(options "")(descr "ESP32 plug-in boards for WS2812 controller"))
-)

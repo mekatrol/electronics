@@ -35,11 +35,7 @@ Each board directory contains its KiCad project (`.kicad_pro`), schematic (`.kic
 
 Shared hardware resources include:
 
-- `hardware/kicad_footprints/` — custom KiCad footprints.
-- `hardware/kicad_symbols/` — custom and legacy schematic-symbol libraries, including the Mekatrol HXY2102EI N-channel MOSFET symbol.
-- `hardware/kicad_libraries/` — bundled symbols and footprints for specific devices, including a matching HXY2102EI SOT-323 footprint.
-- `hardware/kicad_models/` — STEP and WRL component models referenced by PCB designs.
-- `hardware/kicad_modules/` — KiCad Python utilities and action plugins, including layout, edge, dimension, and BOM helpers.
+- `hardware/kicad/` — the canonical KiCad resource tree, containing symbols, footprints, Python modules, and action plugins.
 - `hardware/fusion360_modules/` — Fusion 360 helper scripts.
 - `hardware/pcb-checklist.xlsx` — PCB design/review checklist.
 
