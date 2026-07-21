@@ -4311,7 +4311,7 @@
 		)
 		(uuid "e1cc561f-f916-4e92-bb36-9d3e6a3ac57f")
 	)
-	(global_label "IO2{slash}RX"
+	(global_label "IO3{slash}RX"
 		(shape input)
 		(at 140.97 43.18 180)
 		(fields_autoplaced yes)
@@ -4743,7 +4743,7 @@
 			)
 		)
 	)
-	(global_label "IO3{slash}TX"
+	(global_label "IO4{slash}TX"
 		(shape input)
 		(at 140.97 45.72 180)
 		(fields_autoplaced yes)
