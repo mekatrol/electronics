@@ -24,6 +24,7 @@ import csv
 import shutil
 import subprocess
 import sys
+import textwrap
 import zipfile
 from pathlib import Path
 from typing import Sequence
@@ -43,12 +44,44 @@ GERBER_LAYERS = (
     "Edge.Cuts",
 )
 HARDWARE_DIR = Path(__file__).resolve().parents[2]
+REPOSITORY_DIR = HARDWARE_DIR.parent
+IPC_PYTHON = REPOSITORY_DIR / ".venv-kicad-ipc" / "bin" / "python"
+IPC_UNSAVED_CHECK = Path(__file__).with_name("check_kicad_unsaved.py")
+UNSAVED_PROJECT_MESSAGE = (
+    "the KiCad project has unsaved changes; save it in KiCad, then run this "
+    "command again"
+)
 
 
 def run(command: Sequence[str]) -> None:
     """Print and execute one external command, failing on a non-zero status."""
     print("+", " ".join(command))
     subprocess.run(command, check=True)
+
+
+def print_failure(error: Exception) -> None:
+    """Print every expected failure prominently, with a KiCad hint if useful."""
+    messages = [f"ERROR: {error}"]
+    if isinstance(error, subprocess.CalledProcessError):
+        command = [str(part) for part in error.cmd]
+        if "sch" in command and "erc" in command:
+            messages.append("Run DRC in schematic to see detail")
+        elif "pcb" in command and "drc" in command:
+            messages.append("Run DRC in PCB to see detail")
+
+    lines = [
+        line
+        for message in messages
+        for line in textwrap.wrap(
+            message, width=75, break_long_words=False, break_on_hyphens=False
+        )
+    ]
+    content_width = max(len(line) for line in lines)
+    border = "*" * (content_width + 4)
+    print(border, file=sys.stderr)
+    for line in lines:
+        print(f"* {line:<{content_width}} *", file=sys.stderr)
+    print(border, file=sys.stderr)
 
 
 def find_kicad_cli(override: str | None = None) -> list[str]:
@@ -117,11 +150,22 @@ def reject_newer_autosaves(files: Sequence[Path]) -> None:
             newer_autosaves.append(autosave)
 
     if newer_autosaves:
-        paths = ", ".join(str(path) for path in newer_autosaves)
-        raise RuntimeError(
-            "newer KiCad autosave file(s) found; save the open project before "
-            f"generating manufacturing files: {paths}"
-        )
+        raise RuntimeError(UNSAVED_PROJECT_MESSAGE)
+
+
+def reject_unsaved_open_board(board: Path) -> None:
+    """Use KiCad IPC, when available, to detect changes before autosave runs."""
+    if not IPC_PYTHON.is_file() or not IPC_UNSAVED_CHECK.is_file():
+        return
+    result = subprocess.run(
+        [str(IPC_PYTHON), str(IPC_UNSAVED_CHECK), str(board)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=False,
+        timeout=6,
+    )
+    if result.returncode == 2:
+        raise RuntimeError(UNSAVED_PROJECT_MESSAGE)
 
 
 def copper_layers(board: Path) -> list[str]:
@@ -220,6 +264,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
         raise FileNotFoundError(
             f"root schematic not found: {board.with_suffix('.kicad_sch')}"
         )
+    reject_unsaved_open_board(board)
     reject_newer_autosaves([schematic, board])
 
     output_dir = board.parent / "gerber"
@@ -323,8 +368,11 @@ def main() -> int:
     args = parse_args()
     try:
         output_dir = generate(args.project, find_kicad_cli(args.kicad_cli))
-    except (FileNotFoundError, ValueError, RuntimeError, subprocess.CalledProcessError) as error:
-        print(f"error: {error}", file=sys.stderr)
+    except subprocess.CalledProcessError as error:
+        print_failure(error)
+        return 1
+    except (FileNotFoundError, ValueError, RuntimeError) as error:
+        print_failure(error)
         return 1
     print(f"JLCPCB files written to {output_dir}")
     return 0

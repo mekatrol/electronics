@@ -9,6 +9,8 @@ changes from remaining in the editor.
 
 from contextlib import contextmanager
 import math
+from pathlib import Path
+import re
 
 from kipy import KiCad
 from kipy.geometry import Box2, Vector2
@@ -27,6 +29,65 @@ def connect_board():
     client = KiCad(timeout_ms=5000)
     client.ping()
     return client, client.get_board()
+
+
+def board_document_path(document):
+    """Return the absolute file path represented by an IPC PCB document."""
+    board_path = Path(document.board_filename)
+    if board_path.is_absolute():
+        return board_path.resolve()
+    return (Path(document.project.path) / board_path).resolve()
+
+
+def _normalized_board_tokens(contents):
+    """Tokenize PCB content while ignoring IPC serializer-only differences."""
+    tokens = re.findall(r'"(?:\\.|[^"\\])*"|[()]|[^\s()]+', contents)
+    ignored_expressions = {
+        "filled_polygon",
+        "generator",
+        "generator_version",
+        "version",
+    }
+    normalized = []
+    index = 0
+    while index < len(tokens):
+        if (
+            tokens[index] == "("
+            and index + 1 < len(tokens)
+            and tokens[index + 1] in ignored_expressions
+        ):
+            depth = 0
+            while index < len(tokens):
+                if tokens[index] == "(":
+                    depth += 1
+                elif tokens[index] == ")":
+                    depth -= 1
+                index += 1
+                if depth == 0:
+                    break
+            continue
+        normalized.append(tokens[index])
+        index += 1
+    return normalized
+
+
+def board_has_unsaved_changes(board, saved_path=None):
+    """Return whether an open board differs meaningfully from its saved file.
+
+    KiCad's ``get_as_string`` output uses different whitespace and adds
+    serializer metadata to embedded footprints, even immediately after Save.
+    It can also omit cached zone-fill polygons written by ``kicad-cli``.
+    Comparing normalized S-expression tokens avoids those false positives
+    while retaining changes to editable board content and zone outlines.
+    """
+    path = (
+        Path(saved_path).resolve()
+        if saved_path is not None
+        else board_document_path(board.document)
+    )
+    live_tokens = _normalized_board_tokens(board.get_as_string())
+    saved_tokens = _normalized_board_tokens(path.read_text(encoding="utf-8"))
+    return live_tokens != saved_tokens
 
 
 @contextmanager
@@ -193,10 +254,10 @@ def move_text_center(client, text, target_center):
 
 
 __all__ = [
-    "BoardLayer", "board_edge_bounds", "box_center", "box_edges",
-    "connect_board", "courtyard_box", "distance", "editor_commit",
-    "footprint_reference", "footprints_by_reference", "from_mm",
-    "is_horizontal", "is_vertical", "merge_boxes", "move_text_center",
-    "point_from_mm", "refill_all_zones", "same_point", "text_box", "to_mm",
-    "vector",
+    "BoardLayer", "board_document_path", "board_edge_bounds",
+    "board_has_unsaved_changes", "box_center", "box_edges", "connect_board",
+    "courtyard_box", "distance", "editor_commit", "footprint_reference",
+    "footprints_by_reference", "from_mm", "is_horizontal", "is_vertical",
+    "merge_boxes", "move_text_center", "point_from_mm", "refill_all_zones",
+    "same_point", "text_box", "to_mm", "vector",
 ]

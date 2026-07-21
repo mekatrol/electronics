@@ -207,8 +207,11 @@ Flatpak are detected automatically; use
 
 Before generating output, the script runs ERC and DRC as release gates. DRC
 uses `--refill-zones --save-board` to persist zone fills without Python
-bindings. It refuses to continue when a newer KiCad
-autosave exists. Successful output is written to the project's `gerber/`
+bindings. When the IPC environment and PCB Editor are available, it compares
+the live board with the saved file and immediately rejects unsaved changes. It
+also refuses to continue when a newer KiCad autosave exists, which remains the
+fallback when IPC is unavailable and covers schematic autosaves. Successful
+output is written to the project's `gerber/`
 directory:
 
 - Gerber and Excellon drill files
@@ -222,7 +225,9 @@ The BOM includes populated components with a non-empty `LCSC Part #` field.
 
 `kicad_ipc.py` centralizes IPC connection handling, nanometre/millimetre
 geometry, board and courtyard bounds, text placement, atomic editor commits,
-and blocking all-zone refills. Scripts request a post-commit refill with
+blocking all-zone refills, and reliable live-versus-saved board comparison.
+Scripts can call `board_has_unsaved_changes(board)` before operations that
+require a saved PCB. Scripts request a post-commit refill with
 `editor_commit(..., refill_zones=True)`, which guarantees staged geometry is
 published before KiCad rebuilds every zone. The module has no project settings
 and makes no board changes when imported.
