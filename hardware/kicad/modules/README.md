@@ -111,6 +111,7 @@ The editor history labels are:
 | `align_connector_pin_text.py` | Align connector pin labels |
 | `align_holes.py` | Align mounting holes |
 | `center_and_distribute_items.py` | Center and optionally distribute footprints |
+| `check_fiducials.py` | Align and check fiducials |
 | `pcb_edge.py` | Replace board outline and ground zones |
 | `resize_matching_text.py` | Resize matching board text |
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
@@ -150,6 +151,19 @@ aligns their horizontal (X) centres. Set `DISTRIBUTE_SPACING` to `True` with
 three or more references to create equal edge-to-edge gaps on the perpendicular
 axis; the two outer footprints remain fixed on that axis. Save manually after
 review.
+
+### `check_fiducials.py`
+
+Checks that every PCB side containing populated components has at least three
+fiducials, and verifies each fiducial's copper and solder-mask opening against
+the configured dimensions. It snaps fiducial coordinates to the nearest 0.5 mm
+grid (configurable with `POSITION_GRID_MM`) only when the resulting clearance
+envelope remains inside Edge.Cuts and clear of other footprints, tracks, and
+vias. Unsafe moves are reported and skipped. The standard 1 mm copper / 2 mm
+mask opening uses a 0.5 mm solder-mask margin on every side. Run PCB Editor's
+full DRC after review and save the board manually when satisfied. After the
+undoable position transaction is published, the script performs a blocking
+refill of every copper zone through the shared IPC utility.
 
 ### `pcb_edge.py`
 
