@@ -18,6 +18,7 @@
 /hardware/**/*.lck
 /hardware/**/*.kicad_prl
 /hardware/**/*.kicad_sch-bak
+/hardware/**/*-bak
 /hardware/**/*.bak
 /hardware/**/plots/
 
