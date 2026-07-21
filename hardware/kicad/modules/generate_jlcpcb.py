@@ -8,7 +8,8 @@ The output is written to a ``gerber`` directory beside the board:
 * ``<project>-bom.csv``
 * ``<project>-positions.csv`` (CPL / centroid / pick-and-place)
 
-KiCad 7 or newer and its ``kicad-cli`` executable are required.
+KiCad 7 or newer, its ``kicad-cli`` executable, and its ``pcbnew`` Python
+module are required.
 """
 
 from __future__ import annotations
@@ -37,6 +38,14 @@ GERBER_LAYERS = (
     "Edge.Cuts",
 )
 HARDWARE_DIR = Path(__file__).resolve().parents[2]
+REFILL_ZONES_SCRIPT = """\
+import pcbnew
+import sys
+
+board = pcbnew.LoadBoard(sys.argv[1])
+pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+pcbnew.SaveBoard(sys.argv[1], board)
+"""
 
 
 def run(command: Sequence[str]) -> None:
@@ -68,6 +77,28 @@ def find_kicad_cli(override: str | None = None) -> list[str]:
         "kicad-cli was not found; install KiCad 7 or newer, or pass "
         "--kicad-cli /path/to/kicad-cli"
     )
+
+
+def find_pcbnew_python(kicad_cli: Sequence[str]) -> list[str]:
+    """Return a Python command that can import the matching pcbnew module."""
+    command = list(kicad_cli)
+    try:
+        flatpak_command = command.index("--command=kicad-cli")
+    except ValueError:
+        python = shutil.which("python3")
+        if python:
+            return [python]
+        raise FileNotFoundError(
+            "python3 was not found; it is required to persist refilled zones"
+        )
+
+    command[flatpak_command] = "--command=python3"
+    return command
+
+
+def refill_zones(board: Path, kicad_cli: Sequence[str]) -> None:
+    """Refill every copper zone and save the result into the board file."""
+    run([*find_pcbnew_python(kicad_cli), "-c", REFILL_ZONES_SCRIPT, str(board)])
 
 
 def find_project_files(source: Path) -> tuple[Path, Path | None]:
@@ -216,6 +247,8 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     project_name = board.stem
     erc_report = board.parent / f"{project_name}-erc.rpt"
     drc_report = board.parent / f"{project_name}-drc.rpt"
+
+    refill_zones(board, kicad_cli)
 
     # KiCad calls its schematic design-rule check ERC.  Asking the CLI to use
     # a non-zero exit code for violations makes both checks hard release gates.
