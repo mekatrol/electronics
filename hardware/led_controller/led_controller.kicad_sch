@@ -4162,10 +4162,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "03749e5e-7075-4f3e-a413-d3b468619930")
 		(property "Reference" "U1"
-			(at 201.93 54.61 0)
+			(at 192.024 56.896 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4175,7 +4174,7 @@
 			)
 		)
 		(property "Value" "74AHCT125"
-			(at 201.93 57.15 0)
+			(at 192.024 59.436 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5316,10 +5315,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "4dc00166-80ee-4f7d-afed-21cc2738ba17")
 		(property "Reference" "U1"
-			(at 201.93 73.66 0)
+			(at 192.278 76.2 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5329,7 +5327,7 @@
 			)
 		)
 		(property "Value" "74AHCT125"
-			(at 201.93 76.2 0)
+			(at 192.278 78.74 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5672,10 +5670,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "68deacd1-3d02-42aa-bd2c-d508fa4505de")
 		(property "Reference" "U1"
-			(at 201.93 35.56 0)
+			(at 192.278 37.592 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5685,7 +5682,7 @@
 			)
 		)
 		(property "Value" "74AHCT125"
-			(at 201.93 38.1 0)
+			(at 192.278 40.132 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7271,10 +7268,9 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "bd2d6d35-99e1-48b7-b77d-3c768a2117c7")
 		(property "Reference" "U1"
-			(at 201.93 96.52 0)
+			(at 191.77 99.06 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7284,7 +7280,7 @@
 			)
 		)
 		(property "Value" "74AHCT125"
-			(at 201.93 99.06 0)
+			(at 191.77 101.6 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
