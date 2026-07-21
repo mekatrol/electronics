@@ -1,4 +1,14 @@
-# Run with exec(open("/home/dad/repos/electronics/hardware/kicad/modules/zone_outline_perp.py").read())
+"""Replace diagonal zone-outline edges with perpendicular segments.
+
+Execution:
+    Open a board in KiCad's PCB Editor, set ``ZONE_NAME`` and the corner
+    preference below, then run this file from the scripting console with::
+
+        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/zone_outline_perp.py").read())
+
+The first outer contour is rebuilt and zone cutouts are not preserved. Review
+the result in the editor and save the board manually.
+"""
 
 import pcbnew
 

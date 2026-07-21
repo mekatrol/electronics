@@ -10,6 +10,11 @@ The output is written to a ``gerber`` directory beside the board:
 
 KiCad 7 or newer, its ``kicad-cli`` executable, and its ``pcbnew`` Python
 module are required.
+
+Execution::
+
+    python3 hardware/kicad/modules/generate_jlcpcb.py <project>
+    python3 hardware/kicad/modules/generate_jlcpcb.py --help
 """
 
 from __future__ import annotations

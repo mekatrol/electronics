@@ -1,5 +1,13 @@
-# Run with:
-# exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_component_reference_text.py").read())
+"""Align visible component references relative to their courtyards.
+
+Execution:
+    Open a board in KiCad's PCB Editor, adjust the settings below, then run
+    this file from the PCB Editor scripting console with::
+
+        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_component_reference_text.py").read())
+
+The script optionally saves the board; see ``SAVE_BOARD_AFTER_ALIGNMENT``.
+"""
 
 import math
 

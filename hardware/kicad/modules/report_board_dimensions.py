@@ -1,5 +1,13 @@
-# Run with:
-# exec(open("/home/dad/repos/electronics/hardware/kicad/modules/report_board_dimensions.py").read())
+"""Report board dimensions and mounting-hole/fiducial offsets.
+
+Execution:
+    Open a board in KiCad's PCB Editor, adjust the settings below, then run
+    this file from the PCB Editor scripting console with::
+
+        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/report_board_dimensions.py").read())
+
+This script only reads the board and prints its report to the console.
+"""
 
 import pcbnew
 

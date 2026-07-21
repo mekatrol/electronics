@@ -1,5 +1,13 @@
-# Run with:
-# exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_holes.py").read())
+"""Place four mounting-hole footprints at configured board-edge offsets.
+
+Execution:
+    Open a board in KiCad's PCB Editor, adjust the references and offsets
+    below, then run this file from the PCB Editor scripting console with::
+
+        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_holes.py").read())
+
+Review the result in the editor and save the board manually.
+"""
 
 import pcbnew
 

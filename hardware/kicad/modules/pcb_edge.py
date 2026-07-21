@@ -1,5 +1,13 @@
-# Run with:
-# exec(open("/home/dad/repos/electronics/hardware/kicad/modules/pcb_edge.py").read())
+"""Create a rectangular board outline and optional outer GND zones.
+
+Execution:
+    Open a board in KiCad's PCB Editor, carefully review the destructive
+    replacement settings below, then run this file from the scripting console::
+
+        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/pcb_edge.py").read())
+
+Review the result in the editor and save the board manually.
+"""
 
 import math
 
