@@ -65,9 +65,12 @@ def print_failure(error: Exception) -> None:
     if isinstance(error, subprocess.CalledProcessError):
         command = [str(part) for part in error.cmd]
         if "sch" in command and "erc" in command:
-            messages.append("Run DRC in schematic to see detail")
+            messages = ["ERROR: Schematic ERC failed; fix the errors in KiCad."]
         elif "pcb" in command and "drc" in command:
-            messages.append("Run DRC in PCB to see detail")
+            messages = [
+                "ERROR: PCB validation failed. Run Update PCB from Schematic, "
+                "then fix any remaining PCB DRC errors in KiCad."
+            ]
 
     lines = [
         line
@@ -289,6 +292,12 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
             "--output", str(drc_report),
             "--refill-zones",
             "--save-board",
+            # Include the same schematic/PCB consistency checks shown by
+            # Inspect > Design Rules Checker > Schematic Parity.  With
+            # --exit-code-violations this rejects fabrication when Update PCB
+            # from Schematic still has connectivity or footprint changes to
+            # apply.
+            "--schematic-parity",
             "--exit-code-violations",
             str(board),
         ]

@@ -2435,6 +2435,12 @@
 		)
 	)
 	(junction
+		(at 48.26 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0b03c224-8191-40c5-be96-754ba6bd6dc3")
+	)
+	(junction
 		(at 53.34 88.9)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2974,6 +2980,16 @@
 	)
 	(wire
 		(pts
+			(xy 38.1 88.9) (xy 48.26 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4b3a6b44-c788-493c-886b-75428da19dcc")
+	)
+	(wire
+		(pts
 			(xy 105.41 184.15) (xy 105.41 189.23)
 		)
 		(stroke
@@ -3304,6 +3320,16 @@
 	)
 	(wire
 		(pts
+			(xy 38.1 78.74) (xy 38.1 81.28)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87d4b193-2fc6-42ee-9711-67724e3a7fd4")
+	)
+	(wire
+		(pts
 			(xy 53.34 81.28) (xy 53.34 80.01)
 		)
 		(stroke
@@ -3491,6 +3517,16 @@
 			(type default)
 		)
 		(uuid "b09cc883-2529-4711-b7a7-66dfbd6fc849")
+	)
+	(wire
+		(pts
+			(xy 38.1 86.36) (xy 38.1 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b6c1e560-29fc-4b50-a522-82aac347b316")
 	)
 	(wire
 		(pts
@@ -4017,6 +4053,30 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+			)
+		)
+	)
+	(global_label "+3.3V"
+		(shape input)
+		(at 38.1 78.74 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a95c056d-245c-4d08-88a1-7537172f8a83")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 38.1 70.07 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 			)
 		)
 	)
@@ -8224,6 +8284,87 @@
 			(project "led_controller"
 				(path "/6209671b-cc8f-4a71-bb9c-a321293d12ec"
 					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Small")
+		(at 38.1 83.82 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "ec69f3de-7b25-4dc1-a018-70eb9babc3b5")
+		(property "Reference" "C10"
+			(at 30.988 83.058 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100n"
+			(at 30.988 85.598 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
+			(at 38.1 83.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 38.1 83.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor, small symbol"
+			(at 38.1 83.82 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "ae5e1584-636c-497f-8e26-8da262adaa51")
+		)
+		(pin "1"
+			(uuid "417c0f41-b461-4b19-8ae0-3ee6110c6381")
+		)
+		(instances
+			(project "led_controller"
+				(path "/6209671b-cc8f-4a71-bb9c-a321293d12ec"
+					(reference "C10")
 					(unit 1)
 				)
 			)
