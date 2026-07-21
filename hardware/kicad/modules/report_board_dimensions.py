@@ -1,199 +1,75 @@
-"""Report board dimensions and mounting-hole/fiducial offsets.
+#!/usr/bin/env python3
+"""Report board, mounting-hole and fiducial dimensions through IPC.
 
-Execution:
-    Open a board in KiCad's PCB Editor, adjust the settings below, then run
-    this file from the PCB Editor scripting console with::
-
-        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/report_board_dimensions.py")
-
-This script only reads the board and prints its report to the console.
+Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/report_board_dimensions.py``.
+This script is read-only and therefore creates no undo entry.
 """
 
-import sys
-from pathlib import Path
-
-import pcbnew
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from pcbnew_helpers import board_edge_bounds, get_current_board, iu_to_mm  # noqa: E402
+from kicad_ipc import board_edge_bounds, connect_board, footprints_by_reference, to_mm
 
 
-# ============================================================
-# Report settings
-# ============================================================
-# References are checked consecutively from 1. The first missing reference
-# ends that group, so references should not contain gaps (for example, H1,
-# H2, H3 and FID1, FID2).
 HOLE_REFERENCE_PREFIX = "H"
 FIDUCIAL_REFERENCE_PREFIX = "FID"
 DECIMAL_PLACES = 3
 
-# GetBoardEdgesBoundingBox() includes the visible Edge.Cuts stroke. This must
-# match the line width used to create the outline so the report measures from
-# the fabrication centreline rather than from the outside of the drawn line.
-EDGE_CUT_LINE_WIDTH_MM = 0.10
 
-
-def get_board_edge_centrelines(board):
-    """Return the Edge.Cuts centreline boundaries in KiCad units."""
-    left_x, right_x, top_y, bottom_y = board_edge_bounds(board)
-
-    if right_x <= left_x or bottom_y <= top_y:
-        raise RuntimeError("The board needs a valid Edge.Cuts outline.")
-
-    half_line_width = pcbnew.FromMM(EDGE_CUT_LINE_WIDTH_MM / 2.0)
-
-    return (
-        left_x + half_line_width,
-        right_x - half_line_width,
-        top_y + half_line_width,
-        bottom_y - half_line_width,
-    )
-
-
-def find_consecutive_footprints(board, reference_prefix):
-    """Find PREFIX1, PREFIX2, ... until the first reference not present."""
-    footprints = []
+def consecutive_footprints(footprints, prefix):
+    """Return PREFIX1, PREFIX2, ... until the first missing reference."""
+    found = []
     number = 1
-
-    while True:
-        reference = f"{reference_prefix}{number}"
-        footprint = board.FindFootprintByReference(reference)
-
-        if footprint is None:
-            break
-
-        footprints.append((reference, footprint))
+    while f"{prefix}{number}" in footprints:
+        reference = f"{prefix}{number}"
+        found.append((reference, footprints[reference]))
         number += 1
-
-    return footprints
-
-
-def nearest_edge_distances(position, left_x, right_x, top_y, bottom_y):
-    """
-    Return the nearest vertical and horizontal board edges and distances.
-
-    KiCad's Y coordinate increases downwards, hence top is subtracted from
-    the footprint Y while the footprint Y is subtracted from bottom.
-    """
-    horizontal_distances = (
-        ("left", position.x - left_x),
-        ("right", right_x - position.x),
-    )
-    vertical_distances = (
-        ("top", position.y - top_y),
-        ("bottom", bottom_y - position.y),
-    )
-
-    nearest_horizontal = min(horizontal_distances, key=lambda item: item[1])
-    nearest_vertical = min(vertical_distances, key=lambda item: item[1])
-    return nearest_horizontal, nearest_vertical
+    return found
 
 
-def format_mm(value_iu):
-    return f"{iu_to_mm(value_iu):.{DECIMAL_PLACES}f} mm"
+def format_mm(value):
+    """Format a nanometre measurement consistently for the report."""
+    return f"{to_mm(value):.{DECIMAL_PLACES}f} mm"
 
 
-def report_footprint_group(
-    title,
-    footprints,
-    left_x,
-    right_x,
-    top_y,
-    bottom_y,
-):
-    """Print each footprint's offsets from its two nearest board edges."""
-    print()
-    print(title)
-
-    if not footprints:
+def report_offsets(title, items, edges):
+    """Print offsets from each footprint anchor to its nearest two edges."""
+    left, right, top, bottom = edges
+    print(f"\n{title}")
+    if not items:
         print("  None found.")
-        return
-
-    for reference, footprint in footprints:
-        position = footprint.GetPosition()
-        horizontal, vertical = nearest_edge_distances(
-            position,
-            left_x,
-            right_x,
-            top_y,
-            bottom_y,
+    for reference, footprint in items:
+        position = footprint.position
+        horizontal = min(("left", position.x-left), ("right", right-position.x), key=lambda x: x[1])
+        vertical = min(("top", position.y-top), ("bottom", bottom-position.y), key=lambda x: x[1])
+        print(
+            f"  {reference}: {horizontal[0]} {format_mm(horizontal[1])}, "
+            f"{vertical[0]} {format_mm(vertical[1])}"
         )
-        horizontal_name, horizontal_distance = horizontal
-        vertical_name, vertical_distance = vertical
-
-        print(f"  {reference}")
-        print(f"    {horizontal_name:<6}: {format_mm(horizontal_distance)}")
-        print(f"    {vertical_name:<6}: {format_mm(vertical_distance)}")
 
 
-def report_hole_spacing(holes):
-    """
-    Print X and Y separation for every unique pair of mounting holes.
-
-    These are axis-aligned measurements, not the diagonal distance between
-    hole centres. Absolute values keep the result independent of reference
-    order and board orientation.
-    """
-    print()
-    print("Hole-to-hole spacing")
-
-    if len(holes) < 2:
-        print("  Need at least two holes.")
-        return
-
-    for first_index in range(len(holes) - 1):
-        first_reference, first_footprint = holes[first_index]
-        first_position = first_footprint.GetPosition()
-
-        for second_reference, second_footprint in holes[first_index + 1 :]:
-            second_position = second_footprint.GetPosition()
-            horizontal_distance = abs(second_position.x - first_position.x)
-            vertical_distance = abs(second_position.y - first_position.y)
-
-            print(f"  {first_reference} to {second_reference}")
-            print(f"    horizontal: {format_mm(horizontal_distance)}")
-            print(f"    vertical  : {format_mm(vertical_distance)}")
-
-
-def report_board(board):
-    left_x, right_x, top_y, bottom_y = get_board_edge_centrelines(board)
-    width = right_x - left_x
-    height = bottom_y - top_y
+def main():
+    """Read the open board and print its mechanical-dimension report."""
+    _client, board = connect_board()
+    # IPC shape bounding boxes describe the geometric Edge.Cuts centreline and
+    # do not add the visible stroke width, so no line-width compensation is
+    # required (unlike the legacy SWIG GetBoardEdgesBoundingBox result).
+    edges = board_edge_bounds(board)
+    footprints = footprints_by_reference(board)
+    holes = consecutive_footprints(footprints, HOLE_REFERENCE_PREFIX)
+    fiducials = consecutive_footprints(footprints, FIDUCIAL_REFERENCE_PREFIX)
 
     print("Board dimensions")
-    print(f"  width : {format_mm(width)}")
-    print(f"  height: {format_mm(height)}")
-
-    holes = find_consecutive_footprints(board, HOLE_REFERENCE_PREFIX)
-    fiducials = find_consecutive_footprints(board, FIDUCIAL_REFERENCE_PREFIX)
-
-    report_footprint_group(
-        "Mounting holes",
-        holes,
-        left_x,
-        right_x,
-        top_y,
-        bottom_y,
-    )
-    report_hole_spacing(holes)
-    report_footprint_group(
-        "Fiducials",
-        fiducials,
-        left_x,
-        right_x,
-        top_y,
-        bottom_y,
-    )
+    print(f"  Width : {format_mm(edges[1] - edges[0])}")
+    print(f"  Height: {format_mm(edges[3] - edges[2])}")
+    report_offsets("Mounting holes", holes, edges)
+    print("\nHole-to-hole spacing")
+    for index, (first_ref, first) in enumerate(holes[:-1]):
+        for second_ref, second in holes[index + 1:]:
+            print(
+                f"  {first_ref} to {second_ref}: X "
+                f"{format_mm(abs(second.position.x-first.position.x))}, "
+                f"Y {format_mm(abs(second.position.y-first.position.y))}"
+            )
+    report_offsets("Fiducials", fiducials, edges)
 
 
-board = get_current_board()
-
-if board is None:
-    print("Error: no board is currently open.")
-else:
-    try:
-        report_board(board)
-    except Exception as error:
-        print(f"Error: {error}")
+if __name__ == "__main__":
+    main()

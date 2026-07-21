@@ -1,263 +1,113 @@
-"""Replace diagonal zone-outline edges with perpendicular segments.
+#!/usr/bin/env python3
+"""Orthogonalize copper-zone outlines through KiCad's IPC API.
 
-Execution:
-    Open a board in KiCad's PCB Editor, set ``ZONE_NAME`` and the corner
-    preference below, then run this file from the scripting console with::
-
-        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/zone_outline_perp.py")
-
-The first outer contour is rebuilt and zone cutouts are not preserved. Review
-the result in the editor and save the board manually.
+Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/zone_outline_perp.py``.
+Each run is one PCB Editor undo/redo transaction.  The first outer contour is
+rebuilt and existing zone holes/cutouts are deliberately not preserved.
 """
 
-import sys
-from pathlib import Path
+from kipy.geometry import PolyLine, PolyLineNode, PolygonWithHoles
 
-import pcbnew
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from pcbnew_helpers import (  # noqa: E402
-    get_current_board,
-    is_horizontal,
-    is_vertical,
-    iu_to_mm as mm,
-    same_point,
-    vector as vec,
+from kicad_ipc import (
+    connect_board, editor_commit, is_horizontal, is_vertical, same_point,
+    to_mm, vector,
 )
 
 
-# ============================================================
-# User settings
-# ============================================================
-ZONE_NAME = ""          # exact zone name to match
-PREFER_HORIZONTAL_FIRST = True  # for diagonal replacement: horizontal then vertical
+ZONE_NAME = ""  # Exact name; empty processes every zone.
+PREFER_HORIZONTAL_FIRST = True
 DEBUG = True
 
 
-# ============================================================
-# Helpers
-# ============================================================
-def is_axis_aligned(a, b):
-    """Return whether an outline edge is horizontal or vertical."""
-    return is_horizontal(a, b) or is_vertical(a, b)
+def compress(points):
+    """Remove adjacent duplicates and a repeated closing vertex."""
+    result = []
+    for point in points:
+        if not result or not same_point(result[-1], point):
+            result.append(vector(point.x, point.y))
+    if len(result) > 1 and same_point(result[0], result[-1]):
+        result.pop()
+    return result
 
 
-def compress_duplicate_points(points):
-    if not points:
-        return []
-
-    out = [vec(points[0].x, points[0].y)]
-
-    for p in points[1:]:
-        if not same_point(out[-1], p):
-            out.append(vec(p.x, p.y))
-
-    # Drop explicit closing point if present
-    if len(out) > 1 and same_point(out[0], out[-1]):
-        out.pop()
-
-    return out
-
-
-def merge_collinear_edges(points):
-    """
-    Merge consecutive collinear edges in a closed polygon.
-    Input/output: list of unique polygon vertices, with no repeated closing point.
-    """
-    pts = compress_duplicate_points(points)
-
-    if len(pts) < 3:
-        return pts[:]
-
+def merge_collinear(points):
+    """Remove vertices lying between two collinear axis-aligned edges."""
+    points = compress(points)
     changed = True
-
-    while changed and len(pts) >= 3:
+    while changed and len(points) >= 3:
         changed = False
-        new_pts = []
-        n = len(pts)
-
-        for i in range(n):
-            prev = pts[(i - 1) % n]
-            cur = pts[i]
-            nxt = pts[(i + 1) % n]
-
-            prev_cur_h = is_horizontal(prev, cur)
-            prev_cur_v = is_vertical(prev, cur)
-            cur_nxt_h = is_horizontal(cur, nxt)
-            cur_nxt_v = is_vertical(cur, nxt)
-
-            # Merge if the current point sits between two collinear axis-aligned edges
-            if (prev_cur_h and cur_nxt_h) or (prev_cur_v and cur_nxt_v):
+        output = []
+        for index, current in enumerate(points):
+            previous = points[index - 1]
+            following = points[(index + 1) % len(points)]
+            if ((is_horizontal(previous, current) and is_horizontal(current, following)) or
+                    (is_vertical(previous, current) and is_vertical(current, following))):
                 changed = True
-                continue
-
-            new_pts.append(vec(cur.x, cur.y))
-
-        pts = compress_duplicate_points(new_pts)
-
-    return pts
+            else:
+                output.append(current)
+        points = compress(output)
+    return points
 
 
-def orthogonalize_edges(points, prefer_horizontal_first=True):
-    """
-    Walk edges of a closed polygon. Any diagonal edge is replaced with two
-    orthogonal edges by inserting one corner point.
-    """
-    pts = compress_duplicate_points(points)
-
-    if len(pts) < 3:
-        raise RuntimeError("Polygon has fewer than 3 unique points")
-
-    out = []
-    n = len(pts)
-
-    for i in range(n):
-        a = pts[i]
-        b = pts[(i + 1) % n]
-
-        if not out:
-            out.append(vec(a.x, a.y))
-
-        if is_axis_aligned(a, b):
-            if not same_point(out[-1], b):
-                out.append(vec(b.x, b.y))
-            continue
-
-        # Replace diagonal edge with an L-shape
-        if prefer_horizontal_first:
-            mid = vec(b.x, a.y)
-        else:
-            mid = vec(a.x, b.y)
-
-        if not same_point(out[-1], mid):
-            out.append(mid)
-
-        if not same_point(out[-1], b):
-            out.append(vec(b.x, b.y))
-
-    out = compress_duplicate_points(out)
-    out = merge_collinear_edges(out)
-    out = compress_duplicate_points(out)
-
-    if len(out) < 3:
-        raise RuntimeError("Orthogonalization collapsed polygon too far")
-
-    return out
+def orthogonalize(points):
+    """Replace every diagonal edge with two perpendicular segments."""
+    points = compress(points)
+    output = []
+    for index, first in enumerate(points):
+        second = points[(index + 1) % len(points)]
+        if not output or not same_point(output[-1], first):
+            output.append(first)
+        if not is_horizontal(first, second) and not is_vertical(first, second):
+            corner = (
+                vector(second.x, first.y)
+                if PREFER_HORIZONTAL_FIRST
+                else vector(first.x, second.y)
+            )
+            if not same_point(corner, first) and not same_point(corner, second):
+                output.append(corner)
+    return merge_collinear(output)
 
 
-def has_only_90_degree_corners(points):
-    """
-    True if every edge is horizontal or vertical.
-    For an orthogonal polygon, that means all corners are 90 or 270 degrees.
-    """
-    pts = compress_duplicate_points(points)
-    n = len(pts)
-
-    if n < 3:
-        return False
-
-    for i in range(n):
-        a = pts[i]
-        b = pts[(i + 1) % n]
-        if not is_axis_aligned(a, b):
-            return False
-
-    return True
+def polygon_from_points(points):
+    """Build the closed IPC polygon required by a zone outline."""
+    line = PolyLine()
+    for point in points:
+        line.append(PolyLineNode.from_point(point))
+    line.closed = True
+    polygon = PolygonWithHoles()
+    polygon.outline = line
+    return polygon
 
 
-def get_matching_zones(board, zone_name):
-    matches = []
+def main():
+    """Update matching zones, refill them, and push one editor transaction."""
+    _client, board = connect_board()
+    zones = [zone for zone in board.get_zones() if not ZONE_NAME or zone.name == ZONE_NAME]
+    if not zones:
+        raise RuntimeError(f'no zones found with name "{ZONE_NAME}"')
 
-    for zone in board.Zones():
-        try:
-            if zone.GetZoneName() == zone_name or zone_name == '':
-                matches.append(zone)
-        except Exception:
-            pass
+    with editor_commit(
+        board,
+        "Orthogonalize zone outlines",
+        refill_zones=True,
+    ):
+        for index, zone in enumerate(zones, start=1):
+            nodes = zone.outline.outline.nodes
+            if any(not node.has_point for node in nodes):
+                raise RuntimeError(f"zone {index} contains arc nodes; cannot orthogonalize safely")
+            original = [node.point for node in nodes]
+            final = orthogonalize(original)
+            if len(final) < 3:
+                raise RuntimeError(f"zone {index} would have fewer than three vertices")
+            zone.outline = polygon_from_points(final)
+            if DEBUG:
+                print(f'Zone {index} "{zone.name}": {len(original)} -> {len(final)} vertices')
+                for point in final:
+                    print(f"  ({to_mm(point.x):.3f}, {to_mm(point.y):.3f}) mm")
+        board.update_items(zones)
 
-    return matches
-
-
-def extract_outer_outline_points(zone):
-    """
-    Reads only the first outer outline.
-    This script does not preserve holes/cutouts.
-    """
-    poly = zone.Outline()
-    outline_count = poly.OutlineCount()
-
-    if outline_count < 1:
-        raise RuntimeError("Zone has no outlines")
-
-    chain = poly.Outline(0)
-    count = chain.PointCount()
-
-    if count < 3:
-        raise RuntimeError("Zone outline has too few points")
-
-    pts = []
-
-    for i in range(count):
-        p = chain.CPoint(i)
-        pts.append(vec(p.x, p.y))
-
-    return compress_duplicate_points(pts)
+    print(f"Updated {len(zones)} zone(s) (undo: Orthogonalize zone outlines).")
 
 
-def rebuild_zone_outline(zone, points):
-    """
-    Rebuilds a single outer contour.
-    """
-    zone.RemoveAllContours()
-
-    for p in points:
-        ok = zone.AppendCorner(vec(p.x, p.y), -1, False)
-        if not ok:
-            raise RuntimeError(f"Failed to append point ({p.x}, {p.y})")
-
-
-def dump_points(label, points):
-    print(label)
-    for i, p in enumerate(points):
-        print(f"  {i:02d}: ({mm(p.x):.3f}, {mm(p.y):.3f}) mm")
-
-
-# ============================================================
-# Main
-# ============================================================
-board = get_current_board()
-if board is None:
-    raise RuntimeError("No board is open")
-
-zones = get_matching_zones(board, ZONE_NAME)
-
-if not zones:
-    raise RuntimeError(f'No zones found with zone name "{ZONE_NAME}"')
-
-changed_count = 0
-
-for index, zone in enumerate(zones, start=1):
-    old_points = extract_outer_outline_points(zone)
-    merged_points = merge_collinear_edges(old_points)
-    new_points = orthogonalize_edges(
-        merged_points,
-        prefer_horizontal_first=PREFER_HORIZONTAL_FIRST
-    )
-
-    if DEBUG:
-        print(f'Zone {index}: "{ZONE_NAME}"')
-        dump_points("  Original points:", old_points)
-        dump_points("  After collinear merge:", merged_points)
-        dump_points("  Final orthogonal points:", new_points)
-        print(f"  Orthogonal result: {has_only_90_degree_corners(new_points)}")
-
-    rebuild_zone_outline(zone, new_points)
-    changed_count += 1
-
-filler = pcbnew.ZONE_FILLER(board)
-filler.Fill(board.Zones())
-
-pcbnew.Refresh()
-
-print(f'Updated {changed_count} zone(s) named "{ZONE_NAME}"')
+if __name__ == "__main__":
+    main()

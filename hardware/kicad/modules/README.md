@@ -86,40 +86,47 @@ Zones: 2
 - **Flatpak socket check:** run
   `ls -l ~/.var/app/org.kicad.KiCad/cache/tmp/kicad/api.sock`.
 
-The PCB Editor scripts below have not yet been migrated: they still use the
-deprecated SWIG interface and should not be used when SWIG-free operation is a
-requirement. Their current instructions are retained only until the IPC
-migration is complete.
-
 ## PCB Editor scripts
 
-The following scripts use KiCad's `pcbnew` API and must run inside the PCB
-Editor's scripting console. Open the board to modify, edit the script's
-**User settings** section as needed, and then execute it with `runpy`:
+The following scripts use the supported `kipy` IPC API. Open the board to
+modify in PCB Editor, edit the script's **User settings** section as needed,
+then run it from a terminal at the repository root:
 
-```python
-import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/SCRIPT_NAME.py")
+```sh
+.venv-kicad-ipc/bin/python hardware/kicad/modules/SCRIPT_NAME.py
 ```
 
-Replace `SCRIPT_NAME.py` with the desired filename. If this repository is in a
-different location, use that script's absolute path instead. `runpy` supplies
-the script filename needed to locate the shared `pcbnew_helpers.py` module.
-Assigning its return value to `_result` prevents KiCad's PyShell from printing
-the complete script-globals dictionary after execution. Most scripts
-modify only the board currently held in memory: inspect the result, undo it if
-necessary, and explicitly save the board when satisfied. The one exception is
-`align_component_reference_text.py`, which saves by default when it moves
-references.
+Replace `SCRIPT_NAME.py` with the desired filename. Do not use KiCad PyShell:
+it loads the deprecated SWIG interface, whereas IPC clients are external
+processes. Every mutating script opens a named editor commit and pushes all its
+changes as one PCB Editor Undo/Redo entry. If an exception occurs, the script
+drops the commit so partial changes are not retained. Inspect the result, use
+Undo if necessary, and save the board manually when satisfied.
+
+The editor history labels are:
+
+| Script | Undo/Redo entry |
+| --- | --- |
+| `align_component_reference_text.py` | Align component references |
+| `align_connector_pin_text.py` | Align connector pin labels |
+| `align_holes.py` | Align mounting holes |
+| `center_items.py` | Center footprints vertically |
+| `pcb_edge.py` | Replace board outline and ground zones |
+| `resize_matching_text.py` | Resize matching board text |
+| `zone_outline_perp.py` | Orthogonalize zone outlines |
+
+`report_board_dimensions.py` is read-only and creates no history entry.
 
 ### `align_component_reference_text.py`
 
 Positions each visible footprint reference outside its component courtyard.
-It retains the reference's current side, applies the configured clearance, and
-skips placements that would collide with another courtyard on the same PCB
-side. Set `IGNORE_REFERENCES` for manually positioned labels and review
+It retains the reference's current side and existing position along that side:
+top/bottom references move only vertically, while left/right references move
+only horizontally. It applies the configured clearance and skips placements
+that would collide with another courtyard on the same PCB side. Set
+`IGNORE_REFERENCES` for manually positioned labels and review
 `REFERENCE_OFFSET_MM`, `OTHER_COURTYARD_CLEARANCE_MM`, and
-`CENTRED_REFERENCE_SIDE`. Set `SAVE_BOARD_AFTER_ALIGNMENT` to `False` to
-prevent automatic saving.
+`CENTRED_REFERENCE_SIDE`. It deliberately leaves saving to PCB Editor.
 
 ### `align_connector_pin_text.py`
 
@@ -149,13 +156,16 @@ Creates a rectangular `Edge.Cuts` outline using the configured size, origin,
 corner radius, and line width. By default it deletes the existing outline and
 replaces front/back GND zones, so carefully review
 `DELETE_EXISTING_EDGE_CUTS`, `REPLACE_GROUND_ZONES`, and `GROUND_NET_NAME`
-before execution. Save manually after review.
+before execution. After publishing the rebuilt Edge.Cuts transaction, it runs a
+blocking refill of every board zone—even when GND-zone replacement is disabled.
+The refill must occur after the IPC commit because staged geometry is not yet
+visible to KiCad's zone filler. Save manually after review.
 
 ### `report_board_dimensions.py`
 
 Prints the board width and height, mounting-hole and fiducial edge offsets, and
-pairwise hole spacing. Configure the reference prefixes and ensure
-`EDGE_CUT_LINE_WIDTH_MM` matches the outline. References are discovered
+pairwise hole spacing. IPC reports Edge.Cuts centreline geometry directly, so
+no visible line-width compensation is needed. References are discovered
 consecutively (`H1`, `H2`, ... and `FID1`, `FID2`, ...); discovery stops at the
 first gap. This script is read-only.
 
@@ -189,13 +199,14 @@ python3 hardware/kicad/modules/generate_jlcpcb.py --help
 
 The positional argument can be a project name below `hardware/`, a project or
 board file, or a directory containing exactly one `.kicad_pcb` file. The
-script requires KiCad 7 or newer, `kicad-cli`, and a Python environment that
-can import the matching `pcbnew` module. A native KiCad installation and the
-official KiCad Flatpak are detected automatically; use
+script requires KiCad 10 or newer and `kicad-cli`; it does not use `pcbnew` or
+require an open editor. A native KiCad installation and the official KiCad
+Flatpak are detected automatically; use
 `--kicad-cli /path/to/kicad-cli` to override detection.
 
-Before generating output, the script refills and saves board zones and runs
-ERC and DRC as release gates. It refuses to continue when a newer KiCad
+Before generating output, the script runs ERC and DRC as release gates. DRC
+uses `--refill-zones --save-board` to persist zone fills without Python
+bindings. It refuses to continue when a newer KiCad
 autosave exists. Successful output is written to the project's `gerber/`
 directory:
 
@@ -208,11 +219,12 @@ The BOM includes populated components with a non-empty `LCSC Part #` field.
 
 ## Support modules
 
-`pcbnew_helpers.py` centralizes the PCB Editor scripts' reusable KiCad API and
-geometry operations. It provides unit conversions, points and vectors,
-bounding-box centres, cross-version text angles and board access, board-edge
-bounds, board-text detection, and basic point/segment calculations. It has no
-project settings and makes no board changes when imported.
+`kicad_ipc.py` centralizes IPC connection handling, nanometre/millimetre
+geometry, board and courtyard bounds, text placement, atomic editor commits,
+and blocking all-zone refills. Scripts request a post-commit refill with
+`editor_commit(..., refill_zones=True)`, which guarantees staged geometry is
+published before KiCad rebuilds every zone. The module has no project settings
+and makes no board changes when imported.
 
 `kicad_netlist_reader.py` is the legacy KiCad generic-netlist parser used to
 build the BOM, and `kicad_utils.py` contains a legacy output-file helper. They

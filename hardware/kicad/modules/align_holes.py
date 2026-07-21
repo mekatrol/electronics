@@ -1,145 +1,74 @@
-"""Place four mounting-hole footprints at configured board-edge offsets.
+#!/usr/bin/env python3
+"""Place four mounting holes at configured board-edge offsets using IPC.
 
-Execution:
-    Open a board in KiCad's PCB Editor, adjust the references and offsets
-    below, then run this file from the PCB Editor scripting console with::
+Run from the repository root with::
 
-        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/align_holes.py")
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/align_holes.py
 
-Review the result in the editor and save the board manually.
+The complete operation is one entry in PCB Editor's Undo/Redo history.
 """
 
-import sys
-from pathlib import Path
-
-import pcbnew
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
-from pcbnew_helpers import (  # noqa: E402
+from kicad_ipc import (
     board_edge_bounds,
-    get_current_board,
-    iu_to_mm,
-    mm_to_iu,
+    connect_board,
+    editor_commit,
+    footprints_by_reference,
+    from_mm,
+    to_mm,
+    vector,
 )
 
 
-# =========================
-# Hole references
-# =========================
+# Footprint references for the four physical corners.
 TOP_LEFT_HOLE_REF = "H1"
 TOP_RIGHT_HOLE_REF = "H2"
 BOTTOM_LEFT_HOLE_REF = "H3"
 BOTTOM_RIGHT_HOLE_REF = "H4"
 
-
-# =========================
-# Offsets from board edges
-# =========================
-# Hole-centre distances from their corresponding board edges.
-LEFT_OFFSET_MM = 3.55
-RIGHT_OFFSET_MM = 3.55
-TOP_OFFSET_MM = 3.55
-BOTTOM_OFFSET_MM = 3.55
-
+# Hole-centre distances from the corresponding fabrication edges.
+LEFT_OFFSET_MM = 3.50
+RIGHT_OFFSET_MM = 3.50
+TOP_OFFSET_MM = 3.50
+BOTTOM_OFFSET_MM = 3.50
 DEBUG = True
 
 
-def get_footprint_by_ref(board, reference):
-    """Find a configured mounting-hole footprint, warning when absent."""
-    footprint = board.FindFootprintByReference(reference)
-
-    if footprint is None:
-        print(f"Warning: footprint {reference} was not found; skipping it.")
-        return None
-
-    return footprint
-
-
-def move_hole_to(board, reference, target_x, target_y):
-    """Move one mounting-hole anchor to a target board coordinate."""
-    footprint = get_footprint_by_ref(board, reference)
-
-    if footprint is None:
-        return False
-
-    old_position = footprint.GetPosition()
-    new_position = pcbnew.VECTOR2I(target_x, target_y)
-
-    footprint.SetPosition(new_position)
-
-    if DEBUG:
-        print(reference)
-        print(f"  old X: {iu_to_mm(old_position.x):.3f} mm")
-        print(f"  old Y: {iu_to_mm(old_position.y):.3f} mm")
-        print(f"  new X: {iu_to_mm(new_position.x):.3f} mm")
-        print(f"  new Y: {iu_to_mm(new_position.y):.3f} mm")
-        print(f"  dx   : {iu_to_mm(new_position.x - old_position.x):.3f} mm")
-        print(f"  dy   : {iu_to_mm(new_position.y - old_position.y):.3f} mm")
-
-    return True
-
-
-board = get_current_board()
-
-if board is None:
-    print("Error: no board is currently open.")
-else:
-    left_x, right_x, top_y, bottom_y = board_edge_bounds(board)
-
-    left_offset_iu = mm_to_iu(LEFT_OFFSET_MM)
-    right_offset_iu = mm_to_iu(RIGHT_OFFSET_MM)
-    top_offset_iu = mm_to_iu(TOP_OFFSET_MM)
-    bottom_offset_iu = mm_to_iu(BOTTOM_OFFSET_MM)
-
+def main():
+    """Move configured holes and publish one undoable editor transaction."""
+    _client, board = connect_board()
+    footprints = footprints_by_reference(board)
+    left, right, top, bottom = board_edge_bounds(board)
     targets = {
-        TOP_LEFT_HOLE_REF: (
-            left_x + left_offset_iu,
-            top_y + top_offset_iu,
+        TOP_LEFT_HOLE_REF: vector(left + from_mm(LEFT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)),
+        TOP_RIGHT_HOLE_REF: vector(right - from_mm(RIGHT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)),
+        BOTTOM_LEFT_HOLE_REF: vector(
+            left + from_mm(LEFT_OFFSET_MM), bottom - from_mm(BOTTOM_OFFSET_MM)
         ),
-        TOP_RIGHT_HOLE_REF: (
-            right_x - right_offset_iu,
-            top_y + top_offset_iu,
-        ),
-        BOTTOM_LEFT_HOLE_REF: (
-            left_x + left_offset_iu,
-            bottom_y - bottom_offset_iu,
-        ),
-        BOTTOM_RIGHT_HOLE_REF: (
-            right_x - right_offset_iu,
-            bottom_y - bottom_offset_iu,
+        BOTTOM_RIGHT_HOLE_REF: vector(
+            right - from_mm(RIGHT_OFFSET_MM), bottom - from_mm(BOTTOM_OFFSET_MM)
         ),
     }
 
-    moved_count = 0
+    missing = [reference for reference in targets if reference not in footprints]
+    if missing:
+        raise RuntimeError(f"missing mounting-hole footprint(s): {', '.join(missing)}")
 
-    for reference, target_position in targets.items():
-        target_x, target_y = target_position
+    changed = []
+    with editor_commit(board, "Align mounting holes"):
+        for reference, target in targets.items():
+            footprint = footprints[reference]
+            old = footprint.position
+            footprint.position = target
+            changed.append(footprint)
+            if DEBUG:
+                print(
+                    f"{reference}: ({to_mm(old.x):.3f}, {to_mm(old.y):.3f}) -> "
+                    f"({to_mm(target.x):.3f}, {to_mm(target.y):.3f}) mm"
+                )
+        board.update_items(changed)
 
-        if move_hole_to(board, reference, target_x, target_y):
-            moved_count += 1
+    print(f"Aligned {len(changed)} mounting holes (undo: Align mounting holes).")
 
-    pcbnew.Refresh()
 
-    if DEBUG:
-        print()
-        print("Board edges")
-        print(f"  left   : {iu_to_mm(left_x):.3f} mm")
-        print(f"  right  : {iu_to_mm(right_x):.3f} mm")
-        print(f"  top    : {iu_to_mm(top_y):.3f} mm")
-        print(f"  bottom : {iu_to_mm(bottom_y):.3f} mm")
-
-        print()
-        print("Targets")
-
-        for reference, target_position in targets.items():
-            target_x, target_y = target_position
-
-            print(
-                f"  {reference}: "
-                f"X={iu_to_mm(target_x):.3f} mm, "
-                f"Y={iu_to_mm(target_y):.3f} mm"
-            )
-
-        print()
-        print(f"Moved {moved_count} of {len(targets)} holes.")
+if __name__ == "__main__":
+    main()
