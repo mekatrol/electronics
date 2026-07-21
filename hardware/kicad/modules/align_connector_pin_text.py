@@ -15,7 +15,7 @@ from kicad_ipc import (
 )
 
 
-CONNECTOR_REFERENCES = ["J1", "J2", "J3", "J4", "J5", "J6"]
+CONNECTOR_REFERENCES = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
 LABEL_OFFSET_MM = 1.5
 COURTYARD_CLEARANCE_MM = 0.2
 LABEL_PROXIMITY_MM = 10.0

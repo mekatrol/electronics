@@ -22,11 +22,12 @@ diameter plus twice the pad's solder-mask margin; for example, the standard
 
 Each coordinate is rounded independently to the nearest configured grid mark.
 A move is skipped if its expanded footprint envelope would cross Edge.Cuts or
-overlap a footprint, track, via, or another fiducial on the same side. Tracks
-use KiCad's geometry-aware hit test so empty space inside a diagonal track's
-rectangular bounding box is not mistaken for copper. This is a conservative
-pre-move safety check; run KiCad's full Design Rules Checker afterwards because
-the IPC API does not expose the complete DRC engine.
+overlap a footprint, track, via, or another fiducial on the same side.
+Footprints with courtyard graphics and tracks use KiCad's geometry-aware hit
+test so empty space inside an item's rectangular bounding box is not mistaken
+for a collision. This is a conservative pre-move safety check; run KiCad's full
+Design Rules Checker afterwards because the IPC API does not expose the
+complete DRC engine.
 
 Accepted moves form one ``Align and check fiducials`` entry in PCB Editor's
 Undo/Redo history. The script changes the live PCB Editor board but does not
@@ -225,20 +226,34 @@ def safe_target(
         or envelope.bottom > board_bounds.bottom
     ):
         return False, "clearance envelope would cross Edge.Cuts"
-    for item_id, label, obstacle in obstacles:
+    geometry_tolerance = max(
+        envelope.right - envelope.left,
+        envelope.bottom - envelope.top,
+    ) // 2
+    for item_id, label, obstacle, courtyard_items in obstacles:
         if item_id == footprint.id.value:
             continue
-        if envelope.overlaps(obstacle):
+        if not envelope.overlaps(obstacle):
+            continue
+        if not courtyard_items:
+            return False, f"clearance envelope would overlap {label}"
+        # Courtyards are commonly circular or irregular even though KiCad's
+        # aggregate footprint bounding box is rectangular. Test their actual
+        # graphics to avoid false positives where only two box corners overlap.
+        target_inside_bounds = (
+            obstacle.left <= target.x <= obstacle.right
+            and obstacle.top <= target.y <= obstacle.bottom
+        )
+        if target_inside_bounds or any(
+            board.hit_test(item, target, tolerance=geometry_tolerance)
+            for item in courtyard_items
+        ):
             return False, f"clearance envelope would overlap {label}"
     # A track's axis-aligned bounding box contains substantial empty space when
     # the track is diagonal. Ask KiCad to test the actual track geometry against
     # a circle enclosing the proposed fiducial envelope instead.
-    track_tolerance = max(
-        envelope.right - envelope.left,
-        envelope.bottom - envelope.top,
-    ) // 2
     for label, track in track_obstacles:
-        if board.hit_test(track, target, tolerance=track_tolerance):
+        if board.hit_test(track, target, tolerance=geometry_tolerance):
             return False, f"clearance envelope would overlap {label}"
     return True, ""
 
@@ -269,18 +284,35 @@ def main() -> int:
     tracks_by_side = {}
     for layer in populated:
         side_obstacles = []
+        courtyard_layer = (
+            BoardLayer.BL_B_CrtYd
+            if layer == BoardLayer.BL_B_Cu
+            else BoardLayer.BL_F_CrtYd
+        )
         for footprint in footprints:
             if footprint.layer != layer:
                 continue
             box = board.get_item_bounding_box(footprint, include_text=False)
             if box is not None:
+                courtyard_items = [
+                    item
+                    for item in footprint.definition.items
+                    if getattr(item, "layer", None) == courtyard_layer
+                ]
                 side_obstacles.append(
-                    (footprint.id.value, footprint_reference(footprint), bounds_of(box))
+                    (
+                        footprint.id.value,
+                        footprint_reference(footprint),
+                        bounds_of(box),
+                        courtyard_items,
+                    )
                 )
         for index, via in enumerate(board.get_vias(), start=1):
             box = board.get_item_bounding_box(via)
             if box is not None:
-                side_obstacles.append((via.id.value, f"via {index}", bounds_of(box)))
+                side_obstacles.append(
+                    (via.id.value, f"via {index}", bounds_of(box), [])
+                )
         obstacle_by_side[layer] = side_obstacles
         tracks_by_side[layer] = [
             (f"track {index}", track)
