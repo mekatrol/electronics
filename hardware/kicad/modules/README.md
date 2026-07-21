@@ -110,7 +110,7 @@ The editor history labels are:
 | `align_component_reference_text.py` | Align component references |
 | `align_connector_pin_text.py` | Align connector pin labels |
 | `align_holes.py` | Align mounting holes |
-| `center_items.py` | Center footprints vertically |
+| `center_and_distribute_items.py` | Center and optionally distribute footprints |
 | `pcb_edge.py` | Replace board outline and ground zones |
 | `resize_matching_text.py` | Resize matching board text |
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
@@ -142,13 +142,14 @@ Moves four mounting-hole footprints to fixed offsets from the board edges.
 Configure the four `*_HOLE_REF` values and the four `*_OFFSET_MM` distances.
 The board must have a valid `Edge.Cuts` outline. Save manually after review.
 
-### `center_items.py`
+### `center_and_distribute_items.py`
 
-Moves the footprints in `REFERENCES` vertically so the centre of each bounding
-box sits on the board's vertical centreline. The centreline is inferred from
-the extreme horizontal `Edge.Cuts` segments; adjust
-`HORIZONTAL_TOLERANCE_MM` if those edges are not perfectly horizontal. Save
-manually after review.
+Centres the footprints in `REFERENCES` to the first component in that list.
+`ALIGNMENT = "vertical"` aligns their vertical (Y) centres and `"horizontal"`
+aligns their horizontal (X) centres. Set `DISTRIBUTE_SPACING` to `True` with
+three or more references to create equal edge-to-edge gaps on the perpendicular
+axis; the two outer footprints remain fixed on that axis. Save manually after
+review.
 
 ### `pcb_edge.py`
 
