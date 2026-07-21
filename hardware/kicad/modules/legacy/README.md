@@ -135,13 +135,13 @@ Moves four mounting-hole footprints to fixed offsets from the board edges.
 Configure the four `*_HOLE_REF` values and the four `*_OFFSET_MM` distances.
 The board must have a valid `Edge.Cuts` outline. Save manually after review.
 
-### `center_items.py`
+### `center_and_distribute_items.py`
 
-Moves the footprints in `REFERENCES` vertically so the centre of each bounding
-box sits on the board's vertical centreline. The centreline is inferred from
-the extreme horizontal `Edge.Cuts` segments; adjust
-`HORIZONTAL_TOLERANCE_MM` if those edges are not perfectly horizontal. Save
-manually after review.
+Aligns the bounding-box centres of the footprints in `REFERENCES` to the first
+reference. Set `ALIGNMENT` to `"vertical"` to align Y centres or `"horizontal"`
+to align X centres. When `DISTRIBUTE_SPACING` is enabled, the first and last
+footprints remain fixed on the perpendicular axis and the intervening items
+are arranged with equal edge-to-edge gaps. Save manually after review.
 
 ### `pcb_edge.py`
 
