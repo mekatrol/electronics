@@ -4,12 +4,19 @@ Execution:
     Open a board in KiCad's PCB Editor, adjust the settings below, then run
     this file from the PCB Editor scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/report_board_dimensions.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/report_board_dimensions.py")
 
 This script only reads the board and prints its report to the console.
 """
 
+import sys
+from pathlib import Path
+
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import board_edge_bounds, get_current_board, iu_to_mm  # noqa: E402
 
 
 # ============================================================
@@ -28,25 +35,20 @@ DECIMAL_PLACES = 3
 EDGE_CUT_LINE_WIDTH_MM = 0.10
 
 
-def iu_to_mm(value_iu):
-    """Convert KiCad internal units to millimetres."""
-    return pcbnew.ToMM(value_iu)
-
-
-def get_board_edges(board):
+def get_board_edge_centrelines(board):
     """Return the Edge.Cuts centreline boundaries in KiCad units."""
-    bbox = board.GetBoardEdgesBoundingBox()
+    left_x, right_x, top_y, bottom_y = board_edge_bounds(board)
 
-    if bbox.GetWidth() <= 0 or bbox.GetHeight() <= 0:
+    if right_x <= left_x or bottom_y <= top_y:
         raise RuntimeError("The board needs a valid Edge.Cuts outline.")
 
     half_line_width = pcbnew.FromMM(EDGE_CUT_LINE_WIDTH_MM / 2.0)
 
     return (
-        bbox.GetLeft() + half_line_width,
-        bbox.GetRight() - half_line_width,
-        bbox.GetTop() + half_line_width,
-        bbox.GetBottom() - half_line_width,
+        left_x + half_line_width,
+        right_x - half_line_width,
+        top_y + half_line_width,
+        bottom_y - half_line_width,
     )
 
 
@@ -156,7 +158,7 @@ def report_hole_spacing(holes):
 
 
 def report_board(board):
-    left_x, right_x, top_y, bottom_y = get_board_edges(board)
+    left_x, right_x, top_y, bottom_y = get_board_edge_centrelines(board)
     width = right_x - left_x
     height = bottom_y - top_y
 
@@ -186,7 +188,7 @@ def report_board(board):
     )
 
 
-board = pcbnew.GetBoard()
+board = get_current_board()
 
 if board is None:
     print("Error: no board is currently open.")

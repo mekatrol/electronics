@@ -4,13 +4,27 @@ Execution:
     Open a board in KiCad's PCB Editor, set ``ZONE_NAME`` and the corner
     preference below, then run this file from the scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/zone_outline_perp.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/zone_outline_perp.py")
 
 The first outer contour is rebuilt and zone cutouts are not preserved. Review
 the result in the editor and save the board manually.
 """
 
+import sys
+from pathlib import Path
+
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import (  # noqa: E402
+    get_current_board,
+    is_horizontal,
+    is_vertical,
+    iu_to_mm as mm,
+    same_point,
+    vector as vec,
+)
 
 
 # ============================================================
@@ -24,23 +38,8 @@ DEBUG = True
 # ============================================================
 # Helpers
 # ============================================================
-def vec(x, y):
-    return pcbnew.VECTOR2I(int(x), int(y))
-
-
-def same_point(a, b):
-    return a.x == b.x and a.y == b.y
-
-
-def is_horizontal(a, b):
-    return a.y == b.y
-
-
-def is_vertical(a, b):
-    return a.x == b.x
-
-
 def is_axis_aligned(a, b):
+    """Return whether an outline edge is horizontal or vertical."""
     return is_horizontal(a, b) or is_vertical(a, b)
 
 
@@ -218,10 +217,6 @@ def rebuild_zone_outline(zone, points):
             raise RuntimeError(f"Failed to append point ({p.x}, {p.y})")
 
 
-def mm(iu_value):
-    return pcbnew.ToMM(iu_value)
-
-
 def dump_points(label, points):
     print(label)
     for i, p in enumerate(points):
@@ -231,7 +226,7 @@ def dump_points(label, points):
 # ============================================================
 # Main
 # ============================================================
-board = pcbnew.GetBoard()
+board = get_current_board()
 if board is None:
     raise RuntimeError("No board is open")
 

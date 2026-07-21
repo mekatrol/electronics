@@ -1292,7 +1292,7 @@
 			)
 		)
 		(property ki_fp_filters "DIP*W7.62mm* SO14* SSOP?14* TSSOP?14* SOIC*3.9x8.7mm*P1.27mm*")
-		(path "/bd2d6d35-99e1-48b7-b77d-3c768a2117c7")
+		(path "/8c195b10-42cf-4443-94a3-e83fb1082056")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
 		(units
@@ -7751,7 +7751,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "d8219b12-71a3-4a9c-b0e2-867779db6155")
+		(uuid "5f2c8737-6636-4d84-a0bc-6e0b89c903bf")
 	)
 	(gr_line
 		(start 120 118)
@@ -7761,7 +7761,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "939d3172-bb95-43c0-b8e9-eb6701c25923")
+		(uuid "2c272e39-8b16-488a-ae89-2adca1f076bb")
 	)
 	(gr_line
 		(start 122 50)
@@ -7771,7 +7771,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "0c105521-a99a-4da9-b40a-cbf8c67968b1")
+		(uuid "ee99d415-8985-4d87-9d73-a1308bf9bb7a")
 	)
 	(gr_arc
 		(start 122 120)
@@ -7782,7 +7782,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "0323141c-e0f1-45f0-bcd8-bf3d403867ff")
+		(uuid "b266eaa3-b0b2-4345-b987-f5e531b3ddc7")
 	)
 	(gr_arc
 		(start 168 50)
@@ -7793,7 +7793,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "c8d38129-8570-415e-8b5b-0aa997fc319b")
+		(uuid "f6d6f37a-679e-4065-be30-c451bf5f50d8")
 	)
 	(gr_line
 		(start 168 120)
@@ -7803,7 +7803,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "d3e27b4f-bd45-4e52-a762-ee47feb606fb")
+		(uuid "3f8cf11f-7106-4545-8d49-7bf9369963fa")
 	)
 	(gr_line
 		(start 170 52)
@@ -7813,7 +7813,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "4020a9dc-5d3d-4a94-915b-28f9234c9ed9")
+		(uuid "153a1a34-412e-4ccd-842e-e3a92b2ca59d")
 	)
 	(gr_arc
 		(start 170 118)
@@ -7824,7 +7824,7 @@
 			(type default)
 		)
 		(layer "Edge.Cuts")
-		(uuid "3977775b-7e6a-4180-8b89-eac13d10c46e")
+		(uuid "8af38d0a-a2b4-4a46-833f-5595a7988236")
 	)
 	(gr_text "5V"
 		(at 138.251191 115.375736 0)
@@ -9126,7 +9126,7 @@
 	(zone
 		(net "GND")
 		(layer "F.Cu")
-		(uuid "2a18d6f6-fa23-4c57-8a2f-192147b3a2fe")
+		(uuid "e9e267eb-3c4b-4337-913e-7ed28a51ff92")
 		(hatch edge 0.5)
 		(connect_pads
 			(clearance 0.5)
@@ -10180,7 +10180,7 @@
 	(zone
 		(net "GND")
 		(layer "B.Cu")
-		(uuid "c7891b2e-e88b-48a1-ae37-01e85dc661b2")
+		(uuid "b0068f16-72ed-4d7e-9c89-63e9c9ad168d")
 		(hatch edge 0.5)
 		(connect_pads
 			(clearance 0.5)

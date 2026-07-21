@@ -4,14 +4,24 @@ Execution:
     Open a board in KiCad's PCB Editor, carefully review the destructive
     replacement settings below, then run this file from the scripting console::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/pcb_edge.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/pcb_edge.py")
 
 Review the result in the editor and save the board manually.
 """
 
 import math
+import sys
+from pathlib import Path
 
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import (  # noqa: E402
+    get_current_board,
+    mm_to_iu as mm,
+    point_from_mm as pt,
+)
 
 
 # ============================================================
@@ -37,42 +47,6 @@ DELETE_EXISTING_EDGE_CUTS = True
 # Edge.Cuts outline has rounded corners.
 REPLACE_GROUND_ZONES = True
 GROUND_NET_NAME = "GND"
-
-
-def mm(value: float) -> int:
-    return pcbnew.FromMM(value)
-
-
-def pt(x_mm: float, y_mm: float):
-    return pcbnew.VECTOR2I(mm(x_mm), mm(y_mm))
-
-
-def get_current_board():
-    """
-    Return the open board as a pcbnew.BOARD Python proxy.
-
-    Some KiCad 10 SWIG builds return the underlying SwigPyObject pointer from
-    pcbnew.GetBoard() instead of its Python BOARD wrapper. Reattach that raw
-    pointer to a non-owning BOARD proxy when necessary. The proxy must not own
-    the object because KiCad itself owns the currently open board.
-    """
-    current_board = pcbnew.GetBoard()
-
-    if current_board is None or hasattr(current_board, "GetDrawings"):
-        return current_board
-
-    if type(current_board).__name__ != "SwigPyObject":
-        return current_board
-
-    wrapped_board = pcbnew.BOARD.__new__(pcbnew.BOARD)
-    wrapped_board.this = current_board
-
-    try:
-        wrapped_board.this.own(False)
-    except AttributeError:
-        pass
-
-    return wrapped_board
 
 
 def add_edge_segment(board, start, end, line_width):

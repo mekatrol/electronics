@@ -4,12 +4,24 @@ Execution:
     Open a board in KiCad's PCB Editor, adjust the references and offsets
     below, then run this file from the PCB Editor scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_holes.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/align_holes.py")
 
 Review the result in the editor and save the board manually.
 """
 
+import sys
+from pathlib import Path
+
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import (  # noqa: E402
+    board_edge_bounds,
+    get_current_board,
+    iu_to_mm,
+    mm_to_iu,
+)
 
 
 # =========================
@@ -33,15 +45,8 @@ BOTTOM_OFFSET_MM = 3.55
 DEBUG = True
 
 
-def mm_to_iu(value_mm):
-    return pcbnew.FromMM(value_mm)
-
-
-def iu_to_mm(value_iu):
-    return pcbnew.ToMM(value_iu)
-
-
 def get_footprint_by_ref(board, reference):
+    """Find a configured mounting-hole footprint, warning when absent."""
     footprint = board.FindFootprintByReference(reference)
 
     if footprint is None:
@@ -51,18 +56,8 @@ def get_footprint_by_ref(board, reference):
     return footprint
 
 
-def get_board_edges(board):
-    bbox = board.GetBoardEdgesBoundingBox()
-
-    left_x = bbox.GetLeft()
-    right_x = bbox.GetRight()
-    top_y = bbox.GetTop()
-    bottom_y = bbox.GetBottom()
-
-    return left_x, right_x, top_y, bottom_y
-
-
 def move_hole_to(board, reference, target_x, target_y):
+    """Move one mounting-hole anchor to a target board coordinate."""
     footprint = get_footprint_by_ref(board, reference)
 
     if footprint is None:
@@ -85,12 +80,12 @@ def move_hole_to(board, reference, target_x, target_y):
     return True
 
 
-board = pcbnew.GetBoard()
+board = get_current_board()
 
 if board is None:
     print("Error: no board is currently open.")
 else:
-    left_x, right_x, top_y, bottom_y = get_board_edges(board)
+    left_x, right_x, top_y, bottom_y = board_edge_bounds(board)
 
     left_offset_iu = mm_to_iu(LEFT_OFFSET_MM)
     right_offset_iu = mm_to_iu(RIGHT_OFFSET_MM)

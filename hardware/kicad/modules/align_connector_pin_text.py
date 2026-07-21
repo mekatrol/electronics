@@ -4,14 +4,27 @@ Execution:
     Open a board in KiCad's PCB Editor, adjust the settings below, then run
     this file from the PCB Editor scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_connector_pin_text.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/align_connector_pin_text.py")
 
 Review the result in the editor and save the board manually.
 """
 
-import math
+import sys
+from pathlib import Path
 
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import (  # noqa: E402
+    bounding_box_center as bbox_centre,
+    distance,
+    get_current_board,
+    is_board_text,
+    iu_to_mm,
+    mm_to_iu,
+    text_angle_degrees,
+)
 
 
 # ============================================================
@@ -48,64 +61,23 @@ DEBUG = True
 
 
 # ============================================================
-# Unit and geometry helpers
+# Connector-specific geometry helpers
 # ============================================================
-def mm_to_iu(value_mm):
-    """Convert millimetres to KiCad internal units."""
-    return pcbnew.FromMM(value_mm)
-
-
-def iu_to_mm(value_iu):
-    """Convert KiCad internal units to millimetres."""
-    return pcbnew.ToMM(value_iu)
-
-
-def bbox_centre(bbox):
-    """Return the centre of a KiCad bounding box without relying on GetCenter()."""
-    return pcbnew.VECTOR2I(
-        bbox.GetX() + bbox.GetWidth() // 2,
-        bbox.GetY() + bbox.GetHeight() // 2,
-    )
-
-
-def text_angle_degrees(text):
-    """Read a board text angle in degrees."""
-    angle = text.GetTextAngle()
-
-    if hasattr(angle, "AsDegrees"):
-        return angle.AsDegrees()
-
-    # Compatibility with older KiCad builds which returned tenths of a degree.
-    return float(angle) / 10.0
-
-
 def parallel_angle_error(first_degrees, second_degrees):
     """Return the smallest angle between two unoriented baselines (0..90)."""
     difference = abs(first_degrees - second_degrees) % 180.0
     return min(difference, 180.0 - difference)
 
 
-def distance(first, second):
-    return math.hypot(first.x - second.x, first.y - second.y)
-
-
 # ============================================================
 # Board item helpers
 # ============================================================
-def is_board_text(item):
-    """Identify free-standing PCB text without depending on SWIG proxy types."""
-    return all(
-        hasattr(item, method_name)
-        for method_name in ("GetText", "GetTextAngle", "SetPosition")
-    )
-
-
 def get_board_text_items(board):
     """Return visible, free-standing text items from the board drawings."""
     text_items = []
 
     for item in board.GetDrawings():
-        if not is_board_text(item):
+        if not is_board_text(item, ("GetTextAngle", "SetPosition")):
             continue
 
         if hasattr(item, "IsVisible") and not item.IsVisible():
@@ -467,7 +439,7 @@ def align_connector_labels(board):
     return total_moved
 
 
-board = pcbnew.GetBoard()
+board = get_current_board()
 
 if board is None:
     print("Error: no board is currently open.")

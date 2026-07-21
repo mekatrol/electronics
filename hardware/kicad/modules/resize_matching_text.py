@@ -4,12 +4,19 @@ Execution:
     Open a board in KiCad's PCB Editor, adjust the strings and dimensions
     below, then run this file from the PCB Editor scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/resize_matching_text.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/resize_matching_text.py")
 
 Review the result in the editor and save the board manually.
 """
 
+import sys
+from pathlib import Path
+
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import get_current_board, is_board_text  # noqa: E402
 
 
 # ============================================================
@@ -22,14 +29,6 @@ TEXT_STRINGS = ["GND", "5V", "D", "JLCJLCJLCJLC"]
 TEXT_WIDTH_MM = 0.8
 TEXT_HEIGHT_MM = 0.8
 TEXT_THICKNESS_MM = 0.1
-
-
-def is_board_text(item):
-    """Return True for board text while remaining compatible across KiCad versions."""
-    return all(
-        hasattr(item, method_name)
-        for method_name in ("GetText", "SetTextSize", "SetTextThickness")
-    )
 
 
 def resize_matching_text(board):
@@ -45,7 +44,10 @@ def resize_matching_text(board):
     # Free-standing text placed on a PCB is stored in the board drawings.
     # Footprint fields and footprint graphical text are intentionally excluded.
     for item in board.GetDrawings():
-        if not is_board_text(item) or item.GetText() not in target_strings:
+        if not is_board_text(
+            item,
+            ("SetTextSize", "SetTextThickness"),
+        ) or item.GetText() not in target_strings:
             continue
 
         item.SetTextSize(text_size)
@@ -55,7 +57,7 @@ def resize_matching_text(board):
     return changed_count
 
 
-board = pcbnew.GetBoard()
+board = get_current_board()
 
 if board is None:
     print("Error: no board is currently open.")

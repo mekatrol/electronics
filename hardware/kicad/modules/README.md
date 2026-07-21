@@ -7,14 +7,17 @@ manufacturing-file generator, and its support modules.
 
 The following scripts use KiCad's `pcbnew` API and must run inside the PCB
 Editor's scripting console. Open the board to modify, edit the script's
-**User settings** section as needed, and then execute it with:
+**User settings** section as needed, and then execute it with `runpy`:
 
 ```python
-exec(open("/home/dad/repos/electronics/hardware/kicad/modules/SCRIPT_NAME.py").read())
+import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/SCRIPT_NAME.py")
 ```
 
 Replace `SCRIPT_NAME.py` with the desired filename. If this repository is in a
-different location, use that script's absolute path instead. Most scripts
+different location, use that script's absolute path instead. `runpy` supplies
+the script filename needed to locate the shared `pcbnew_helpers.py` module.
+Assigning its return value to `_result` prevents KiCad's PyShell from printing
+the complete script-globals dictionary after execution. Most scripts
 modify only the board currently held in memory: inspect the result, undo it if
 necessary, and explicitly save the board when satisfied. The one exception is
 `align_component_reference_text.py`, which saves by default when it moves
@@ -116,6 +119,12 @@ directory:
 The BOM includes populated components with a non-empty `LCSC Part #` field.
 
 ## Support modules
+
+`pcbnew_helpers.py` centralizes the PCB Editor scripts' reusable KiCad API and
+geometry operations. It provides unit conversions, points and vectors,
+bounding-box centres, cross-version text angles and board access, board-edge
+bounds, board-text detection, and basic point/segment calculations. It has no
+project settings and makes no board changes when imported.
 
 `kicad_netlist_reader.py` is the legacy KiCad generic-netlist parser used to
 build the BOM, and `kicad_utils.py` contains a legacy output-file helper. They

@@ -4,14 +4,28 @@ Execution:
     Open a board in KiCad's PCB Editor, adjust the settings below, then run
     this file from the PCB Editor scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/align_component_reference_text.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/align_component_reference_text.py")
 
 The script optionally saves the board; see ``SAVE_BOARD_AFTER_ALIGNMENT``.
 """
 
 import math
+import sys
+from pathlib import Path
 
 import pcbnew
+
+# Make sibling helper modules importable when KiCad executes this file through
+# runpy rather than through Python's normal script loader.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import (  # noqa: E402
+    bounding_box_center as bbox_centre,
+    get_current_board,
+    iu_to_mm,
+    mm_to_iu,
+    text_angle_degrees,
+)
 
 
 # ============================================================
@@ -41,36 +55,8 @@ DEBUG = True
 
 
 # ============================================================
-# Geometry helpers
+# Reference geometry helpers
 # ============================================================
-def mm_to_iu(value_mm):
-    """Convert millimetres to KiCad internal units."""
-    return pcbnew.FromMM(value_mm)
-
-
-def iu_to_mm(value_iu):
-    """Convert KiCad internal units to millimetres."""
-    return pcbnew.ToMM(value_iu)
-
-
-def bbox_centre(bbox):
-    """Return the centre of a KiCad bounding box."""
-    return pcbnew.VECTOR2I(
-        bbox.GetX() + bbox.GetWidth() // 2,
-        bbox.GetY() + bbox.GetHeight() // 2,
-    )
-
-
-def text_angle_degrees(reference_text):
-    """Read a reference angle in degrees across KiCad API versions."""
-    angle = reference_text.GetTextAngle()
-
-    if hasattr(angle, "AsDegrees"):
-        return angle.AsDegrees()
-
-    return float(angle) / 10.0
-
-
 def nominal_text_half_extents(reference_text):
     """
     Return nominal board-axis half extents without KiCad's selection margin.
@@ -393,7 +379,7 @@ def align_reference_labels(board):
     return moved_count
 
 
-board = pcbnew.GetBoard()
+board = get_current_board()
 
 if board is None:
     print("Error: no board is currently open.")

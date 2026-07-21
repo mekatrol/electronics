@@ -4,12 +4,19 @@ Execution:
     Open a board in KiCad's PCB Editor, adjust ``REFERENCES`` and the tolerance
     below, then run this file from the PCB Editor scripting console with::
 
-        exec(open("/home/dad/repos/electronics/hardware/kicad/modules/center_items.py").read())
+        import runpy; _result = runpy.run_path("/home/dad/repos/electronics/hardware/kicad/modules/center_items.py")
 
 Review the result in the editor and save the board manually.
 """
 
+import sys
+from pathlib import Path
+
 import pcbnew
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from pcbnew_helpers import get_current_board, iu_to_mm, mm_to_iu  # noqa: E402
 
 
 # ============================================================
@@ -18,16 +25,6 @@ import pcbnew
 REFERENCES = ["J1", "J2"]
 HORIZONTAL_TOLERANCE_MM = 0.01
 DEBUG = True
-
-
-def mm_to_iu(value_mm):
-    """Convert millimetres to KiCad internal units."""
-    return pcbnew.FromMM(value_mm)
-
-
-def iu_to_mm(value_iu):
-    """Convert KiCad internal units to millimetres."""
-    return pcbnew.ToMM(value_iu)
 
 
 def is_horizontal_edge(shape, tol_iu):
@@ -108,7 +105,7 @@ def center_items(board):
     return target_center_y, bottom_y, top_y
 
 
-board = pcbnew.GetBoard()
+board = get_current_board()
 
 if board is None:
     print("Error: no board is currently open.")
