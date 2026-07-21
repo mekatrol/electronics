@@ -3,6 +3,94 @@
 This directory contains PCB Editor automation scripts, a command-line
 manufacturing-file generator, and its support modules.
 
+## KiCad IPC API setup
+
+KiCad's SWIG-based `pcbnew` Python interface is deprecated and is scheduled for
+removal in KiCad 11. New and migrated automation should use KiCad's official
+`kicad-python` (`kipy`) IPC client. The IPC client runs in an external Python
+process and communicates with a running KiCad application.
+
+### Enable the API server
+
+For the KiCad 10 Flatpak:
+
+1. Start KiCad and open **Preferences → Plugins**.
+2. Enable the **API server** option.
+3. Close and restart KiCad after changing the option.
+4. Open the required `.kicad_pcb` in PCB Editor and leave PCB Editor running
+   while an IPC script executes.
+
+The project manager alone is insufficient. Board requests such as
+`GetOpenDocuments` are available only while PCB Editor is open and has
+registered its IPC request handlers.
+
+No `flatpak override` was needed on this system. The existing Flatpak
+permissions already include home-directory access and shared IPC:
+
+```text
+shared=network;ipc;
+filesystems=home;/media;/run/media;
+```
+
+The Flatpak places its API socket at:
+
+```text
+~/.var/app/org.kicad.KiCad/cache/tmp/kicad/api.sock
+```
+
+The official client detects that path automatically. Do not change the socket
+permissions or expose additional host directories merely to use the API. A
+`Permission denied` error from a containerized development tool can come from
+that tool's own sandbox; it does not imply that a normal terminal process
+needs a Flatpak override.
+
+### Install the external Python client
+
+Create a virtual environment once from the repository root and install the
+official binding:
+
+```sh
+python3 -m venv .venv-kicad-ipc
+.venv-kicad-ipc/bin/pip install kicad-python==0.7.1
+```
+
+Activate it for an interactive terminal session if desired:
+
+```sh
+source .venv-kicad-ipc/bin/activate
+```
+
+KiCad 10.0.4 was tested with the latest available `kicad-python` release,
+0.7.1. That binding identifies its generated API definitions as KiCad 10.0.1,
+so `KiCad.check_version()` emits a strict patch-version warning against
+10.0.4. Direct IPC ping and read operations were nevertheless verified:
+
+```text
+Open board: led_controller.kicad_pcb
+Footprints: 31
+Board text items: 28
+Zones: 2
+```
+
+### Troubleshooting
+
+- **Connection refused or no socket:** confirm the API server is enabled, then
+  restart KiCad.
+- **`no handler available for ... GetOpenDocuments`:** PCB Editor is not open,
+  or the client connected to another running KiCad instance. Close redundant
+  KiCad instances, open the board from the remaining project manager, and try
+  again.
+- **Multiple KiCad instances:** the default client connects to the first API
+  socket it discovers. Keep one project-manager/PCB-Editor instance running
+  when invoking scripts manually.
+- **Flatpak socket check:** run
+  `ls -l ~/.var/app/org.kicad.KiCad/cache/tmp/kicad/api.sock`.
+
+The PCB Editor scripts below have not yet been migrated: they still use the
+deprecated SWIG interface and should not be used when SWIG-free operation is a
+requirement. Their current instructions are retained only until the IPC
+migration is complete.
+
 ## PCB Editor scripts
 
 The following scripts use KiCad's `pcbnew` API and must run inside the PCB
