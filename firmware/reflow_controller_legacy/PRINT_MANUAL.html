@@ -1,0 +1,389 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>PCB Reflow Oven Controller Manual</title><link rel="stylesheet" href="print-manual.css"></head><body>
+<h1>PCB Reflow Oven Controller</h1>
+<h2>Operator and maintenance manual</h2>
+<p>This manual describes the controller represented by the firmware in this
+directory. It was reconstructed from the source code; no circuit diagram,
+oven specification, or original operating instructions were present with the
+firmware.</p>
+<blockquote>
+<p><strong>Important:</strong> The current source has not been established as safe for
+unattended or production use. It contains no over-temperature cut-out,
+heating timeout, thermistor open/short detection, or check for disagreement
+between its two sensors. Use an independent, hardware over-temperature
+cut-out and keep the oven attended whenever it is energised.</p>
+</blockquote>
+<h2>1. Intended use</h2>
+<p>The controller operates a small PCB reflow oven using:</p>
+<ul>
+<li>two 100 kΩ NTC thermistors;</li>
+<li>one heater output;</li>
+<li>one cooling-fan output;</li>
+<li>a 20 × 4 character LCD;</li>
+<li>a rotary-encoder push button;</li>
+<li>a separate button called <code>KILL</code> in the source; and</li>
+<li>a beeper.</li>
+</ul>
+<p>The automatic program heats through three stages and then turns on the fan:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th style="text-align: right;">Default setpoint</th>
+<th style="text-align: right;">Hold time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Preheat</td>
+<td style="text-align: right;">125 °C</td>
+<td style="text-align: right;">60 seconds</td>
+</tr>
+<tr>
+<td>Soak</td>
+<td style="text-align: right;">160 °C</td>
+<td style="text-align: right;">60 seconds</td>
+</tr>
+<tr>
+<td>Reflow</td>
+<td style="text-align: right;">195 °C</td>
+<td style="text-align: right;">60 seconds</td>
+</tr>
+<tr>
+<td>Cooling</td>
+<td style="text-align: right;">No controlled setpoint</td>
+<td style="text-align: right;">Fan runs until below 25 °C</td>
+</tr>
+</tbody>
+</table>
+<p>These are controller defaults, not universal solder-paste recommendations.
+Confirm the correct profile from the solder-paste and component data sheets
+before processing a board. In particular, 195 °C may be too low for some
+lead-free pastes.</p>
+<h2>2. Safety</h2>
+<ul>
+<li>The oven may contain exposed mains voltage and surfaces hot enough to cause
+  burns or fire. Enclose, earth, fuse, and strain-relieve all mains wiring.</li>
+<li>Drive the heater through a correctly rated and heatsinked, isolated switching
+  device. Do not connect an oven heater directly to the controller output.</li>
+<li>Fit an independent thermal fuse or thermostat that removes heater power
+  without relying on this firmware, its microcontroller, or its thermistors.</li>
+<li>Keep the oven on a non-combustible surface with clear ventilation.</li>
+<li>Do not leave it unattended. Keep a suitable fire extinguisher nearby.</li>
+<li>Do not use the oven for food after it has processed solder, flux, or PCBs.</li>
+<li>Treat the controller display as an indication, not an independent safety
+  instrument.</li>
+<li>If either temperature reading is implausible, differs substantially from the
+  other, or stops changing while heating, abort and isolate power.</li>
+<li>Opening the oven early may release hot flux fumes. Use suitable extraction.</li>
+<li>The firmware's stop button is implemented in software. It is not a substitute
+  for a latching emergency stop that physically interrupts heater power.</li>
+</ul>
+<h2>3. Controls and indications</h2>
+<h3>Start/stop button</h3>
+<p>The input named <code>KILL</code> in the source is the only control used by the main
+program. With the controller idle, press and release this button to start a
+reflow run. The beeper sounds while the button is held.</p>
+<p>During a run, press and release the same button to abort. The heater turns off
+and the cooling fan turns on.</p>
+<p>The rotary encoder and its push button are initialised but are not used by the
+active main loop. Turning or pressing the encoder does not select a profile or
+change a setpoint in this firmware.</p>
+<h3>LCD</h3>
+<p>The display has four lines:</p>
+<ol>
+<li><code>Stage:</code> followed by <code>IDLE</code>, <code>PREHEAT</code>, <code>SOAK</code>, or <code>REFLOW</code>.</li>
+<li><code>Setpoint:</code> followed by the active target temperature.</li>
+<li>Status symbols and, during a hold, seconds remaining.</li>
+<li>Sensor 1 temperature, sensor 2 temperature, and their average.</li>
+</ol>
+<p>Line 3 uses these symbols:</p>
+<ul>
+<li><code>^</code> — heating toward the setpoint;</li>
+<li><code>-</code> — holding at the setpoint;</li>
+<li><code>C</code> — five-second heater cycling has been enabled near the setpoint.</li>
+</ul>
+<p>The countdown appears from character position 11 on the third line. The
+controller regulates from the average of the two displayed sensor readings.</p>
+<h3>Serial output</h3>
+<p>The serial port runs at 9600 baud. On startup it prints the setpoints stored in
+EEPROM. While operating, it continuously emits comma-separated data:</p>
+<p><code>text
+setpoint,sensor_1,sensor_2,average</code></p>
+<p>This can be viewed with an Arduino serial monitor or captured for plotting.
+There is no header in the live data.</p>
+<h2>4. Before the first run</h2>
+<ol>
+<li>With mains power isolated, inspect the earth connection, heater switching
+   device, fuse, fan, wiring, and independent thermal cut-out.</li>
+<li>Secure both thermistors where they measure useful board/oven temperature.
+   Keep them clear of direct electrical contact and prevent them moving during
+   a run.</li>
+<li>Power only the low-voltage controller first, if the hardware permits it.</li>
+<li>At room temperature, confirm that both displayed readings are plausible and
+   close to a trusted thermometer. A large difference between the two sensors
+   must be investigated before heating.</li>
+<li>Confirm that the heater output is off at startup.</li>
+<li>Test the physical emergency isolation and the software stop function
+   without a populated PCB.</li>
+<li>Perform an instrumented empty-oven trial, followed by a trial with a scrap
+   or test PCB. Compare the recorded profile with the paste specification.</li>
+</ol>
+<h2>5. Running a reflow cycle</h2>
+<ol>
+<li>Apply solder paste and place components in accordance with the paste and
+   assembly instructions.</li>
+<li>Place the PCB and both temperature sensors in their validated positions.</li>
+<li>Close the oven and start fume extraction.</li>
+<li>Check that the display readings are plausible.</li>
+<li>Press and release the start/stop button.</li>
+<li>Remain with the oven and watch both sensor readings throughout the run.</li>
+</ol>
+<p>The controller then performs the following sequence:</p>
+<ol>
+<li><strong>Preheat:</strong> heats to 125 °C, then holds for 60 seconds.</li>
+<li><strong>Soak:</strong> heats to 160 °C, then holds for 60 seconds.</li>
+<li><strong>Reflow:</strong> heats to 195 °C, then holds for 60 seconds.</li>
+<li><strong>Finish:</strong> turns the heater off, changes the displayed stage to <code>IDLE</code>, and
+   turns the fan on.</li>
+<li><strong>Cool:</strong> leaves the fan on until the averaged temperature falls below
+   25 °C, at which point the idle loop turns it off.</li>
+</ol>
+<p>Below each setpoint the heater initially remains continuously available. Once
+the temperature is within 25 °C of the setpoint, the controller alternates a
+five-second enable window and a five-second disable window. During an enabled
+window, the heater is energised only while the measured average is below the
+setpoint.</p>
+<p>Stage duration is not fixed: each stage takes as long as needed to reach its
+setpoint, followed by its 60-second hold. There is no timeout if a setpoint
+cannot be reached.</p>
+<h2>6. Aborting a run</h2>
+<p>Press and release the start/stop button. The firmware:</p>
+<ol>
+<li>turns off the heater;</li>
+<li>exits the active stage;</li>
+<li>sets the displayed stage to <code>IDLE</code>; and</li>
+<li>turns on the cooling fan.</li>
+</ol>
+<p>If temperature continues to rise unexpectedly, or the button does not respond,
+use the independent mains isolation immediately. Do not wait for software
+control.</p>
+<h2>7. After a run</h2>
+<ul>
+<li>Leave the PCB undisturbed while solder is liquid.</li>
+<li>Keep extraction running and allow the fan-controlled cooling period to
+  finish.</li>
+<li>Confirm that the heater is off.</li>
+<li>Open the oven only when doing so is safe for the process and operator.</li>
+<li>Inspect the assembly for bridges, tombstoning, insufficient wetting, damaged
+  parts, and other defects.</li>
+<li>Save the serial temperature trace when validating or troubleshooting a
+  profile.</li>
+</ul>
+<h2>8. Profile settings</h2>
+<p>On first startup, the firmware writes these values to EEPROM:</p>
+<table>
+<thead>
+<tr>
+<th>EEPROM field</th>
+<th style="text-align: right;">Default</th>
+<th>Used by active cycle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>preheat_setpoint</code></td>
+<td style="text-align: right;">125 °C</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>soak_setpoint</code></td>
+<td style="text-align: right;">160 °C</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>reflow_setpoint</code></td>
+<td style="text-align: right;">195 °C</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>cool_setpoint</code></td>
+<td style="text-align: right;">0 °C</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>overshoot_delta</code></td>
+<td style="text-align: right;">25 °C</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p>There is no operator menu for editing them. Changing the constants in
+<code>stage.h</code> affects only EEPROM that has not previously been initialised.
+Existing units reload their saved EEPROM values at boot. Updating a deployed
+unit therefore requires a deliberate EEPROM migration/erase or configuration
+tool; simply reflashing changed defaults may not change its profile.</p>
+<p>Do not alter a profile without measuring the resulting board temperature and
+checking:</p>
+<ul>
+<li>the paste's specified preheat/soak range;</li>
+<li>time above liquidus;</li>
+<li>peak package temperature;</li>
+<li>maximum heating and cooling ramp rates; and</li>
+<li>the most temperature-sensitive component limits.</li>
+</ul>
+<h2>9. Temperature sensors</h2>
+<p>The conversion table is for a 100 kΩ thermistor specified in the source as
+<code>R25 = 100 kΩ</code>, <code>β25 = 4092 K</code>, with a 4.7 kΩ pull-up. Its table spans
+approximately −15 °C to 300 °C.</p>
+<p>Each sensor reading is smoothed with a five-sample moving average. Control uses
+the arithmetic mean of the two independently converted temperatures.</p>
+<p>There is no user calibration offset or gain adjustment. Validate both channels
+against a traceable or otherwise trusted thermometer across the operating
+range. A room-temperature agreement alone does not establish accuracy near
+reflow temperature.</p>
+<h2>10. Troubleshooting</h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Checks and action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run will not start</td>
+<td>Confirm the separate start/stop (<code>KILL</code>) input changes state and the encoder push button is not stuck pressed.</td>
+</tr>
+<tr>
+<td>Heater does not warm</td>
+<td>Abort. Check the displayed temperatures, fuse, independent cut-out, heater supply, isolation device, and heater output path. Do not bypass safety devices.</td>
+</tr>
+<tr>
+<td>Temperature rises with <code>IDLE</code> displayed</td>
+<td>Isolate mains immediately. Suspect a shorted or incorrectly wired heater switching device.</td>
+</tr>
+<tr>
+<td>Temperature never reaches a setpoint</td>
+<td>Abort manually; there is no automatic timeout. Check heater power, sensor placement, oven losses, and fan state.</td>
+</tr>
+<tr>
+<td>One reading is very high or low</td>
+<td>Abort and isolate power. Check that thermistor, connector, divider wiring, and analogue input. The firmware does not detect a failed sensor.</td>
+</tr>
+<tr>
+<td>Sensors disagree</td>
+<td>Abort. Check placement, attachment, wiring, and calibration. The controller does not reject mismatched readings.</td>
+</tr>
+<tr>
+<td>Large temperature overshoot</td>
+<td>Stop using the profile. Check sensor thermal contact and heater inertia; validate a safer setpoint/cycling strategy with instrumentation.</td>
+</tr>
+<tr>
+<td>Fan remains on</td>
+<td>This is expected until the average falls below 25 °C. Check sensor readings and fan output wiring if it never stops.</td>
+</tr>
+<tr>
+<td>Changed source defaults have no effect</td>
+<td>Old values remain in EEPROM. Use a controlled EEPROM reset or migration before relying on new defaults.</td>
+</tr>
+<tr>
+<td>Encoder does nothing</td>
+<td>Expected in the active firmware; the main loop never services the encoder routine.</td>
+</tr>
+</tbody>
+</table>
+<h2>11. Maintainer reference</h2>
+<p>The source targets Arduino-style hardware and uses the following pin
+assignments:</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th style="text-align: right;">Pin</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heater output</td>
+<td style="text-align: right;">D8</td>
+</tr>
+<tr>
+<td>Fan output</td>
+<td style="text-align: right;">D10</td>
+</tr>
+<tr>
+<td>Thermistor 1</td>
+<td style="text-align: right;">A13</td>
+</tr>
+<tr>
+<td>Thermistor 2</td>
+<td style="text-align: right;">A15</td>
+</tr>
+<tr>
+<td>LCD RS / Enable</td>
+<td style="text-align: right;">D16 / D17</td>
+</tr>
+<tr>
+<td>LCD D4–D7</td>
+<td style="text-align: right;">D23 / D25 / D27 / D29</td>
+</tr>
+<tr>
+<td>Encoder A / B / push</td>
+<td style="text-align: right;">D31 / D33 / D35</td>
+</tr>
+<tr>
+<td>Beeper</td>
+<td style="text-align: right;">D37</td>
+</tr>
+<tr>
+<td>Start/stop (<code>KILL</code>)</td>
+<td style="text-align: right;">D41</td>
+</tr>
+<tr>
+<td>SD detect / select</td>
+<td style="text-align: right;">D49 / D53</td>
+</tr>
+</tbody>
+</table>
+<p>The pin selection implies a board with Arduino Mega-class pin availability.
+Verify the actual controller board before relying on this table.</p>
+<h3>Source-derived limitations</h3>
+<p>The following are important characteristics of the current source, not merely
+future enhancements:</p>
+<ul>
+<li>no thermal runaway, maximum-temperature, or maximum-stage-time protection;</li>
+<li>no thermistor open-circuit, short-circuit, plausibility, or disagreement
+  checks;</li>
+<li>no feedback proving that the heater or fan actually switched;</li>
+<li>no watchdog handling in the application;</li>
+<li>no configurable profile UI;</li>
+<li>the cooling setpoint and <code>COOL</code> stage are defined but not used;</li>
+<li><code>learn_run()</code> exists but is not called by the main program;</li>
+<li><code>lcd_loop()</code> exists but is not called by the main program;</li>
+<li>the PID implementation exists but the active reflow cycle does not use it;</li>
+<li>the SD-card and encoder code is inactive because <code>lcd_loop()</code> is not called;</li>
+<li>the LCD is initialised with <code>lcd.begin(SCREEN_WIDTH, SCREEN_WIDTH)</code> rather
+  than the declared 20 × 4 dimensions;</li>
+<li><code>config</code> is declared external in <code>config.h</code> but static in <code>config.cpp</code>; and</li>
+<li>LCD functions declared for other files are defined static in <code>lcd.cpp</code>; and</li>
+<li>the first dwell-screen update in <code>reflow.cpp</code> passes the numeric value <code>60</code>
+  where <code>ui_update()</code> requires a pointer to the countdown value.</li>
+</ul>
+<p>The last four items should be reviewed before attempting a fresh build. This
+manual describes the apparent intended runtime behavior of the source, not a
+successful build verification.</p>
+<h2>12. Recommended validation before further use</h2>
+<p>Before returning this controller to service:</p>
+<ol>
+<li>Correct the build/linkage and LCD initialisation issues.</li>
+<li>Add fail-safe sensor plausibility checks, sensor-disagreement limits,
+   absolute over-temperature shutdown, and timeouts for every heating stage.</li>
+<li>Define a fault state that latches the heater off and requires operator
+   acknowledgement.</li>
+<li>Confirm output polarity and safe power-up behavior on the actual hardware.</li>
+<li>Validate the independent hardware cut-out by test.</li>
+<li>Record a thermocouple-instrumented profile on a representative PCB.</li>
+<li>Update this manual with enclosure-specific mains isolation, fuse ratings,
+   heater rating, fan behavior, sensor locations, and emergency-stop details.</li>
+</ol>
+</body></html>
