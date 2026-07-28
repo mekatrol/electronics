@@ -1,0 +1,11 @@
+{
+    "C_Cpp.default.configurationProvider": "",
+    "C_Cpp.default.compileCommands": "",
+    "C_Cpp.errorSquiggles": "enabled",
+    "files.associations": {
+        "*.h": "c"
+    },
+    "makefile.configureOnOpen": true,
+    "makefile.makePath": "/usr/bin/make"
+}
+
