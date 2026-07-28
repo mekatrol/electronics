@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "board_pins.h"
+#include "mainboard_clock.h"
 #include "mainboard_display_module.h"
 
 static void mask_interrupts(void)
@@ -15,6 +16,7 @@ int main(void)
    * until reset-state polarity and the SKR pin map have passed bench review.
    */
   mask_interrupts();
+  mainboard_clock_initialize();
 
   (void)BOARD_HEATER_0_PIN;
   (void)BOARD_HEATER_1_PIN;

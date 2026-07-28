@@ -6,8 +6,9 @@ Bare-metal firmware for:
 - BIGTREETECH Mini 12864 V1.0 display module.
 
 The migration is phased in [AGENTS.md](AGENTS.md). The current Phase 1 scope is
-the cross-platform build layout and a minimal SKR bring-up image containing an
-inert Mini 12864 module. Reflow logic and peripherals are intentionally
+the cross-platform build layout and a minimal SKR bring-up image that
+initializes the Mini 12864 LCD and shows a static readiness message. Reflow
+logic and other peripherals are intentionally
 migrated in later phases after the board foundations are verified.
 
 The Mini 12864 is connected directly to the SKR and has no processor of its
@@ -20,6 +21,7 @@ Install:
 - GNU Make.
 - Arm GNU Toolchain containing `arm-none-eabi-gcc`,
   `arm-none-eabi-objcopy`, and `arm-none-eabi-size`.
+- Python 3, used to insert the LPC1769 vector-table checksum.
 
 Ensure those programs are on `PATH`. Use a terminal where GNU Make is named
 `make`; on Windows this can be MSYS2, Chocolatey, Scoop, xPack, or another GNU
@@ -100,6 +102,11 @@ The image is linked after the factory BTT bootloader. Copy `firmware.bin` to a
 FAT32 SD card, then follow the SKR update procedure. Do not flash or connect
 heater power until the pin map and reset-state behavior have passed the bench
 tests.
+
+For the first display bench check, connect EXP1 to EXP1 and EXP2 to EXP2 with
+power removed. After flashing and resetting, the LCD should show `REFLOW
+CONTROLLER` and `DISPLAY READY`. Keep all heater loads and heater power
+disconnected during this test.
 
 ## Program The SKR Firmware
 
@@ -236,15 +243,18 @@ successfully. An initial program-counter value in the LPC ROM area, such as
 `0x1fff0080`, can appear when OpenOCD first halts the target and is not by
 itself a programming failure.
 
-The `flash` target programs and verifies the ELF through:
+The `flash` target programs and verifies the raw `firmware.bin` explicitly at
+`0x00004000` through:
 
 ```text
 interface/stlink.cfg
 target/lpc17xx.cfg
 ```
 
-The ELF is linked at `0x00004000`; the target does not intentionally overwrite
-the first 16 KiB factory BTT bootloader region.
+The first 16 KiB factory BTT bootloader region is not erased or programmed.
+Do not replace the raw-binary command with OpenOCD's `program` helper and an
+ELF file; this OpenOCD/LPC17xx combination may write the ELF container at
+address zero and destroy the bootloader.
 
 When multiple ST-Links are attached, obtain their serial numbers with:
 

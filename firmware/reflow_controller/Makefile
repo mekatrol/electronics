@@ -6,6 +6,7 @@ CC      := $(TOOLCHAIN_PREFIX)gcc
 OBJCOPY := $(TOOLCHAIN_PREFIX)objcopy
 SIZE    := $(TOOLCHAIN_PREFIX)size
 OPENOCD ?= openocd
+PYTHON ?= python3
 STLINK_SERIAL ?=
 OPENOCD_STLINK_SERIAL_CMD := $(if $(STLINK_SERIAL),-c "adapter serial $(STLINK_SERIAL)",)
 
@@ -20,6 +21,9 @@ MAINBOARD_MAP := $(MAINBOARD_BUILD)/$(PROJECT_NAME)-mainboard.map
 MAINBOARD_BIN := $(MAINBOARD_BUILD)/firmware.bin
 
 MAINBOARD_SRCS_C := src/mainboard/main.c \
+                    boards/mainboard/mainboard_clock.c \
+                    boards/mainboard/mainboard_gpio.c \
+                    boards/mainboard/mainboard_neopixel.c \
                     boards/display/mainboard_display_module.c
 MAINBOARD_SRCS_S := boards/mainboard/startup.s
 
@@ -68,14 +72,15 @@ toolchain-check:
 	$(OBJCOPY) --version
 	$(SIZE) --version
 
-# Program the bootloader-offset ELF through an ST-Link. The ELF contains its
-# own 0x00004000 load address, so OpenOCD leaves the first 16 KiB BTT
-# bootloader region untouched.
+# Program the raw application binary explicitly at 0x00004000. Do not pass an
+# ELF to OpenOCD's LPC17xx "program" helper: it may treat the ELF container as
+# raw bytes at address zero and overwrite the BTT bootloader.
 flash: mainboard
-	$(OPENOCD) -f interface/stlink.cfg $(OPENOCD_STLINK_SERIAL_CMD) -f target/lpc17xx.cfg -c "adapter speed 1000; program $(abspath $(MAINBOARD_ELF)) verify reset exit"
+	$(OPENOCD) -f interface/stlink.cfg $(OPENOCD_STLINK_SERIAL_CMD) -f target/lpc17xx.cfg -c "adapter speed 1000; init; reset halt; flash write_image erase $(abspath $(MAINBOARD_BIN)) 0x00004000 bin; verify_image $(abspath $(MAINBOARD_BIN)) 0x00004000 bin; reset run; shutdown"
 
 $(MAINBOARD_BIN): $(MAINBOARD_ELF)
 	$(OBJCOPY) -O binary $< $@
+	$(PYTHON) tools/lpc_vector_checksum.py $@
 
 $(MAINBOARD_ELF): $(MAINBOARD_OBJS) $(MAINBOARD_LINKER)
 	$(call make_output_dir)
@@ -97,5 +102,6 @@ print-config:
 	@echo MAINBOARD_NAME=$(MAINBOARD_NAME)
 	@echo CC=$(CC)
 	@echo OPENOCD=$(OPENOCD)
+	@echo PYTHON=$(PYTHON)
 	@echo STLINK_SERIAL=$(STLINK_SERIAL)
 	@echo MAINBOARD_BIN=$(MAINBOARD_BIN)

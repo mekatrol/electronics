@@ -4,7 +4,9 @@
 
 `D:/repos/pcb-cnc-mill` provides useful naming, GNU Make patterns, a bare-metal
 scheduler, USB/CDC code, a UART protocol, and a placeholder Mini 12864 attached
-display interface.
+display interface. `D:/repos/pcb-mill/firmware/cnc` provides an additional
+LPC1769 Mini 12864 experiment with LCD, NeoPixel, clock, SysTick, and UART
+code.
 
 Its `firmware/boards/mainboard/btt_skr_1_4/` directory contains bootloader
 restore documentation only. It does not contain an LPC1769 startup file,
@@ -13,6 +15,12 @@ Those items must be implemented and verified during this migration.
 
 STM32G0 code from the SKR Mini E3 V3 target is not register-compatible with the
 LPC1769 and must not be copied as if it were an SKR 1.4 Turbo port.
+
+The `pcb-mill` experiment confirms the SKR 1.4 EXP pin mapping and the basic
+ST7567 command sequence. Reuse requires review: its `GPIO0` definition points
+to the GPIO1 base address, its P0.18 SPI function-select shift is incorrect,
+and its LCD/NeoPixel timing assumes that its 120 MHz clock setup has already
+completed. Those defects and assumptions are not carried into this firmware.
 
 ## Legacy Module Map
 

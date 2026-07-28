@@ -12,5 +12,8 @@ The reference PCB-mill repository has bootloader recovery notes for this board
 but no firmware board port. Startup and linking here are therefore new
 bring-up code and require hardware verification.
 
-The current image is deliberately inert. It does not configure heater, fan,
-sensor, USB, UART, or SD-card peripherals.
+The current image establishes the LPC1769's 120 MHz core clock, configures the
+five GPIO signals required to initialize the attached Mini 12864 LCD, and sets
+the panel's three NeoPixels to dim white for a visible static bring-up message.
+It does not configure heater, fan, sensor, USB, UART, SD-card, encoder, or
+sounder peripherals.
