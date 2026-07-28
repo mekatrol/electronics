@@ -7,6 +7,7 @@ OBJCOPY := $(TOOLCHAIN_PREFIX)objcopy
 SIZE    := $(TOOLCHAIN_PREFIX)size
 OPENOCD ?= openocd
 PYTHON ?= python3
+HOST_CC ?= cc
 STLINK_SERIAL ?=
 OPENOCD_STLINK_SERIAL_CMD := $(if $(STLINK_SERIAL),-c "adapter serial $(STLINK_SERIAL)",)
 
@@ -19,10 +20,19 @@ MAINBOARD_BUILD := build/mainboard/$(MAINBOARD_NAME)
 MAINBOARD_ELF := $(MAINBOARD_BUILD)/$(PROJECT_NAME)-mainboard.elf
 MAINBOARD_MAP := $(MAINBOARD_BUILD)/$(PROJECT_NAME)-mainboard.map
 MAINBOARD_BIN := $(MAINBOARD_BUILD)/firmware.bin
+HOST_RUNTIME_TEST := build/runtime-tests
 
 MAINBOARD_SRCS_C := src/mainboard/main.c \
+                    src/runtime/runtime_scheduler.c \
+                    src/runtime/runtime_work_queue.c \
+                    src/storage/sd_card.c \
+                    src/storage/fat_volume.c \
                     boards/mainboard/mainboard_clock.c \
                     boards/mainboard/mainboard_gpio.c \
+                    boards/mainboard/mainboard_hal.c \
+                    boards/mainboard/mainboard_uart.c \
+                    boards/mainboard/mainboard_temperature.c \
+                    boards/mainboard/mainboard_spi.c \
                     boards/mainboard/mainboard_neopixel.c \
                     boards/display/mainboard_display_module.c
 MAINBOARD_SRCS_S := boards/mainboard/startup.s
@@ -38,7 +48,9 @@ COMMON_LDFLAGS := $(CPUFLAGS) -nostdlib -Wl,--gc-sections
 
 MAINBOARD_CFLAGS := $(COMMON_CFLAGS) \
                     -Iboards/mainboard/include \
-                    -Iboards/display
+                    -Iboards/display \
+                    -Isrc/runtime \
+                    -Isrc/storage
 
 MAINBOARD_LINKER := boards/mainboard/linker.ld
 
@@ -60,7 +72,7 @@ endif
 
 .DEFAULT_GOAL := all
 
-.PHONY: all mainboard flash clean print-config toolchain-check
+.PHONY: all mainboard flash clean print-config toolchain-check test
 
 all: mainboard
 
@@ -71,6 +83,17 @@ toolchain-check:
 	$(CC) --version
 	$(OBJCOPY) --version
 	$(SIZE) --version
+
+test: $(HOST_RUNTIME_TEST)
+	$(HOST_RUNTIME_TEST)
+
+$(HOST_RUNTIME_TEST): tests/test_runtime.c \
+                      src/runtime/runtime_scheduler.c \
+                      src/runtime/runtime_work_queue.c
+	$(call make_output_dir)
+	$(HOST_CC) -std=c11 -Wall -Wextra -Werror -Isrc/runtime \
+	  tests/test_runtime.c src/runtime/runtime_scheduler.c \
+	  src/runtime/runtime_work_queue.c -o $@
 
 # Program the raw application binary explicitly at 0x00004000. Do not pass an
 # ELF to OpenOCD's LPC17xx "program" helper: it may treat the ELF container as
@@ -103,5 +126,6 @@ print-config:
 	@echo CC=$(CC)
 	@echo OPENOCD=$(OPENOCD)
 	@echo PYTHON=$(PYTHON)
+	@echo HOST_CC=$(HOST_CC)
 	@echo STLINK_SERIAL=$(STLINK_SERIAL)
 	@echo MAINBOARD_BIN=$(MAINBOARD_BIN)

@@ -5,11 +5,12 @@ Bare-metal firmware for:
 - BIGTREETECH SKR 1.4 Turbo mainboard (`LPC1769`, Cortex-M3).
 - BIGTREETECH Mini 12864 V1.0 display module.
 
-The migration is phased in [AGENTS.md](AGENTS.md). The current Phase 1 scope is
-the cross-platform build layout and a minimal SKR bring-up image that
-initializes the Mini 12864 LCD and shows a static readiness message. Reflow
-logic and other peripherals are intentionally
-migrated in later phases after the board foundations are verified.
+The migration is phased in [AGENTS.md](AGENTS.md). Phase 1 has passed its build
+exit check. Phase 2 is active: the image now includes the scheduler, bounded
+work queue, monotonic tick, watchdog, fault-safe outputs, diagnostic UART,
+temperature ADC acquisition, SSP1 SD block access, and a small read-only FAT32
+mount layer. USB CDC and all Phase 2 physical bench checks remain open, so
+Phase 3 has not started.
 
 The Mini 12864 is connected directly to the SKR and has no processor of its
 own. There is only one firmware image.
@@ -92,6 +93,7 @@ Useful commands:
 ```sh
 make clean
 make print-config
+make test
 ```
 
 Outputs:
@@ -103,7 +105,8 @@ FAT32 SD card, then follow the SKR update procedure. Do not flash or connect
 heater power until the pin map and reset-state behavior have passed the bench
 tests.
 
-For the first display bench check, connect EXP1 to EXP1 and EXP2 to EXP2 with
+The Phase 2 diagnostic UART is UART0 at 115200 8N1 and performs bounded
+one-byte loopback. Connect EXP1 to EXP1 and EXP2 to EXP2 with
 power removed. After flashing and resetting, the LCD should show `REFLOW
 CONTROLLER` and `DISPLAY READY`. Keep all heater loads and heater power
 disconnected during this test.

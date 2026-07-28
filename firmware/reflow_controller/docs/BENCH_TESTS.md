@@ -29,14 +29,27 @@ actual result, and pass/fail for every test.
 - The three-LED NeoPixel chain and LCD backlight worked with the timing ported
   from the CNC reference.
 
-## Future Peripheral Bring-Up
+## Phase 2
+
+Use heater power disconnected for every test in this section. Record the
+board revision, measuring instrument, firmware commit, and actual readings.
 
 - [ ] SKR monotonic timer accuracy.
 - [ ] SKR watchdog reset and reported reset cause.
-- [ ] Diagnostic UART loopback.
+- [ ] UART0 loopback at 115200 8N1 (one byte is serviced per scheduler pass).
 - [ ] USB enumeration and CDC transfer.
-- [ ] SKR SD mount, read, write, remove, and corrupt-card handling.
+- [ ] SKR SD FAT32 mount/root read, removal, and corrupt-card handling.
+- [ ] Temperature inputs AD0.0, AD0.1, and AD0.2 track known voltages.
+- [ ] EXP connector pins retain safe reset states.
+- [ ] Heater outputs remain low during reset, boot, unhandled interrupt, and
+      watchdog reset.
+
+USB CDC is not yet implemented and the remaining unchecked items are required
+Phase 2 exit evidence. Do not mark Phase 2 complete or begin Phase 3 until all
+of them pass.
+
+## Future Peripheral Bring-Up
+
 - [ ] Mini 12864 encoder, button, sounder, and dynamic RGB feedback.
 - [ ] Temperature sensor open/short/plausibility faults.
-- [ ] Heater outputs remain off during reset, boot, link loss, and faults.
 - [ ] Low-power dummy-load control.

@@ -84,6 +84,7 @@ call_main:
 .section .text.Default_Handler, "ax", %progbits
 .type Default_Handler, %function
 Default_Handler:
+  bl mainboard_hal_fault
   b .
 
 .size Default_Handler, . - Default_Handler

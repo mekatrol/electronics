@@ -49,3 +49,12 @@ completed. Those defects and assumptions are not carried into this firmware.
 - Mini 12864: implement the LCD serial bus, encoder, button, LEDs/backlight,
   and sounder within the SKR firmware. There is no second firmware target.
 - Excluded: TMC2209, CAN, motion, G-code, limits, probe, spindle, and toolhead.
+
+## Phase Status
+
+- Phase 1 software exit check: complete (`make clean all` produces the required
+  bootloader-offset `firmware.bin`).
+- Phase 2: active. Scheduler/work queue, SysTick, watchdog, safe GPIO, UART0,
+  ADC channels, SSP1 SD block reads, and FAT32 boot/root access are implemented.
+- Phase 2 remains incomplete until an LPC1769 USB device/CDC backend is added
+  and every physical exit check below is recorded. Phase 3 must not begin.

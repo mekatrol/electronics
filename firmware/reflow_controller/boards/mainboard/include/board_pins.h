@@ -3,7 +3,7 @@
 
 /*
  * LPC1769 pins are encoded as (port * 32 + bit). These assignments follow the
- * published SKR 1.4 Turbo convention but remain disabled in Phase 1.
+ * published SKR 1.4 Turbo convention.
  * TODO: verify each signal and its inactive level on the actual controller.
  */
 #define LPC_PIN(port, bit) (((port) * 32u) + (bit))
@@ -25,6 +25,16 @@ enum
   BOARD_HEATER_1_PIN = LPC_PIN(2u, 4u),
   BOARD_HEATED_BED_PIN = LPC_PIN(2u, 5u),
   BOARD_FAN_0_PIN = LPC_PIN(2u, 3u),
+  BOARD_TEMPERATURE_0_PIN = LPC_PIN(0u, 23u),
+  BOARD_TEMPERATURE_1_PIN = LPC_PIN(0u, 24u),
+  BOARD_TEMPERATURE_BED_PIN = LPC_PIN(0u, 25u),
+  BOARD_UART_TX_PIN = LPC_PIN(0u, 2u),
+  BOARD_UART_RX_PIN = LPC_PIN(0u, 3u),
+  BOARD_SD_CHIP_SELECT_PIN = LPC_PIN(0u, 6u),
+  BOARD_SD_SPI_CLOCK_PIN = LPC_PIN(0u, 7u),
+  BOARD_SD_SPI_MISO_PIN = LPC_PIN(0u, 8u),
+  BOARD_SD_SPI_MOSI_PIN = LPC_PIN(0u, 9u),
+  BOARD_SD_DETECT_PIN = LPC_PIN(0u, 27u),
 };
 
 #endif // BTT_SKR_1_4_TURBO_BOARD_PINS_H
