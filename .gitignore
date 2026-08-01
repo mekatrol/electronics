@@ -1,5 +1,10 @@
 # Firmware build and editor-generated files
 /firmware/**/build/
+/firmware/**/build-*/
+/firmware/**/managed_components/
+/firmware/**/sdkconfig
+/firmware/**/sdkconfig.old
+/firmware/led-controller/.led-controller-board
 /firmware/.vscode/*.log
 /firmware/.vscode/.cortex-debug.*.state.json
 
