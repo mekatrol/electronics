@@ -337,7 +337,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R2"
-			(at 0.023809 -1.895181 0)
+			(at 0.023809 -1.97825 0)
 			(layer "F.SilkS")
 			(uuid "f60d5aa1-4f43-4016-b9e8-5876ceeb355d")
 			(effects
@@ -384,12 +384,6 @@
 		(path "/c3ba0213-40fe-40d9-adf3-bdf353844d0d")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -483,7 +477,7 @@
 		(descr "Terminal Block Xinya XY308-2.54-2P, 2 pins, pitch 2.54mm, size 5.58x6.5mm, drill diameter 1.2mm, pad diameter 2mm, http://www.xinyaelectronic.com/product/xy308-254")
 		(tags "THT Terminal Block Xinya XY308-2.54-2P pitch 2.54mm size 5.58x6.5mm drill 1.2mm pad 2mm")
 		(property "Reference" "J6"
-			(at -2.785181 0.17381 180)
+			(at -2.86825 0.17381 180)
 			(layer "F.SilkS")
 			(uuid "15f37ec5-eb1b-4bde-9bff-ae61b35f4309")
 			(effects
@@ -530,12 +524,6 @@
 		(path "/1d244f8b-cc28-424d-8096-d60c0d25ad5b")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -837,7 +825,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R3"
-			(at 0.023809 -1.895181 0)
+			(at 0.023809 -1.97825 0)
 			(layer "F.SilkS")
 			(uuid "5e9b88c1-05de-414b-81dd-82f984617289")
 			(effects
@@ -884,12 +872,6 @@
 		(path "/8e9b3e2c-d84d-4d17-a59d-49f2b5125f59")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1084,7 +1066,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C10"
-			(at 3.595 -0.075 180)
+			(at 3.32825 -0.075 180)
 			(layer "F.SilkS")
 			(uuid "40b71b65-9c98-46a8-8339-71c45d88f35c")
 			(effects
@@ -1131,12 +1113,6 @@
 		(path "/ec69f3de-7b25-4dc1-a018-70eb9babc3b5")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1230,7 +1206,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R5"
-			(at 0.023809 -1.895181 0)
+			(at 0.023809 -1.97825 0)
 			(layer "F.SilkS")
 			(uuid "88203309-8166-4527-83ec-9ec3a2f72a3c")
 			(effects
@@ -1277,12 +1253,6 @@
 		(path "/5002583f-2765-4193-8310-165f527e19e7")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1376,7 +1346,7 @@
 		(descr "SO, 14 Pin (https://www.st.com/resource/en/datasheet/l6491.pdf)")
 		(tags "SO SO")
 		(property "Reference" "U1"
-			(at -0.023809 -5.254819 0)
+			(at -0.023809 -5.42825 0)
 			(layer "F.SilkS")
 			(uuid "dd55d2c2-d659-43b6-b546-c9cbd9761db9")
 			(effects
@@ -1423,28 +1393,6 @@
 		(path "/8c195b10-42cf-4443-94a3-e83fb1082056")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "2" "1" "3")
-			)
-			(unit
-				(name "B")
-				(pins "5" "4" "6")
-			)
-			(unit
-				(name "C")
-				(pins "9" "10" "8")
-			)
-			(unit
-				(name "D")
-				(pins "12" "13" "11")
-			)
-			(unit
-				(name "E")
-				(pins "14" "7")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1813,7 +1761,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C4"
-			(at 0.023809 1.824818 180)
+			(at 0.023809 1.99825 180)
 			(layer "F.SilkS")
 			(uuid "fa6822cf-91f2-452c-921a-65241ef85522")
 			(effects
@@ -1860,12 +1808,6 @@
 		(path "/b1fec907-9312-4e51-9eb5-5a4389e10cd2")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -1959,7 +1901,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R4"
-			(at 0.047619 -1.9428 0)
+			(at 0.047619 -1.97825 0)
 			(layer "F.SilkS")
 			(uuid "25618e47-2079-4a1b-bd5c-4b9e9ae5bc07")
 			(effects
@@ -2006,12 +1948,6 @@
 		(path "/bd7a147e-22ee-4cb4-8884-311d1e23a400")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2105,7 +2041,7 @@
 		(descr "SMD capacitor, aluminum electrolytic, Nichicon, 5.0x5.4mm")
 		(tags "capacitor electrolytic")
 		(property "Reference" "C5"
-			(at 0 3.665181 0)
+			(at 0 3.74825 0)
 			(layer "F.SilkS")
 			(uuid "679329c9-fb43-420c-a613-401f99c4097d")
 			(effects
@@ -2152,12 +2088,6 @@
 		(path "/3c5e46aa-5a68-4ede-a1c2-3b3be5071e41")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2651,7 +2581,7 @@
 		(descr "Nexperia CFP3 (SOD-123W), https://assets.nexperia.com/documents/outline-drawing/SOD123W.pdf")
 		(tags "CFP3 SOD-123W")
 		(property "Reference" "D1"
-			(at 0.023809 -1.865181 180)
+			(at 0.023809 -1.94825 180)
 			(layer "F.SilkS")
 			(uuid "8d1b7eb4-02b1-411c-819f-ea93ed7ba5ff")
 			(effects
@@ -2702,12 +2632,6 @@
 		(path "/f509fa4a-406e-40fc-91b3-fc9489330db3")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -2929,7 +2853,7 @@
 		(descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x04 2.54mm single row")
 		(property "Reference" "J1"
-			(at 0.02381 -2.444819 0)
+			(at 0.02381 -2.61825 0)
 			(layer "F.SilkS")
 			(uuid "4141e552-327c-4834-b231-c085592bbad4")
 			(effects
@@ -2977,12 +2901,6 @@
 		(path "/b35497e0-980b-4acc-88fa-3bcb0096dc78")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3182,7 +3100,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C1"
-			(at 0 1.824819 180)
+			(at 0 1.99825 180)
 			(layer "F.SilkS")
 			(uuid "6c1a8942-0080-419a-ae66-60f0feb037a6")
 			(effects
@@ -3229,12 +3147,6 @@
 		(path "/c4fe1a86-aac6-45d2-9c06-f581b548a7ab")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -3691,7 +3603,7 @@
 		(descr "Terminal Block Phoenix MKDS-1,5-2-5.08, 2 pins, pitch 5.08mm, size 10.2x9.8mm, drill diameter 1.3mm, pad diameter 2.6mm, http://www.farnell.com/datasheets/100425.pdf")
 		(tags "THT Terminal Block Phoenix MKDS-1,5-2-5.08 pitch 5.08mm size 10.2x9.8mm drill 1.3mm pad 2.6mm")
 		(property "Reference" "J5"
-			(at 2.56881 -6.384819 0)
+			(at 2.56881 -6.55825 0)
 			(layer "F.SilkS")
 			(uuid "ebdd2423-82e3-40f5-8fff-3adf3c279e98")
 			(effects
@@ -3738,12 +3650,6 @@
 		(path "/a51e1654-9bab-499c-afa8-13f6b0845b56")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4023,6 +3929,7 @@
 			(net "GND")
 			(pinfunction "Pin_2_2")
 			(pintype "passive")
+			(zone_connect 1)
 			(uuid "939d88fd-70c4-4f55-9af8-d7149de23b75")
 		)
 		(embedded_fonts no)
@@ -4045,7 +3952,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C6"
-			(at -3.4 0.1 0)
+			(at -3.32825 0.1 0)
 			(layer "F.SilkS")
 			(uuid "8f71a2dc-c14c-49fd-85d2-113beaabfc90")
 			(effects
@@ -4092,12 +3999,6 @@
 		(path "/28ec17b9-ee00-4407-8d20-167dc774ecf6")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4191,7 +4092,7 @@
 		(descr "Nexperia CFP3 (SOD-123W), https://assets.nexperia.com/documents/outline-drawing/SOD123W.pdf")
 		(tags "CFP3 SOD-123W")
 		(property "Reference" "D2"
-			(at 2.924819 -0.023809 180)
+			(at 3.09825 -0.023809 180)
 			(layer "F.SilkS")
 			(uuid "1a203c60-676a-4855-9f9b-84f286f923a7")
 			(effects
@@ -4242,12 +4143,6 @@
 		(path "/0a942766-bf8f-47e8-ae5b-f1344e59f843")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4469,7 +4364,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C8"
-			(at -3.154819 0 0)
+			(at -3.32825 0 0)
 			(layer "F.SilkS")
 			(uuid "ba7abc4d-549c-44f4-a1f6-f6e428ffb063")
 			(effects
@@ -4516,12 +4411,6 @@
 		(path "/3b81c298-5e70-4e9f-81b8-1db947f1e498")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -4845,6 +4734,7 @@
 			(net "GND")
 			(pinfunction "Pin_4_4")
 			(pintype "passive")
+			(zone_connect 1)
 			(uuid "073d4b88-0499-4176-b790-862e64354dbd")
 		)
 		(embedded_fonts no)
@@ -4867,7 +4757,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C9"
-			(at 0.05 -2.25 180)
+			(at 0.05 -2.251191 180)
 			(layer "F.SilkS")
 			(uuid "46815fe1-23e8-4cc4-baa6-547879e05770")
 			(effects
@@ -4914,12 +4804,6 @@
 		(path "/8e3fc9e6-b093-4d5e-9e3d-8eba963d1cae")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5013,7 +4897,7 @@
 		(descr "Resistor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "resistor")
 		(property "Reference" "R1"
-			(at 0.023809 -1.895181 0)
+			(at 0.023809 -1.97825 0)
 			(layer "F.SilkS")
 			(uuid "5339246a-01d7-4a17-9e9f-376addca3fd8")
 			(effects
@@ -5060,12 +4944,6 @@
 		(path "/87461381-d14b-4813-98c9-5794fc8d8c57")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5159,7 +5037,7 @@
 		(descr "Through hole straight pin header, 1x06, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x06 2.54mm single row")
 		(property "Reference" "J7"
-			(at 0 -2.38 0)
+			(at 0 -2.61825 0)
 			(layer "F.SilkS")
 			(uuid "271141c5-fee3-416b-b639-dbc4ba4039b6")
 			(effects
@@ -5206,12 +5084,6 @@
 		(path "/43ae847c-e02b-46ae-91b9-5519f658d426")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -5433,7 +5305,7 @@
 		(descr "Waveshare ESP32-S3-Zero / ESP32-C6-Zero hybrid carrier footprint with THT sockets and SMD castellated-pad lands")
 		(tags "Waveshare ESP32 Microcontroller")
 		(property "Reference" "U3"
-			(at 7.596191 22.925181 0)
+			(at 7.596191 23.00825 0)
 			(unlocked yes)
 			(layer "F.SilkS")
 			(uuid "cc44f650-9b07-4d9d-861a-794cb21221bf")
@@ -5486,14 +5358,6 @@
 		(path "/cd52812b-25f2-4f7e-9984-1c6920114dc2")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3" "4" "5" "6" "7" "8" "9" "18" "17" "16" "15" "14" "13"
-					"12" "11" "10"
-				)
-			)
-		)
 		(attr exclude_from_bom)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6316,6 +6180,7 @@
 			(net "GND")
 			(pinfunction "Pin_4_4")
 			(pintype "passive")
+			(zone_connect 1)
 			(uuid "bab73d11-1d30-4ac5-8a7e-b9675112cc6c")
 		)
 		(embedded_fonts no)
@@ -6338,7 +6203,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C2"
-			(at 0 1.824819 180)
+			(at 0 1.99825 180)
 			(layer "F.SilkS")
 			(uuid "e020ae92-161c-4da5-a7fc-885fe856d033")
 			(effects
@@ -6385,12 +6250,6 @@
 		(path "/1e0f1d25-0d0f-4562-a13e-2ab798a13a55")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6484,7 +6343,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C3"
-			(at 0 1.824819 180)
+			(at 0 1.99825 180)
 			(layer "F.SilkS")
 			(uuid "1c5fdabe-a82f-4c3d-99a2-9b9f4f0bfd52")
 			(effects
@@ -6531,12 +6390,6 @@
 		(path "/22acb755-d434-44f4-965a-98685fefdd93")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -6852,7 +6705,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor handsolder")
 		(property "Reference" "C7"
-			(at -3.154819 0.023809 0)
+			(at -3.32825 0.023809 0)
 			(layer "F.SilkS")
 			(uuid "1133853e-8ad1-49a3-b69b-0ce82cd31d63")
 			(effects
@@ -6899,12 +6752,6 @@
 		(path "/8695aee2-0445-426d-89c9-a2a28d7f1e69")
 		(sheetname "/")
 		(sheetfile "led_controller.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr smd)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_line
@@ -7564,7 +7411,7 @@
 	)
 	(gr_rect
 		(start 153.5 109)
-		(end 168.8 111.4)
+		(end 168.8 113.1)
 		(stroke
 			(width 0.1)
 			(type solid)
@@ -8530,7 +8377,7 @@
 		)
 	)
 	(gr_text "SN:"
-		(at 150.7 110.8 0)
+		(at 150.7 111.5895 0)
 		(layer "F.SilkS")
 		(uuid "ca85be7b-3042-40a0-b6d1-e65ad74def5c")
 		(effects
@@ -8601,7 +8448,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "LED Controller V1.0"
+	(gr_text "LED Controller V1.1"
 		(at 150.1 106.3 0)
 		(layer "F.SilkS")
 		(uuid "a58250e7-a97a-4e10-bcc8-2c93595d56d5")
@@ -8613,7 +8460,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "July 2026"
+	(gr_text "Aug 2026"
 		(at 150.1 108.1 0)
 		(layer "F.SilkS")
 		(uuid "3d23b1f5-2162-4bb0-9f30-33aa361d36c3")
@@ -8625,7 +8472,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "LED Controller V1.0"
+	(gr_text "LED Controller V1.1"
 		(at 153.3 68.3 90)
 		(layer "B.SilkS")
 		(uuid "dc2da779-0184-4507-8c25-798716bf9c92")
