@@ -4,16 +4,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "driver/gpio.h"
 #include "esp_check.h"
 #include "esp_http_server.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "led_controller.h"
+#include "sdkconfig.h"
+
+#if CONFIG_LED_CONTROLLER_BOARD_ESP32_S3_ZERO
+#define BUTTON_GPIO 7
+#elif CONFIG_LED_CONTROLLER_BOARD_ESP32_C6_ZERO
+#define BUTTON_GPIO 22
+#else
+#error "Select a supported controller board"
+#endif
+
+#define BUTTON_DEBOUNCE_SAMPLE_MILLISECONDS 5
+#define BUTTON_DEBOUNCE_MILLISECONDS 30
+#define BUTTON_DEBOUNCE_STABLE_SAMPLES \
+    (BUTTON_DEBOUNCE_MILLISECONDS / BUTTON_DEBOUNCE_SAMPLE_MILLISECONDS)
+#define BUTTON_TASK_STACK_SIZE 2048
+#define BUTTON_TASK_PRIORITY 4
 
 #define REBOOT_TASK_STACK_SIZE 2048
 #define REBOOT_TASK_PRIORITY 5
 #define REBOOT_RESPONSE_DELAY_MILLISECONDS 1000
+
+static volatile bool button_pressed;
 
 static const char INDEX_HTML[] =
     "<!doctype html><meta name=viewport content='width=device-width'><title>LED controller</title>"
@@ -39,7 +58,8 @@ static bool query_integer(httpd_req_t *request, const char *name, long *value)
     char query[256];
     char text_value[16];
     if (httpd_req_get_url_query_str(request, query, sizeof(query)) != ESP_OK ||
-        httpd_query_key_value(query, name, text_value, sizeof(text_value)) != ESP_OK) {
+        httpd_query_key_value(query, name, text_value, sizeof(text_value)) != ESP_OK)
+    {
         return false;
     }
     char *end;
@@ -55,20 +75,24 @@ static esp_err_t preview_string(httpd_req_t *request)
         !query_integer(request, "green", &green) || !query_integer(request, "blue", &blue) ||
         !query_integer(request, "intensity", &intensity) || index < 0 || index >= EXTERNAL_LED_STRING_COUNT ||
         physical < 0 || physical > LED_STRING_MAXIMUM_PHYSICAL_LENGTH || control < 0 || control > physical ||
-        red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 || intensity < 0 || intensity > 100) {
+        red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 || intensity < 0 || intensity > 100)
+    {
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, "Invalid settings: control length must be no greater than physical length; maximum length is 2048");
     }
     const led_string_settings_t settings = {
-        .physical_length = (size_t)physical, .control_length = (size_t)control,
-        .red = (uint8_t)red, .green = (uint8_t)green, .blue = (uint8_t)blue,
+        .physical_length = (size_t)physical,
+        .control_length = (size_t)control,
+        .red = (uint8_t)red,
+        .green = (uint8_t)green,
+        .blue = (uint8_t)blue,
         .intensity_percent = (uint8_t)intensity,
     };
     ESP_RETURN_ON_ERROR(led_controller_preview_string((size_t)index, &settings), "web-server", "Could not preview string");
     return httpd_resp_sendstr(request, "OK");
 }
 
-
-typedef struct {
+typedef struct
+{
     bool onboard;
     size_t index;
 } output_target_t;
@@ -83,11 +107,13 @@ static bool query_text(httpd_req_t *request, const char *name, char *value, size
 static bool parse_output_target(httpd_req_t *request, output_target_t *target)
 {
     char value[16];
-    if (!query_text(request, "index", value, sizeof(value))) {
+    if (!query_text(request, "index", value, sizeof(value)))
+    {
         return false;
     }
 
-    if (strcmp(value, "onboard") == 0) {
+    if (strcmp(value, "onboard") == 0)
+    {
         target->onboard = true;
         target->index = 0;
         return true;
@@ -95,7 +121,8 @@ static bool parse_output_target(httpd_req_t *request, output_target_t *target)
 
     char *end;
     const long index = strtol(value, &end, 10);
-    if (*value == '\0' || *end != '\0' || index < 0 || index >= EXTERNAL_LED_STRING_COUNT) {
+    if (*value == '\0' || *end != '\0' || index < 0 || index >= EXTERNAL_LED_STRING_COUNT)
+    {
         return false;
     }
 
@@ -106,18 +133,21 @@ static bool parse_output_target(httpd_req_t *request, output_target_t *target)
 
 static bool read_request_body(httpd_req_t *request, char *body, size_t body_size)
 {
-    if (request->content_len <= 0 || (size_t)request->content_len >= body_size) {
+    if (request->content_len <= 0 || (size_t)request->content_len >= body_size)
+    {
         return false;
     }
 
     size_t received = 0;
-    while (received < (size_t)request->content_len) {
+    while (received < (size_t)request->content_len)
+    {
         const int result = httpd_req_recv(
             request,
             body + received,
             (size_t)request->content_len - received);
 
-        if (result <= 0) {
+        if (result <= 0)
+        {
             return false;
         }
         received += (size_t)result;
@@ -133,7 +163,8 @@ static bool body_integer(httpd_req_t *request, const char *name, long *value)
     char text_value[16];
 
     if (!read_request_body(request, body, sizeof(body)) ||
-        httpd_query_key_value(body, name, text_value, sizeof(text_value)) != ESP_OK) {
+        httpd_query_key_value(body, name, text_value, sizeof(text_value)) != ESP_OK)
+    {
         return false;
     }
 
@@ -146,7 +177,8 @@ static esp_err_t send_output_state(httpd_req_t *request, const output_target_t *
 {
     char response[96];
 
-    if (target->onboard) {
+    if (target->onboard)
+    {
         led_string_settings_t settings;
         led_controller_get_onboard_settings(&settings);
         const int length = snprintf(
@@ -175,7 +207,8 @@ static esp_err_t send_output_state(httpd_req_t *request, const output_target_t *
 static esp_err_t get_output(httpd_req_t *request)
 {
     output_target_t target;
-    if (!parse_output_target(request, &target)) {
+    if (!parse_output_target(request, &target))
+    {
         return httpd_resp_send_err(
             request,
             HTTPD_400_BAD_REQUEST,
@@ -188,7 +221,8 @@ static esp_err_t get_output(httpd_req_t *request)
 static esp_err_t set_output(httpd_req_t *request)
 {
     output_target_t target;
-    if (!parse_output_target(request, &target)) {
+    if (!parse_output_target(request, &target))
+    {
         return httpd_resp_send_err(
             request,
             HTTPD_400_BAD_REQUEST,
@@ -197,14 +231,16 @@ static esp_err_t set_output(httpd_req_t *request)
 
     long intensity;
     if (!body_integer(request, "intensity", &intensity) ||
-        intensity < 0 || intensity > 100) {
+        intensity < 0 || intensity > 100)
+    {
         return httpd_resp_send_err(
             request,
             HTTPD_400_BAD_REQUEST,
             "Body must contain intensity=0..100");
     }
 
-    if (target.onboard) {
+    if (target.onboard)
+    {
         led_string_settings_t settings;
         led_controller_get_onboard_settings(&settings);
         settings.intensity_percent = (uint8_t)intensity;
@@ -212,7 +248,9 @@ static esp_err_t set_output(httpd_req_t *request)
             led_controller_preview_onboard(&settings),
             "web-server",
             "Could not update onboard output");
-    } else {
+    }
+    else
+    {
         led_string_settings_t strings[EXTERNAL_LED_STRING_COUNT];
         led_controller_get_settings(strings);
         strings[target.index].intensity_percent = (uint8_t)intensity;
@@ -237,7 +275,8 @@ static esp_err_t preview_onboard_led(httpd_req_t *request)
     if (!query_integer(request, "red", &red) || !query_integer(request, "green", &green) ||
         !query_integer(request, "blue", &blue) || !query_integer(request, "intensity", &intensity) ||
         red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255 ||
-        intensity < 0 || intensity > 100) {
+        intensity < 0 || intensity > 100)
+    {
         return httpd_resp_send_err(request, HTTPD_400_BAD_REQUEST, "Invalid onboard LED colour or intensity");
     }
     const led_string_settings_t settings = {
@@ -261,17 +300,104 @@ static esp_err_t serve_state(httpd_req_t *request)
     char response[768];
     size_t used = 0;
     used += snprintf(response + used, sizeof(response) - used, "{\"strings\":[");
-    for (size_t index = 0; index < EXTERNAL_LED_STRING_COUNT; index++) {
+    for (size_t index = 0; index < EXTERNAL_LED_STRING_COUNT; index++)
+    {
         used += snprintf(response + used, sizeof(response) - used,
-            "%s{\"physicalLength\":%u,\"controlLength\":%u,\"red\":%u,\"green\":%u,\"blue\":%u,\"intensity\":%u}",
-            index == 0 ? "" : ",", (unsigned)strings[index].physical_length, (unsigned)strings[index].control_length,
-            strings[index].red, strings[index].green, strings[index].blue, strings[index].intensity_percent);
+                         "%s{\"physicalLength\":%u,\"controlLength\":%u,\"red\":%u,\"green\":%u,\"blue\":%u,\"intensity\":%u}",
+                         index == 0 ? "" : ",", (unsigned)strings[index].physical_length, (unsigned)strings[index].control_length,
+                         strings[index].red, strings[index].green, strings[index].blue, strings[index].intensity_percent);
     }
     used += snprintf(response + used, sizeof(response) - used,
-        "],\"onboard\":{\"red\":%u,\"green\":%u,\"blue\":%u,\"intensity\":%u}}",
-        onboard_settings.red, onboard_settings.green, onboard_settings.blue, onboard_settings.intensity_percent);
+                     "],\"onboard\":{\"red\":%u,\"green\":%u,\"blue\":%u,\"intensity\":%u}}",
+                     onboard_settings.red, onboard_settings.green, onboard_settings.blue, onboard_settings.intensity_percent);
     httpd_resp_set_type(request, "application/json");
     return httpd_resp_send(request, response, used);
+}
+
+static bool read_button_raw(void)
+{
+    // The button is active-low: pressing it pulls the GPIO to ground.
+    return gpio_get_level(BUTTON_GPIO) == 0;
+}
+
+static void debounce_button_task(void *task_parameter)
+{
+    (void)task_parameter;
+
+    bool candidate_state = read_button_raw();
+    size_t stable_samples = 0;
+
+    button_pressed = candidate_state;
+
+    while (true)
+    {
+        vTaskDelay(pdMS_TO_TICKS(BUTTON_DEBOUNCE_SAMPLE_MILLISECONDS));
+
+        const bool raw_state = read_button_raw();
+
+        if (raw_state != candidate_state)
+        {
+            candidate_state = raw_state;
+            stable_samples = 1;
+            continue;
+        }
+
+        if (stable_samples < BUTTON_DEBOUNCE_STABLE_SAMPLES)
+        {
+            stable_samples++;
+        }
+
+        if (stable_samples >= BUTTON_DEBOUNCE_STABLE_SAMPLES &&
+            button_pressed != candidate_state)
+        {
+            button_pressed = candidate_state;
+        }
+    }
+}
+
+static esp_err_t initialize_button_input(void)
+{
+    const gpio_config_t configuration = {
+        .pin_bit_mask = 1ULL << BUTTON_GPIO,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+
+    ESP_RETURN_ON_ERROR(
+        gpio_config(&configuration),
+        "web-server",
+        "Could not configure button GPIO");
+
+    button_pressed = read_button_raw();
+
+    ESP_RETURN_ON_FALSE(
+        xTaskCreate(
+            debounce_button_task,
+            "debounce-button",
+            BUTTON_TASK_STACK_SIZE,
+            NULL,
+            BUTTON_TASK_PRIORITY,
+            NULL) == pdPASS,
+        ESP_ERR_NO_MEM,
+        "web-server",
+        "Could not create button debounce task");
+
+    return ESP_OK;
+}
+
+static esp_err_t get_button(httpd_req_t *request)
+{
+    char response[48];
+    const int length = snprintf(
+        response,
+        sizeof(response),
+        "{\"pressed\":%s}",
+        button_pressed ? "true" : "false");
+
+    httpd_resp_set_type(request, "application/json");
+    return httpd_resp_send(request, response, length);
 }
 
 static void reboot_after_http_response(void *task_parameter)
@@ -283,7 +409,8 @@ static void reboot_after_http_response(void *task_parameter)
 
 static esp_err_t reboot_controller(httpd_req_t *request)
 {
-    if (xTaskCreate(reboot_after_http_response, "reboot-controller", REBOOT_TASK_STACK_SIZE, NULL, REBOOT_TASK_PRIORITY, NULL) != pdPASS) {
+    if (xTaskCreate(reboot_after_http_response, "reboot-controller", REBOOT_TASK_STACK_SIZE, NULL, REBOOT_TASK_PRIORITY, NULL) != pdPASS)
+    {
         return httpd_resp_send_err(request, HTTPD_500_INTERNAL_SERVER_ERROR, "Could not schedule controller restart");
     }
     return httpd_resp_sendstr(request, "Restarting");
@@ -291,21 +418,29 @@ static esp_err_t reboot_controller(httpd_req_t *request)
 
 esp_err_t web_server_start(void)
 {
+    ESP_RETURN_ON_ERROR(
+        initialize_button_input(),
+        "web-server",
+        "Could not initialize button input");
+
     httpd_config_t configuration = HTTPD_DEFAULT_CONFIG();
     configuration.core_id = 0;
+    configuration.max_uri_handlers = 16;
     httpd_handle_t server = NULL;
     ESP_RETURN_ON_ERROR(httpd_start(&server, &configuration), "web-server", "Could not start HTTP server");
     const httpd_uri_t routes[] = {
         {.uri = "/", .method = HTTP_GET, .handler = serve_index},
         {.uri = "/api/state", .method = HTTP_GET, .handler = serve_state},
         {.uri = "/api/output", .method = HTTP_GET, .handler = get_output},
+        {.uri = "/api/button", .method = HTTP_GET, .handler = get_button},
         {.uri = "/api/output", .method = HTTP_POST, .handler = set_output},
         {.uri = "/api/preview", .method = HTTP_POST, .handler = preview_string},
         {.uri = "/api/onboard-preview", .method = HTTP_POST, .handler = preview_onboard_led},
         {.uri = "/api/save", .method = HTTP_POST, .handler = save_settings},
         {.uri = "/api/reboot", .method = HTTP_POST, .handler = reboot_controller},
     };
-    for (size_t index = 0; index < sizeof(routes) / sizeof(routes[0]); index++) {
+    for (size_t index = 0; index < sizeof(routes) / sizeof(routes[0]); index++)
+    {
         ESP_RETURN_ON_ERROR(httpd_register_uri_handler(server, &routes[index]), "web-server", "Could not register HTTP route");
     }
     return ESP_OK;
