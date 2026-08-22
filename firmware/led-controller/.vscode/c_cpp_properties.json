@@ -3,10 +3,8 @@
   "configurations": [
     {
       "name": "ESP-IDF",
-      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
-      "configurationProvider": "ms-vscode.cmake-tools",
+      "compileCommands": "${workspaceFolder}/build-esp32c6/compile_commands.json",
       "intelliSenseMode": "linux-gcc-x64"
     }
   ]
 }
-

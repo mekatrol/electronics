@@ -127,6 +127,67 @@ run_idf() {
   fi
 }
 
+
+update_intellisense_compile_commands() {
+  local build_dir=$1
+  local vscode_dir="$project_dir/.vscode"
+  local config_file="$vscode_dir/c_cpp_properties.json"
+
+  mkdir -p "$vscode_dir"
+
+  if [ -f "$config_file" ] && command -v python3 >/dev/null 2>&1; then
+    python3 - "$config_file" "$build_dir" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+config_path = Path(sys.argv[1])
+build_dir = sys.argv[2]
+compile_commands = "${workspaceFolder}/" + build_dir + "/compile_commands.json"
+
+try:
+    data = json.loads(config_path.read_text())
+except Exception:
+    data = {}
+
+data["version"] = 4
+configs = data.get("configurations")
+if not isinstance(configs, list):
+    configs = []
+
+target = None
+for config in configs:
+    if isinstance(config, dict) and config.get("name") == "ESP-IDF":
+        target = config
+        break
+
+if target is None:
+    target = {"name": "ESP-IDF"}
+    configs.append(target)
+
+target["compileCommands"] = compile_commands
+target.pop("configurationProvider", None)
+target.setdefault("intelliSenseMode", "linux-gcc-x64")
+
+data["configurations"] = configs
+config_path.write_text(json.dumps(data, indent=2) + "\n")
+PY
+  else
+    cat > "$config_file" <<EOF
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "ESP-IDF",
+      "compileCommands": "\${workspaceFolder}/$build_dir/compile_commands.json",
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ]
+}
+EOF
+  fi
+}
+
 restore_wifi_configuration() {
   local sdkconfig_file=$1
   local saved_ssid=$2
@@ -182,8 +243,10 @@ case "$action" in
     run_idf set-target "$target"
     restore_wifi_configuration sdkconfig "$saved_wifi_ssid" "$saved_wifi_password"
     run_idf reconfigure
+    update_intellisense_compile_commands "$build_directory"
     printf '%s\n' "$target" > "$board_selection_file"
     echo "Selected $serial_port; subsequent tasks will use $build_directory."
+    echo "Updated VS Code IntelliSense to use $build_directory/compile_commands.json."
     ;;
   clean)
     run_idf fullclean
