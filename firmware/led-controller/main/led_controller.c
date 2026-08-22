@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "driver/gpio.h"
+#include "driver/ledc.h"
 #include "driver/rmt_encoder.h"
 #include "driver/rmt_tx.h"
 #include "driver/spi_master.h"
@@ -29,6 +29,9 @@
 #define LED_REFRESH_INTERVAL_MILLISECONDS 500
 #define LED_REFRESH_TASK_PRIORITY 4
 #define LED_REFRESH_TASK_STACK_SIZE 3072
+#define PWM_FREQUENCY_HZ 20000
+#define PWM_DUTY_RESOLUTION LEDC_TIMER_8_BIT
+#define PWM_MAX_DUTY 255
 #define SETTINGS_NAMESPACE "led-strings"
 #define SETTINGS_VERSION 1
 
@@ -37,15 +40,15 @@
  *
  * Set each output independently to either:
  *   LED_CONTROLLER_OUTPUT_ADDRESSABLE - WS2812/addressable LED data
- *   LED_CONTROLLER_OUTPUT_ON_OFF      - ordinary GPIO output
+ *   LED_CONTROLLER_OUTPUT_PWM      - hardware PWM output
  *
- * For an ON/OFF output, intensity_percent == 0 means OFF and any non-zero
+ * For an PWM output, intensity_percent == 0 means OFF and any non-zero
  * intensity means ON. This preserves the existing API and saved settings.
  */
 #define LED_CONTROLLER_OUTPUT_ADDRESSABLE 0
-#define LED_CONTROLLER_OUTPUT_ON_OFF 1
+#define LED_CONTROLLER_OUTPUT_PWM 1
 
-#define LED_CONTROLLER_OUTPUT_1_MODE LED_CONTROLLER_OUTPUT_ON_OFF
+#define LED_CONTROLLER_OUTPUT_1_MODE LED_CONTROLLER_OUTPUT_PWM
 #define LED_CONTROLLER_OUTPUT_2_MODE LED_CONTROLLER_OUTPUT_ADDRESSABLE
 #define LED_CONTROLLER_OUTPUT_3_MODE LED_CONTROLLER_OUTPUT_ADDRESSABLE
 #define LED_CONTROLLER_OUTPUT_4_MODE LED_CONTROLLER_OUTPUT_ADDRESSABLE
@@ -55,7 +58,7 @@ static const char *TAG = "led-controller";
 typedef enum
 {
     LED_OUTPUT_ADDRESSABLE,
-    LED_OUTPUT_SWITCH,
+    LED_OUTPUT_PWM,
 } led_output_type_t;
 
 typedef struct
@@ -63,6 +66,7 @@ typedef struct
     const char *name;
     int gpio_number;
     led_output_type_t type;
+    ledc_channel_t pwm_channel;
     led_string_settings_t settings;
 
 #if CONFIG_LED_CONTROLLER_BOARD_ESP32_S3_ZERO
@@ -75,30 +79,34 @@ typedef struct
 static external_led_string_t external_led_strings[EXTERNAL_LED_STRING_COUNT] = {
     {
         .name = "string-1",
+        .pwm_channel = LEDC_CHANNEL_0,
         .gpio_number = CONFIG_LED_CONTROLLER_STRING_1_GPIO,
-        .type = LED_CONTROLLER_OUTPUT_1_MODE == LED_CONTROLLER_OUTPUT_ON_OFF
-                    ? LED_OUTPUT_SWITCH
+        .type = LED_CONTROLLER_OUTPUT_1_MODE == LED_CONTROLLER_OUTPUT_PWM
+                    ? LED_OUTPUT_PWM
                     : LED_OUTPUT_ADDRESSABLE,
     },
     {
         .name = "string-2",
+        .pwm_channel = LEDC_CHANNEL_1,
         .gpio_number = CONFIG_LED_CONTROLLER_STRING_2_GPIO,
-        .type = LED_CONTROLLER_OUTPUT_2_MODE == LED_CONTROLLER_OUTPUT_ON_OFF
-                    ? LED_OUTPUT_SWITCH
+        .type = LED_CONTROLLER_OUTPUT_2_MODE == LED_CONTROLLER_OUTPUT_PWM
+                    ? LED_OUTPUT_PWM
                     : LED_OUTPUT_ADDRESSABLE,
     },
     {
         .name = "string-3",
+        .pwm_channel = LEDC_CHANNEL_2,
         .gpio_number = CONFIG_LED_CONTROLLER_STRING_3_GPIO,
-        .type = LED_CONTROLLER_OUTPUT_3_MODE == LED_CONTROLLER_OUTPUT_ON_OFF
-                    ? LED_OUTPUT_SWITCH
+        .type = LED_CONTROLLER_OUTPUT_3_MODE == LED_CONTROLLER_OUTPUT_PWM
+                    ? LED_OUTPUT_PWM
                     : LED_OUTPUT_ADDRESSABLE,
     },
     {
         .name = "string-4",
+        .pwm_channel = LEDC_CHANNEL_3,
         .gpio_number = CONFIG_LED_CONTROLLER_STRING_4_GPIO,
-        .type = LED_CONTROLLER_OUTPUT_4_MODE == LED_CONTROLLER_OUTPUT_ON_OFF
-                    ? LED_OUTPUT_SWITCH
+        .type = LED_CONTROLLER_OUTPUT_4_MODE == LED_CONTROLLER_OUTPUT_PWM
+                    ? LED_OUTPUT_PWM
                     : LED_OUTPUT_ADDRESSABLE,
     },
 };
@@ -112,20 +120,26 @@ static led_string_settings_t onboard_led_settings = {
 
 static esp_err_t transmit_settings(external_led_string_t *string, size_t transmit_length);
 
-static esp_err_t transmit_switch(external_led_string_t *string)
+static esp_err_t transmit_pwm(external_led_string_t *string)
 {
-    return gpio_set_level(
-        string->gpio_number,
-        string->settings.intensity_percent > 0 ? 1 : 0);
+    const uint32_t duty = ((uint32_t)string->settings.intensity_percent * PWM_MAX_DUTY) / 100U;
+
+    ESP_RETURN_ON_ERROR(
+        ledc_set_duty(LEDC_LOW_SPEED_MODE, string->pwm_channel, duty),
+        TAG,
+        "Could not set PWM duty for %s",
+        string->name);
+
+    return ledc_update_duty(LEDC_LOW_SPEED_MODE, string->pwm_channel);
 }
 
 static esp_err_t transmit_external_output(
     external_led_string_t *string,
     size_t transmit_length)
 {
-    if (string->type == LED_OUTPUT_SWITCH)
+    if (string->type == LED_OUTPUT_PWM)
     {
-        return transmit_switch(string);
+        return transmit_pwm(string);
     }
 
     return transmit_settings(string, transmit_length);
@@ -138,26 +152,36 @@ static bool settings_are_valid(const led_string_settings_t *settings)
            settings->intensity_percent <= 100;
 }
 
+static esp_err_t initialize_pwm_timer(void)
+{
+    const ledc_timer_config_t timer_configuration = {
+        .speed_mode = LEDC_LOW_SPEED_MODE,
+        .duty_resolution = PWM_DUTY_RESOLUTION,
+        .timer_num = LEDC_TIMER_0,
+        .freq_hz = PWM_FREQUENCY_HZ,
+        .clk_cfg = LEDC_AUTO_CLK,
+        .deconfigure = false,
+    };
+
+    return ledc_timer_config(&timer_configuration);
+}
+
 static esp_err_t initialize_external_string(external_led_string_t *string)
 {
-    if (string->type == LED_OUTPUT_SWITCH)
+    if (string->type == LED_OUTPUT_PWM)
     {
-        const gpio_config_t gpio_configuration = {
-            .pin_bit_mask = 1ULL << string->gpio_number,
-            .mode = GPIO_MODE_OUTPUT,
-            .pull_up_en = GPIO_PULLUP_DISABLE,
-            .pull_down_en = GPIO_PULLDOWN_DISABLE,
-            .intr_type = GPIO_INTR_DISABLE,
+        const ledc_channel_config_t channel_configuration = {
+            .gpio_num = string->gpio_number,
+            .speed_mode = LEDC_LOW_SPEED_MODE,
+            .channel = string->pwm_channel,
+            .intr_type = LEDC_INTR_DISABLE,
+            .timer_sel = LEDC_TIMER_0,
+            .duty = 0,
+            .hpoint = 0,
+            .flags.output_invert = 0,
         };
 
-        ESP_RETURN_ON_ERROR(
-            gpio_config(&gpio_configuration),
-            TAG,
-            "Could not configure GPIO for %s",
-            string->name);
-
-        // Start low; led_controller_start() immediately applies the loaded state.
-        return gpio_set_level(string->gpio_number, 0);
+        return ledc_channel_config(&channel_configuration);
     }
 
 #if CONFIG_LED_CONTROLLER_BOARD_ESP32_S3_ZERO
@@ -425,6 +449,7 @@ esp_err_t led_controller_start(void)
     load_saved_settings();
     ESP_RETURN_ON_ERROR(initialize_onboard_led(), TAG, "Could not initialize onboard LED");
     ESP_RETURN_ON_ERROR(transmit_onboard_settings(), TAG, "Could not apply saved settings to onboard LED");
+    ESP_RETURN_ON_ERROR(initialize_pwm_timer(), TAG, "Could not initialize PWM timer");
     for (size_t index = 0; index < EXTERNAL_LED_STRING_COUNT; index++)
     {
         ESP_RETURN_ON_ERROR(initialize_external_string(&external_led_strings[index]), TAG, "Could not initialize external string %u", (unsigned)(index + 1));
