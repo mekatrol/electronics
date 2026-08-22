@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "esp_check.h"
 #include "esp_http_server.h"
@@ -64,6 +65,164 @@ static esp_err_t preview_string(httpd_req_t *request)
     };
     ESP_RETURN_ON_ERROR(led_controller_preview_string((size_t)index, &settings), "web-server", "Could not preview string");
     return httpd_resp_sendstr(request, "OK");
+}
+
+
+typedef struct {
+    bool onboard;
+    size_t index;
+} output_target_t;
+
+static bool query_text(httpd_req_t *request, const char *name, char *value, size_t value_size)
+{
+    char query[256];
+    return httpd_req_get_url_query_str(request, query, sizeof(query)) == ESP_OK &&
+           httpd_query_key_value(query, name, value, value_size) == ESP_OK;
+}
+
+static bool parse_output_target(httpd_req_t *request, output_target_t *target)
+{
+    char value[16];
+    if (!query_text(request, "index", value, sizeof(value))) {
+        return false;
+    }
+
+    if (strcmp(value, "onboard") == 0) {
+        target->onboard = true;
+        target->index = 0;
+        return true;
+    }
+
+    char *end;
+    const long index = strtol(value, &end, 10);
+    if (*value == '\0' || *end != '\0' || index < 0 || index >= EXTERNAL_LED_STRING_COUNT) {
+        return false;
+    }
+
+    target->onboard = false;
+    target->index = (size_t)index;
+    return true;
+}
+
+static bool read_request_body(httpd_req_t *request, char *body, size_t body_size)
+{
+    if (request->content_len <= 0 || (size_t)request->content_len >= body_size) {
+        return false;
+    }
+
+    size_t received = 0;
+    while (received < (size_t)request->content_len) {
+        const int result = httpd_req_recv(
+            request,
+            body + received,
+            (size_t)request->content_len - received);
+
+        if (result <= 0) {
+            return false;
+        }
+        received += (size_t)result;
+    }
+
+    body[received] = '\0';
+    return true;
+}
+
+static bool body_integer(httpd_req_t *request, const char *name, long *value)
+{
+    char body[128];
+    char text_value[16];
+
+    if (!read_request_body(request, body, sizeof(body)) ||
+        httpd_query_key_value(body, name, text_value, sizeof(text_value)) != ESP_OK) {
+        return false;
+    }
+
+    char *end;
+    *value = strtol(text_value, &end, 10);
+    return *text_value != '\0' && *end == '\0';
+}
+
+static esp_err_t send_output_state(httpd_req_t *request, const output_target_t *target)
+{
+    char response[96];
+
+    if (target->onboard) {
+        led_string_settings_t settings;
+        led_controller_get_onboard_settings(&settings);
+        const int length = snprintf(
+            response,
+            sizeof(response),
+            "{\"index\":\"onboard\",\"intensity\":%u}",
+            settings.intensity_percent);
+
+        httpd_resp_set_type(request, "application/json");
+        return httpd_resp_send(request, response, length);
+    }
+
+    led_string_settings_t strings[EXTERNAL_LED_STRING_COUNT];
+    led_controller_get_settings(strings);
+    const int length = snprintf(
+        response,
+        sizeof(response),
+        "{\"index\":%u,\"intensity\":%u}",
+        (unsigned)target->index,
+        strings[target->index].intensity_percent);
+
+    httpd_resp_set_type(request, "application/json");
+    return httpd_resp_send(request, response, length);
+}
+
+static esp_err_t get_output(httpd_req_t *request)
+{
+    output_target_t target;
+    if (!parse_output_target(request, &target)) {
+        return httpd_resp_send_err(
+            request,
+            HTTPD_400_BAD_REQUEST,
+            "Invalid output index; use 0, 1, 2, 3, or onboard");
+    }
+
+    return send_output_state(request, &target);
+}
+
+static esp_err_t set_output(httpd_req_t *request)
+{
+    output_target_t target;
+    if (!parse_output_target(request, &target)) {
+        return httpd_resp_send_err(
+            request,
+            HTTPD_400_BAD_REQUEST,
+            "Invalid output index; use 0, 1, 2, 3, or onboard");
+    }
+
+    long intensity;
+    if (!body_integer(request, "intensity", &intensity) ||
+        intensity < 0 || intensity > 100) {
+        return httpd_resp_send_err(
+            request,
+            HTTPD_400_BAD_REQUEST,
+            "Body must contain intensity=0..100");
+    }
+
+    if (target.onboard) {
+        led_string_settings_t settings;
+        led_controller_get_onboard_settings(&settings);
+        settings.intensity_percent = (uint8_t)intensity;
+        ESP_RETURN_ON_ERROR(
+            led_controller_preview_onboard(&settings),
+            "web-server",
+            "Could not update onboard output");
+    } else {
+        led_string_settings_t strings[EXTERNAL_LED_STRING_COUNT];
+        led_controller_get_settings(strings);
+        strings[target.index].intensity_percent = (uint8_t)intensity;
+        ESP_RETURN_ON_ERROR(
+            led_controller_preview_string(target.index, &strings[target.index]),
+            "web-server",
+            "Could not update external output");
+    }
+
+    return send_output_state(request, &target);
 }
 
 static esp_err_t save_settings(httpd_req_t *request)
@@ -139,6 +298,8 @@ esp_err_t web_server_start(void)
     const httpd_uri_t routes[] = {
         {.uri = "/", .method = HTTP_GET, .handler = serve_index},
         {.uri = "/api/state", .method = HTTP_GET, .handler = serve_state},
+        {.uri = "/api/output", .method = HTTP_GET, .handler = get_output},
+        {.uri = "/api/output", .method = HTTP_POST, .handler = set_output},
         {.uri = "/api/preview", .method = HTTP_POST, .handler = preview_string},
         {.uri = "/api/onboard-preview", .method = HTTP_POST, .handler = preview_onboard_led},
         {.uri = "/api/save", .method = HTTP_POST, .handler = save_settings},
