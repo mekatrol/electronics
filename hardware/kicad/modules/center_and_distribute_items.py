@@ -13,6 +13,7 @@ from kicad_ipc import (
     to_mm,
     vector,
 )
+from kicad_utils import centering_delta, distribution_offsets
 
 
 # Centre all footprints to the first component listed in REFERENCES.
@@ -21,26 +22,6 @@ REFERENCES = ["J1", "J2", "J3", "J4"]
 ALIGNMENT = "horizontal"  # "vertical" aligns Y centres; "horizontal" aligns X centres.
 DISTRIBUTE_SPACING = True
 DEBUG = True
-
-
-def distribution_offsets(items):
-    """Return equal edge-to-edge spacing offsets for axis-sorted items.
-
-    ``items`` contains ``(reference, start, end)`` tuples.  The first and last
-    items remain fixed and the intervening items are positioned so every gap
-    is equal. Negative gaps intentionally support overlapping outer anchors.
-    """
-    ordered = sorted(items, key=lambda item: (item[1] + item[2], item[0]))
-    first_end = ordered[0][2]
-    last_start = ordered[-1][1]
-    inner_width = sum(end - start for _reference, start, end in ordered[1:-1])
-    gap = (last_start - first_end - inner_width) / (len(ordered) - 1)
-    offsets = {ordered[0][0]: 0, ordered[-1][0]: 0}
-    next_start = first_end + gap
-    for reference, start, end in ordered[1:-1]:
-        offsets[reference] = round(next_start - start)
-        next_start += end - start + gap
-    return offsets
 
 
 def main():
@@ -96,12 +77,13 @@ def main():
         for reference in REFERENCES:
             footprint = footprints[reference]
             center = box_center(boxes[reference])
+            alignment_offset = centering_delta(center, anchor_center)
             old = footprint.position
             if ALIGNMENT == "vertical":
                 delta_x = distribute_offsets[reference]
-                delta_y = anchor_center.y - center.y
+                delta_y = alignment_offset.y
             else:
-                delta_x = anchor_center.x - center.x
+                delta_x = alignment_offset.x
                 delta_y = distribute_offsets[reference]
             footprint.position = vector(old.x + delta_x, old.y + delta_y)
             changed.append(footprint)

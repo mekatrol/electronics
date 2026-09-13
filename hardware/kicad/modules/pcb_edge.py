@@ -28,7 +28,9 @@ from kicad_ipc import (
     editor_commit,
     from_mm,
     point_from_mm,
+    to_mm,
 )
+from kicad_utils import edge_cuts_centroid
 
 
 # ============================================================
@@ -37,10 +39,14 @@ from kicad_ipc import (
 # Fabrication dimensions are measured along the Edge.Cuts centreline. The
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
-BOARD_WIDTH_MM = 40.0
+BOARD_WIDTH_MM = 42.0
 BOARD_HEIGHT_MM = 12.0
 ORIGIN_X_MM = 120.0
 ORIGIN_Y_MM = 50.0
+
+# Preserve the area centroid of the current connected Edge.Cuts contour when
+# replacing it. If no outline exists, the configured origin above is used.
+KEEP_CENTRE = True
 
 # Use 0 for square corners. A positive value creates four tangent quarter-circle
 # arcs and must not exceed half of the board's smaller dimension.
@@ -110,11 +116,11 @@ def create_edge_arc(start, mid, end):
     return item
 
 
-def create_outline_items():
+def create_outline_items(origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
     """Build four lines, or four lines and four tangent corner arcs."""
     validate_settings()
     width, height, radius = BOARD_WIDTH_MM, BOARD_HEIGHT_MM, CORNER_RADIUS_MM
-    x0, y0 = ORIGIN_X_MM, ORIGIN_Y_MM
+    x0, y0 = origin_x_mm, origin_y_mm
     x1, y1 = x0 + width, y0 + height
 
     if radius == 0:
@@ -170,7 +176,7 @@ def create_outline_items():
     ]
 
 
-def rectangular_polygon():
+def rectangular_polygon(origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
     """Build a closed, square-corner polygon matching the board rectangle.
 
     Zone fills are clipped to Edge.Cuts by KiCad, so keeping this source
@@ -178,10 +184,10 @@ def rectangular_polygon():
     """
     line = PolyLine()
     for x, y in [
-        (ORIGIN_X_MM, ORIGIN_Y_MM),
-        (ORIGIN_X_MM + BOARD_WIDTH_MM, ORIGIN_Y_MM),
-        (ORIGIN_X_MM + BOARD_WIDTH_MM, ORIGIN_Y_MM + BOARD_HEIGHT_MM),
-        (ORIGIN_X_MM, ORIGIN_Y_MM + BOARD_HEIGHT_MM),
+        (origin_x_mm, origin_y_mm),
+        (origin_x_mm + BOARD_WIDTH_MM, origin_y_mm),
+        (origin_x_mm + BOARD_WIDTH_MM, origin_y_mm + BOARD_HEIGHT_MM),
+        (origin_x_mm, origin_y_mm + BOARD_HEIGHT_MM),
     ]:
         line.append(PolyLineNode.from_point(point_from_mm(x, y)))
     line.closed = True
@@ -190,7 +196,7 @@ def rectangular_polygon():
     return polygon
 
 
-def ground_zones(board):
+def ground_zones(board, origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
     """Construct one rectangular GND zone for each outer copper layer."""
     net = next((net for net in board.get_nets() if net.name == GROUND_NET_NAME), None)
     if net is None:
@@ -201,7 +207,7 @@ def ground_zones(board):
         zone.name = GROUND_NET_NAME
         zone.net = net
         zone.layers = [layer]
-        zone.outline = rectangular_polygon()
+        zone.outline = rectangular_polygon(origin_x_mm, origin_y_mm)
         zones.append(zone)
     return zones
 
@@ -210,13 +216,21 @@ def main():
     """Replace configured items in one atomic PCB Editor transaction."""
     _client, board = connect_board()
 
-    # Construct and validate all replacement objects before starting the editor
-    # transaction. Configuration failures therefore cannot remove live items.
-    new_outline = create_outline_items()
     existing_edges = [
         shape for shape in board.get_shapes()
         if shape.layer == BoardLayer.BL_Edge_Cuts
     ]
+    origin_x_mm = ORIGIN_X_MM
+    origin_y_mm = ORIGIN_Y_MM
+    if KEEP_CENTRE and existing_edges:
+        centre = edge_cuts_centroid(existing_edges)
+        centre_x_mm, centre_y_mm = to_mm(centre.x), to_mm(centre.y)
+        origin_x_mm = centre_x_mm - BOARD_WIDTH_MM / 2
+        origin_y_mm = centre_y_mm - BOARD_HEIGHT_MM / 2
+
+    # Construct and validate all replacement objects before starting the editor
+    # transaction. Configuration failures therefore cannot remove live items.
+    new_outline = create_outline_items(origin_x_mm, origin_y_mm)
     existing_ground_zones = [
         zone for zone in board.get_zones()
         if zone.net is not None and zone.net.name == GROUND_NET_NAME
@@ -225,7 +239,11 @@ def main():
             for layer in zone.layers
         )
     ]
-    new_zones = ground_zones(board) if REPLACE_GROUND_ZONES else []
+    new_zones = (
+        ground_zones(board, origin_x_mm, origin_y_mm)
+        if REPLACE_GROUND_ZONES
+        else []
+    )
 
     # The shared context manager calls begin_commit/push_commit, producing one
     # named Undo/Redo entry. It calls drop_commit if any IPC request raises.
@@ -246,7 +264,10 @@ def main():
 
     print(
         f"Created {BOARD_WIDTH_MM:.3f} x {BOARD_HEIGHT_MM:.3f} mm outline with "
-        f"{CORNER_RADIUS_MM:.3f} mm corners (undo: Replace board outline and ground zones)."
+        f"{CORNER_RADIUS_MM:.3f} mm corners at "
+        f"({origin_x_mm:.3f}, {origin_y_mm:.3f}) mm"
+        f"{' while preserving the previous centroid' if KEEP_CENTRE and existing_edges else ''} "
+        f"(undo: Replace board outline and ground zones)."
     )
 
 
