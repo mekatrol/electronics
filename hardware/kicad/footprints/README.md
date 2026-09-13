@@ -9,6 +9,10 @@ The repository copy is the canonical copy. KiCad should use the files directly f
 ```text
 hardware/kicad/footprints/
 ├── README.md
+├── setup-kicad-libs.sh
+├── teardown-kicad-libs.sh
+├── library-names.conf
+├── kicad-libs.py
 ├── ESP32_board.pretty/
 ├── Extra.pretty/
 ├── MCU_RaspberryPi_and_Boards.pretty/
@@ -20,7 +24,7 @@ hardware/kicad/footprints/
 
 ## Footprint inventory
 
-Each `.pretty` directory is a separate KiCad footprint library. Use its directory name without `.pretty` as the library nickname.
+Each `.pretty` directory is a separate KiCad footprint library. The setup script preserves existing nicknames; fresh installations use the names in the manual configuration table below.
 
 ### ESP32_board
 
@@ -107,175 +111,46 @@ No `/home/dad/...` absolute path is stored inside the committed footprint files.
 
 # Setup script
 
-Save this as `setup-kicad-libs.sh`, or copy/paste it into a terminal.
+Run [setup-kicad-libs.sh](setup-kicad-libs.sh) with Bash 4 or newer and Python 3 installed. It locates the footprint libraries relative to the script, so it works from any working directory.
+
+Close KiCad before applying changes. From this directory:
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-
-# Change this only if the electronics repository is cloned somewhere else.
-REPO_ROOT="${HOME}/repos/electronics"
-
-LIB_ROOT="${REPO_ROOT}/hardware/kicad/footprints"
-shopt -s nullglob
-FP_LIBS=("${LIB_ROOT}"/*.pretty)
-
-KICAD_CONFIG="${HOME}/.var/app/org.kicad.KiCad/config/kicad/10.0"
-FP_TABLE="${KICAD_CONFIG}/fp-lib-table"
-COMMON_CONFIG="${KICAD_CONFIG}/kicad_common.json"
-
-echo "KiCad custom library setup"
-echo
-echo "Repository root : ${REPO_ROOT}"
-echo "Library root    : ${LIB_ROOT}"
-echo "Footprint libs  : ${#FP_LIBS[@]}"
-echo
-
-if (( ${#FP_LIBS[@]} == 0 )); then
-    echo "ERROR: No .pretty footprint libraries found:"
-    echo "  ${LIB_ROOT}"
-    echo
-    echo "Clone the electronics repository first, or edit REPO_ROOT in this script."
-    exit 1
-fi
-
-if [[ ! -d "${LIB_ROOT}/Toponelec.3dshapes" ]]; then
-    echo "ERROR: 3D model directory not found:"
-    echo "  ${LIB_ROOT}/Toponelec.3dshapes"
-    exit 1
-fi
-
-mkdir -p "${KICAD_CONFIG}"
-
-echo "Checking footprint model paths..."
-
-if grep -R -q '/home/dad' "${LIB_ROOT}" --include='*.kicad_mod'; then
-    echo "ERROR: Absolute /home/dad path found inside footprint files."
-    echo "Fix these before continuing:"
-    grep -R -n '/home/dad' "${LIB_ROOT}" --include='*.kicad_mod'
-    exit 1
-fi
-
-if ! grep -R -q '\${MY_KICAD_LIBS}/Toponelec.3dshapes' "${LIB_ROOT}" --include='*.kicad_mod'; then
-    echo "WARNING: Expected MY_KICAD_LIBS model paths were not found."
-    echo "Current model references:"
-    grep -R -n '(model ' "${LIB_ROOT}" --include='*.kicad_mod' || true
-fi
-
-echo "Footprint files look portable."
-echo
-
-# ----------------------------------------------------------------------
-# Configure MY_KICAD_LIBS in KiCad's common configuration.
-#
-# KiCad stores path variables in kicad_common.json. We use Python here so
-# the JSON is edited safely rather than with sed.
-# ----------------------------------------------------------------------
-
-python3 - "${COMMON_CONFIG}" "${LIB_ROOT}" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-cfg_path = Path(sys.argv[1])
-lib_root = sys.argv[2]
-
-if cfg_path.exists():
-    try:
-        data = json.loads(cfg_path.read_text())
-    except Exception as exc:
-        raise SystemExit(f"ERROR: Could not parse {cfg_path}: {exc}")
-else:
-    data = {}
-
-env = data.setdefault("environment", {})
-vars_ = env.setdefault("vars", {})
-vars_["MY_KICAD_LIBS"] = lib_root
-
-cfg_path.parent.mkdir(parents=True, exist_ok=True)
-cfg_path.write_text(json.dumps(data, indent=2) + "\n")
-
-print(f"Configured MY_KICAD_LIBS = {lib_root}")
-PY
-
-# ----------------------------------------------------------------------
-# Register every .pretty footprint library in the repository.
-# ----------------------------------------------------------------------
-
-if [[ ! -f "${FP_TABLE}" ]]; then
-    cat > "${FP_TABLE}" <<'EOF'
-(fp_lib_table
-)
-EOF
-fi
-
-cp -a "${FP_TABLE}" "${FP_TABLE}.backup-before-custom-libs"
-
-python3 - "${FP_TABLE}" "${LIB_ROOT}" <<'PY'
-import sys
-from pathlib import Path
-
-path = Path(sys.argv[1])
-text = path.read_text()
-
-libraries = sorted(Path(sys.argv[2]).glob("*.pretty"))
-nicknames = {library.stem for library in libraries}
-entries = [
-    f'  (lib (name "{library.stem}")(type "KiCad")'
-    f'(uri "${{MY_KICAD_LIBS}}/{library.name}")(options "")(descr ""))'
-    for library in libraries
-]
-
-# Replace existing entries for these libraries to avoid duplicates.
-lines = [
-    line for line in text.splitlines()
-    if not any(f'(name "{nickname}")' in line for nickname in nicknames)
-]
-
-# Also remove the old accidental alias if it pointed to the same library.
-lines = [
-    line for line in lines
-    if not (
-        '(name "Terminal Blocks")' in line
-        and 'Toponelec_TY308.pretty' in line
-    )
-]
-
-# Insert before final closing parenthesis.
-for i in range(len(lines) - 1, -1, -1):
-    if lines[i].strip() == ")":
-        lines[i:i] = entries
-        break
-else:
-    raise SystemExit("ERROR: Could not find closing ')' in fp-lib-table")
-
-path.write_text("\n".join(lines) + "\n")
-
-for library in libraries:
-    print(f"Registered footprint library: {library.stem}")
-PY
-
-echo
-echo "Setup complete."
-echo
-echo "Verify with:"
-echo
-echo "  grep -R '(model ' \"${LIB_ROOT}\" --include='*.kicad_mod'"
-echo
-echo "Then start KiCad and open a Toponelec footprint in the 3D Viewer."
-```
-
-## Make the script executable
-
-```bash
-chmod +x setup-kicad-libs.sh
-```
-
-Then run:
-
-```bash
+./setup-kicad-libs.sh --dry-run
 ./setup-kicad-libs.sh
 ```
+
+The default configuration directory matches this machine's KiCad 10 Flatpak installation:
+`~/.var/app/org.kicad.KiCad/config/kicad/10.0`.
+For another installation or version, specify its configuration directory:
+
+```bash
+./setup-kicad-libs.sh --config-dir ~/.config/kicad/10.0
+```
+
+The script discovers every `.pretty` directory and configures `MY_KICAD_LIBS`. It preserves existing library nicknames, descriptions, options, disabled/hidden flags, and unrelated settings. Preferred nicknames are Bash variables in [library-names.conf](library-names.conf). Edit the values in `LIBRARY_NAMES` to change them; the Toponelec entry currently uses `Connectors`. Newly added directories without an entry use their directory name without `.pretty`. Setup preserves an existing nickname until you tear down its registration.
+
+Directory comparisons expand configured path variables and shell variables and resolve symlinks, `..`, and trailing slashes. Matching registrations use `${MY_KICAD_LIBS}/<library>.pretty`. Duplicate aliases for a repository directory are merged when their other settings agree; the preferred nickname wins, otherwise the first existing entry wins. Removed aliases are printed so any project references using those aliases can be updated. Conflicting settings or nicknames stop the script before it writes either configuration file. Unrelated duplicate directories are reported and left unchanged. Unresolved variables and relative global paths cannot be compared reliably; they are left unchanged, and nickname conflicts still stop the script.
+
+Repeated runs make no changes once configured. Only changed files are written, using atomic replacement per file. Existing files receive a one-time `.backup-before-custom-libs` backup that subsequent runs preserve. `--dry-run` does not write files or create backups.
+
+## Change names and reinstall
+
+Close KiCad, then run these commands from this directory:
+
+```bash
+./teardown-kicad-libs.sh --dry-run
+./teardown-kicad-libs.sh
+# Edit the nickname values in library-names.conf, then:
+./setup-kicad-libs.sh --dry-run
+./setup-kicad-libs.sh
+```
+
+Both scripts accept `--config-dir`; use the same directory for teardown and setup. They share the implementation in `kicad-libs.py`.
+
+Teardown removes all registrations pointing to the repository's current `.pretty` directories, including aliases, regardless of the nickname variables. You can therefore edit the names before or after teardown. It preserves unrelated libraries, footprint/model files, and `MY_KICAD_LIBS` (existing boards may still use it for 3D models). It creates a separate one-time `fp-lib-table.backup-before-custom-libs-teardown` backup and is idempotent. With no existing configuration, teardown creates nothing.
+
+Reinstalling creates fresh registrations with the configured names and default options. Teardown removes any per-library descriptions, options and disabled/hidden flags along with those registrations; the backup retains them. Existing schematic and board footprint references are not renamed automatically.
 
 ## Manual KiCad equivalent
 
@@ -309,7 +184,7 @@ Add each library below with type `KiCad`:
 | `MCU_RaspberryPi_and_Boards` | `${MY_KICAD_LIBS}/MCU_RaspberryPi_and_Boards.pretty` |
 | `Mekatrol_Footprints` | `${MY_KICAD_LIBS}/Mekatrol_Footprints.pretty` |
 | `Segmentum` | `${MY_KICAD_LIBS}/Segmentum.pretty` |
-| `Toponelec_TY308` | `${MY_KICAD_LIBS}/Toponelec_TY308.pretty` |
+| `Connectors` | `${MY_KICAD_LIBS}/Toponelec_TY308.pretty` |
 
 ## Verification
 
