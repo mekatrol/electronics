@@ -44,7 +44,7 @@ ORIGIN_Y_MM = 50.0
 
 # Use 0 for square corners. A positive value creates four tangent quarter-circle
 # arcs and must not exceed half of the board's smaller dimension.
-CORNER_RADIUS_MM = 2.0
+CORNER_RADIUS_MM = 1.0
 
 # This affects the visible Edge.Cuts stroke, not the finished board dimensions.
 EDGE_LINE_WIDTH_MM = 0.10
