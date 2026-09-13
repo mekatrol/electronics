@@ -111,6 +111,7 @@ The editor history labels are:
 | `align_connector_pin_text.py` | Align connector pin labels |
 | `align_holes.py` | Align mounting holes |
 | `center_and_distribute_items.py` | Center and optionally distribute footprints |
+| `center_components.py` | Center all components within board |
 | `check_fiducials.py` | Align and check fiducials |
 | `pcb_edge.py` | Replace board outline and ground zones |
 | `resize_matching_text.py` | Resize matching board text |
@@ -151,6 +152,18 @@ aligns their horizontal (X) centres. Set `DISTRIBUTE_SPACING` to `True` with
 three or more references to create equal edge-to-edge gaps on the perpendicular
 axis; the two outer footprints remain fixed on that axis. Save manually after
 review.
+
+### `center_components.py`
+
+Centres the bounding rectangle enclosing all footprints on the centre of the
+Edge.Cuts bounding rectangle. For irregular outlines this uses the bounds centre,
+not the polygon's area centroid. Each footprint receives exactly the same X/Y
+offset, preserving relative positions and rotations. All footprints are included,
+including locked footprints, mounting holes, and fiducials. Reference/value text
+is excluded from the bounds by default; set `INCLUDE_TEXT = True` to include it.
+Footprint-owned items move with their parent; tracks, vias, standalone text,
+zones, and Edge.Cuts stay in place. Copper zones are refilled after the move.
+The entire move is one undo entry; save manually after review.
 
 ### `check_fiducials.py`
 
