@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Validate and grid-align PCB fiducials using KiCad's IPC API.
 
-Execution:
-    1. Enable KiCad's API server and open the target board in PCB Editor.
-    2. Review the values in the ``User settings`` section below.
-    3. From the repository root, run::
+Run from the repository root with::
 
-        .venv-kicad-ipc/bin/python hardware/kicad/modules/check_fiducials.py
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/check_fiducials.py
+
+Review the values in the ``User settings`` section below before running the
+script.
 
 The script regards a side as populated when it contains at least one footprint
 that is not a fiducial and is not marked Do Not Populate. Each populated side

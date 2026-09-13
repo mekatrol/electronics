@@ -21,8 +21,8 @@ from kipy.util import from_mm, to_mm
 def connect_board():
     """Connect to the running PCB Editor and return its client and open board.
 
-    KiCad 10 must have Preferences > Plugins > API server enabled.  The
-    official client automatically detects both native and Flatpak socket paths.
+    The official client automatically detects both native and Flatpak socket
+    paths.
     We intentionally do not call ``check_version`` because the latest released
     binding targets KiCad 10.0.1 and rejects compatible newer 10.0.x patches.
     """

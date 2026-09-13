@@ -12,12 +12,13 @@ process and communicates with a running KiCad application.
 
 ### Enable the API server
 
-For the KiCad 10 Flatpak:
+In KiCad 10:
 
-1. Start KiCad and open **Preferences → Plugins**.
-2. Enable the **API server** option.
-3. Close and restart KiCad after changing the option.
-4. Open the required `.kicad_pcb` in PCB Editor and leave PCB Editor running
+1. Start KiCad and select **Preferences → Preferences…**.
+2. Select **Plugins** in the left pane.
+3. Check **Enable API server**, then select **OK**.
+4. Close and restart KiCad after changing the option.
+5. Open the required `.kicad_pcb` in PCB Editor and leave PCB Editor running
    while an IPC script executes.
 
 The project manager alone is insufficient. Board requests such as
@@ -88,9 +89,9 @@ Zones: 2
 
 ## PCB Editor scripts
 
-The following scripts use the supported `kipy` IPC API. Open the board to
-modify in PCB Editor, edit the script's **User settings** section as needed,
-then run it from a terminal at the repository root:
+The following scripts use the supported `kipy` IPC API. After completing the
+setup above, edit the script's **User settings** section as needed, then run it
+from a terminal at the repository root:
 
 ```sh
 .venv-kicad-ipc/bin/python hardware/kicad/modules/SCRIPT_NAME.py

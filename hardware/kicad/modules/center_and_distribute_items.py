@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Centre and optionally distribute configured footprints using KiCad's IPC API.
 
-Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/center_and_distribute_items.py``.
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/center_and_distribute_items.py
+
 All moves are grouped into one PCB Editor undo/redo transaction.
 """
 

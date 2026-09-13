@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Report board, mounting-hole and fiducial dimensions through IPC.
 
-Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/report_board_dimensions.py``.
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/report_board_dimensions.py
+
 This script is read-only and therefore creates no undo entry.
 """
 

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Align visible footprint references outside courtyards using KiCad IPC.
 
-Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/align_component_reference_text.py``.
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/align_component_reference_text.py
+
 All moved references form one PCB Editor undo/redo transaction.  The board is
 left unsaved so the editor remains the authority for Undo, Redo, and Save.
 """

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Orthogonalize copper-zone outlines through KiCad's IPC API.
 
-Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/zone_outline_perp.py``.
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/zone_outline_perp.py
+
 Each run is one PCB Editor undo/redo transaction.  The first outer contour is
 rebuilt and existing zone holes/cutouts are deliberately not preserved.
 """

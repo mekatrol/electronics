@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Create a rectangular board outline and optional GND zones through IPC.
 
-Execution:
-    1. Enable KiCad's API server and open the target board in PCB Editor.
-    2. Review every setting below, especially both replacement switches.
-    3. From the repository root, run::
+Run from the repository root with::
 
-        .venv-kicad-ipc/bin/python hardware/kicad/modules/pcb_edge.py
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/pcb_edge.py
+
+Review every setting below, especially both replacement switches, before
+running the script.
 
 The script changes the live board held by PCB Editor; it does not edit a board
 file directly or save automatically. Deletion and creation are grouped into

@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Report whether an open PCB differs from its saved file through KiCad IPC."""
+"""Report whether an open PCB differs from its saved file through KiCad IPC.
+
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/check_kicad_unsaved.py <board.kicad_pcb>
+
+This script is read-only and therefore creates no undo entry.
+"""
 
 from __future__ import annotations
 

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Align connector pin labels through KiCad's supported IPC API.
 
-Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/align_connector_pin_text.py``.
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/align_connector_pin_text.py
+
 The moved labels are one PCB Editor undo/redo transaction.
 """
 

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Resize exactly matching free board text through KiCad's IPC API.
 
-Run with ``.venv-kicad-ipc/bin/python hardware/kicad/modules/resize_matching_text.py``.
+Run from the repository root with::
+
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/resize_matching_text.py
+
 The update appears as one item in PCB Editor's Undo/Redo history.
 """
 

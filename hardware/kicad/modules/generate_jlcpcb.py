@@ -11,7 +11,7 @@ The output is written to a ``gerber`` directory beside the board:
 KiCad 10 or newer and its ``kicad-cli`` executable are required.  This script
 does not use the deprecated SWIG ``pcbnew`` module.
 
-Execution::
+Run from the repository root with::
 
     python3 hardware/kicad/modules/generate_jlcpcb.py <project>
     python3 hardware/kicad/modules/generate_jlcpcb.py --help
