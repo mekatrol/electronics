@@ -6,12 +6,17 @@ The repository copy is the canonical copy. KiCad should use the files directly f
 
 ## Repository layout
 
+The repository root is the top-level `electronics` directory. The footprints directory is `hardware/kicad/footprints` beneath that root. Each command example below specifies which directory to run it from.
+
 ```text
 hardware/kicad/footprints/
 ├── README.md
 ├── setup-kicad-libs.sh
 ├── teardown-kicad-libs.sh
-├── library-names.conf
+├── setup-kicad-libs.ps1
+├── teardown-kicad-libs.ps1
+├── invoke-kicad-libs.ps1
+├── library-names.json
 ├── kicad-libs.py
 ├── ESP32_board.pretty/
 ├── Extra.pretty/
@@ -111,9 +116,9 @@ No `/home/dad/...` absolute path is stored inside the committed footprint files.
 
 # Setup script
 
-Run [setup-kicad-libs.sh](setup-kicad-libs.sh) with Bash 4 or newer and Python 3 installed. It locates the footprint libraries relative to the script, so it works from any working directory.
+Run [setup-kicad-libs.sh](setup-kicad-libs.sh) with Bash and Python 3.9 or newer installed. It locates the footprint libraries relative to the script, so it works from any working directory.
 
-Close KiCad before applying changes. From this directory:
+Close KiCad before applying changes. Run from the footprints directory (`hardware/kicad/footprints`):
 
 ```bash
 ./setup-kicad-libs.sh --dry-run
@@ -122,26 +127,56 @@ Close KiCad before applying changes. From this directory:
 
 The default configuration directory matches this machine's KiCad 10 Flatpak installation:
 `~/.var/app/org.kicad.KiCad/config/kicad/10.0`.
-For another installation or version, specify its configuration directory:
+For another installation or version, run from the footprints directory (`hardware/kicad/footprints`) and specify the KiCad configuration directory:
 
 ```bash
 ./setup-kicad-libs.sh --config-dir ~/.config/kicad/10.0
 ```
 
-The script discovers every `.pretty` directory and configures `MY_KICAD_LIBS`. It preserves existing library nicknames, descriptions, options, disabled/hidden flags, and unrelated settings. Preferred nicknames are Bash variables in [library-names.conf](library-names.conf). Edit the values in `LIBRARY_NAMES` to change them; the Toponelec entry currently uses `Connectors`. Newly added directories without an entry use their directory name without `.pretty`. Setup preserves an existing nickname until you tear down its registration.
+The script discovers every `.pretty` directory and configures `MY_KICAD_LIBS`. It preserves existing library nicknames, descriptions, options, disabled/hidden flags, and unrelated settings. Preferred nicknames are defined in [library-names.json](library-names.json). Edit the JSON values to change them; the Toponelec entry currently uses `Connectors`. Newly added directories without an entry use their directory name without `.pretty`. Setup preserves an existing nickname until you tear down its registration.
 
 Directory comparisons expand configured path variables and shell variables and resolve symlinks, `..`, and trailing slashes. Matching registrations use `${MY_KICAD_LIBS}/<library>.pretty`. Duplicate aliases for a repository directory are merged when their other settings agree; the preferred nickname wins, otherwise the first existing entry wins. Removed aliases are printed so any project references using those aliases can be updated. Conflicting settings or nicknames stop the script before it writes either configuration file. Unrelated duplicate directories are reported and left unchanged. Unresolved variables and relative global paths cannot be compared reliably; they are left unchanged, and nickname conflicts still stop the script.
 
 Repeated runs make no changes once configured. Only changed files are written, using atomic replacement per file. Existing files receive a one-time `.backup-before-custom-libs` backup that subsequent runs preserve. `--dry-run` does not write files or create backups.
 
+## Windows PowerShell
+
+Install Python 3.9 or newer with the `py` launcher or a `python`/`python3` command on PATH. The scripts support Windows PowerShell 5.1 and PowerShell 7+. Close KiCad, then run from the footprints directory (`hardware/kicad/footprints`):
+
+```powershell
+.\setup-kicad-libs.ps1 -DryRun
+.\setup-kicad-libs.ps1
+```
+
+The default configuration directory is `%APPDATA%\kicad\10.0`. Run from the footprints directory (`hardware/kicad/footprints`) to override the version or the complete configuration directory:
+
+```powershell
+.\setup-kicad-libs.ps1 -KiCadVersion '9.0' -DryRun
+.\setup-kicad-libs.ps1 -ConfigDir 'D:\KiCad Config\10.0' -DryRun
+```
+
+To remove registrations, change names and reinstall, run from the footprints directory (`hardware/kicad/footprints`):
+
+```powershell
+.\teardown-kicad-libs.ps1 -DryRun
+.\teardown-kicad-libs.ps1
+# Edit library-names.json, then:
+.\setup-kicad-libs.ps1 -DryRun
+.\setup-kicad-libs.ps1
+```
+
+Teardown accepts the same parameters; use the same target configuration for both scripts. The PowerShell entry points share `invoke-kicad-libs.ps1` and the same Python backend as Bash, including duplicate detection, backups, dry runs and idempotency. Backend errors return a nonzero exit code.
+
+Both operating systems read [library-names.json](library-names.json), which replaces the former Bash-only `library-names.conf`. For example, edit `"Toponelec_TY308.pretty": "Connectors"` to choose a different nickname. Run teardown and setup separately in each OS after renaming; each OS has its own KiCad configuration. Repository paths are discovered locally, so Windows and Linux can use different checkout paths or drive letters.
+
 ## Change names and reinstall
 
-Close KiCad, then run these commands from this directory:
+Close KiCad, then run these commands from the footprints directory (`hardware/kicad/footprints`):
 
 ```bash
 ./teardown-kicad-libs.sh --dry-run
 ./teardown-kicad-libs.sh
-# Edit the nickname values in library-names.conf, then:
+# Edit the nickname values in library-names.json, then:
 ./setup-kicad-libs.sh --dry-run
 ./setup-kicad-libs.sh
 ```
@@ -188,17 +223,15 @@ Add each library below with type `KiCad`:
 
 ## Verification
 
-Check that the committed footprint files contain no machine-specific paths:
+From the `electronics` repository root, check that the committed footprint files contain no machine-specific paths:
 
 ```bash
-cd ~/repos/electronics
-
 grep -R --include='*.kicad_mod' '/home/dad' hardware/kicad/footprints \
     && echo "WARNING: machine-specific path found" \
     || echo "GOOD: no /home/dad paths found"
 ```
 
-Check the portable 3D model references:
+From the `electronics` repository root, check the portable 3D model references:
 
 ```bash
 grep -R 'MY_KICAD_LIBS' hardware/kicad/footprints/Toponelec_TY308.pretty

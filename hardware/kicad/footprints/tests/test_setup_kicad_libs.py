@@ -93,10 +93,10 @@ class SetupTests(unittest.TestCase):
                 self.assertEqual(before, self.snapshot())
 
     def test_teardown_rename_and_readd(self):
-        # Copy the entry points so this test edits the actual Bash variables.
+        # Copy the entry points so this test edits the shared nickname configuration.
         bundle = self.config / 'bundle'
         bundle.mkdir()
-        for name in ('setup-kicad-libs.sh', 'teardown-kicad-libs.sh', 'kicad-libs.py', 'library-names.conf'):
+        for name in ('setup-kicad-libs.sh', 'teardown-kicad-libs.sh', 'kicad-libs.py', 'library-names.json'):
             shutil.copy2(ROOT / name, bundle / name)
         for library in ROOT.glob('*.pretty'):
             (bundle / library.name).symlink_to(library, target_is_directory=True)
@@ -105,8 +105,8 @@ class SetupTests(unittest.TestCase):
         self.run_script()
         old_table = self.table.read_bytes()
         old_common = self.common.read_bytes()
-        names = bundle / 'library-names.conf'
-        names.write_text(names.read_text().replace('="Connectors"', '="My connectors"'))
+        names = bundle / 'library-names.json'
+        names.write_text(names.read_text().replace(': "Connectors"', ': "My connectors"'))
         before = self.snapshot()
         self.run_script('--dry-run', teardown=True)
         self.assertEqual(before, self.snapshot())
@@ -130,6 +130,19 @@ class SetupTests(unittest.TestCase):
         self.common.unlink()
         self.run_script(teardown=True)
         self.assertEqual({}, self.snapshot())
+
+    def test_utf8_configuration(self):
+        self.table.write_text(
+            f'(fp_lib_table (lib (name "Pièces") (type "KiCad") '
+            f'(uri "{ROOT}/Extra.pretty") (descr "µF capacitors")))', encoding='utf-8-sig')
+        self.common.write_text('{"label": "Pièces"}', encoding='utf-8-sig')
+        self.run_script()
+        self.assertIn('Pièces', self.table.read_text(encoding='utf-8'))
+        self.assertIn('µF capacitors', self.table.read_text(encoding='utf-8'))
+        self.assertEqual(json.loads(self.common.read_text(encoding='utf-8'))['label'], 'Pièces')
+        before = self.snapshot()
+        self.run_script()
+        self.assertEqual(before, self.snapshot())
 
     def test_null_variables(self):
         self.common.write_text('{"environment": {"vars": null}}')

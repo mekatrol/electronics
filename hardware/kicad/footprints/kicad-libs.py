@@ -16,7 +16,7 @@ parser.add_argument('--config-dir', type=Path, help='KiCad version configuration
 parser.add_argument('--dry-run', action='store_true', help='report changes without writing files')
 args = parser.parse_args()
 root = args.root.resolve()
-library_names = dict(args.library_name)
+
 config = (args.config_dir or Path.home()/'.var/app/org.kicad.KiCad/config/kicad/10.0').expanduser().resolve()
 
 
@@ -123,11 +123,19 @@ def save(path, content):
 
 
 def main():
+    names_path = root/'library-names.json'
+    library_names = json.loads(names_path.read_text(encoding='utf-8-sig'))
+    if not isinstance(library_names, dict) or not all(
+        isinstance(key, str) and isinstance(value, str) and value.strip()
+        for key, value in library_names.items()
+    ):
+        fail('library-names.json must map directory names to nonempty nickname strings')
+    library_names.update(args.library_name)
     libraries = sorted(p for p in root.glob('*.pretty') if p.is_dir())
     if not libraries:
         fail(f'No .pretty directories found in {root}')
     common_path, table_path = config/'kicad_common.json', config/'fp-lib-table'
-    old_common = common_path.read_text() if common_path.exists() else None
+    old_common = common_path.read_text(encoding='utf-8-sig') if common_path.exists() else None
     common = json.loads(old_common) if old_common is not None else {}
     original = copy.deepcopy(common)
     environment = common.setdefault('environment', {})
@@ -143,7 +151,7 @@ def main():
         variables['MY_KICAD_LIBS'] = str(root)
     after = dict(os.environ)
     after.update(variables)
-    old_table = table_path.read_text() if table_path.exists() else '(fp_lib_table\n  (version 7)\n)\n'
+    old_table = table_path.read_text(encoding='utf-8-sig') if table_path.exists() else '(fp_lib_table\n  (version 7)\n)\n'
     tree = parse(old_table)
     entries = []
     for node in tree.value[1:]:
