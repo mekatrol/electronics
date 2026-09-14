@@ -120,6 +120,37 @@ The editor history labels are:
 
 `report_board_dimensions.py` is read-only and creates no history entry.
 
+### `panelize_pcb.py`
+
+Creates a separate V-scored KiCad 10 panel from a saved `.kicad_pcb`; it never
+opens the source for writing. Configure the grid on the command line:
+
+```sh
+python kicad/modules/panelize_pcb.py power_rail_mosfet_switch/power_rail_mosfet_switch.kicad_pcb -x 4 -y 3
+```
+
+The output defaults to `<board>_panel_<X>x<Y>.kicad_pcb`. It has one continuous
+rectangular `Edge.Cuts` outline, a 5 mm rail on all four sides, a 2 mm scrap gap
+between boards, three asymmetric global 1 mm copper / 2 mm mask fiducials on
+the rail loaded directly from KiCad 10's installed
+`Fiducial:Fiducial_1mm_Mask2mm` library footprint, and V-score lines on
+`User.Drawings` at both sides of every PCB row
+and column. The gap prevents edge copper such as castellations from touching
+the next PCB. Each PCB copy receives unique UUIDs and private net
+names to prevent cross-panel ratsnest connections. The script asks KiCad 10's
+`kicad-cli pcb drc --refill-zones --save-board` to parse and normalize the
+generated board and persist fresh zone fills; pass `--no-kicad-check` only when
+the CLI is unavailable.
+
+V-scoring makes each finished PCB the rectangular envelope of its original
+outline. In particular, rounded corners become square. Use routed tabs instead
+if the finished PCB must retain a non-rectangular outline. Always confirm the
+score lines, gap, rail width, fiducial construction, and panel limits with the
+PCB fabricator before ordering. Use `--gap 0` only for designs whose board-edge
+copper and fabrication process explicitly permit directly abutted PCBs.
+The standard footprint library is auto-detected; use `--fiducial-footprint`
+only for a nonstandard KiCad installation.
+
 ### `component_reference_text.py`
 
 Positions each visible footprint reference outside its component courtyard.
@@ -249,6 +280,11 @@ directory:
 - `<project>-gerbers.zip`
 - `<project>-bom.csv`
 - `<project>-positions.csv`
+
+`User.Drawings` is exported as `<project>-User_Drawings.gbr` and included in
+the Gerber ZIP. Panel files produced by `panelize_pcb.py` use this Gerber for
+their V-score centre lines. Explicitly identify it as the V-score drawing in
+the fabrication order notes; it is intentionally separate from `Edge.Cuts`.
 
 The BOM includes populated components with a non-empty `LCSC Part #` field.
 
