@@ -1098,12 +1098,6 @@
 		(path "/5983b2c6-6dda-45fa-8446-2bb7b99bd466")
 		(sheetname "/")
 		(sheetfile "power_rail_mosfet_switch.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
@@ -2026,12 +2020,6 @@
 		(path "/b9d01cb8-0858-47c3-8e6f-bc741fea4ce7")
 		(sheetname "/")
 		(sheetfile "power_rail_mosfet_switch.kicad_sch")
-		(units
-			(unit
-				(name "A")
-				(pins "1" "2" "3")
-			)
-		)
 		(attr through_hole)
 		(duplicate_pad_numbers_are_jumpers no)
 		(fp_rect
@@ -3407,7 +3395,7 @@
 		(net "GND")
 		(layer "F.Cu")
 		(uuid "4e125718-52df-4af6-a99a-2473b72e42d1")
-		(name "GND")
+		(name "GND_FRONT")
 		(hatch edge 0.5)
 		(connect_pads
 			(clearance 0)
@@ -3416,6 +3404,7 @@
 		(fill yes
 			(thermal_gap 0.2)
 			(thermal_bridge_width 0.3)
+			(smoothing fillet)
 			(island_removal_mode 0)
 		)
 		(polygon
@@ -3665,9 +3654,9 @@
 	)
 	(zone
 		(net "GND")
-		(layers "F.Cu" "B.Cu")
+		(layer "B.Cu")
 		(uuid "0a24b906-497b-4a72-b8a9-0263d7d58d50")
-		(name "GND_1")
+		(name "GND_BACK")
 		(hatch edge 0.5)
 		(connect_pads
 			(clearance 0)
