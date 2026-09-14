@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Align visible footprint references outside courtyards using KiCad IPC.
+"""Resize and align visible footprint references using KiCad IPC.
 
 Run from the repository root with::
 
-    .venv-kicad-ipc/bin/python hardware/kicad/modules/align_component_reference_text.py
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/component_reference_text.py
 
-All moved references form one PCB Editor undo/redo transaction.  The board is
+All changed references form one PCB Editor undo/redo transaction. The board is
 left unsaved so the editor remains the authority for Undo, Redo, and Save.
 """
 
@@ -14,13 +14,51 @@ from kicad_ipc import (
     editor_commit, footprint_reference, from_mm, move_text_center, text_box,
     to_mm, vector,
 )
+from kipy.geometry import Vector2
 
 
 IGNORE_REFERENCES = []
+MATCH_WIDTH_MM = 1.0
+NEW_WIDTH_MM = 0.8
+MATCH_HEIGHT_MM = 1.0
+NEW_HEIGHT_MM = 0.8
 REFERENCE_OFFSET_MM = 0.0
 OTHER_COURTYARD_CLEARANCE_MM = 0.1
 CENTRED_REFERENCE_SIDE = "top"
 DEBUG = True
+
+
+def resize_matching_axes(text):
+    """Replace each configured text dimension when that axis matches."""
+    attributes = text.attributes
+    width, height = attributes.size.x, attributes.size.y
+    new_width, new_height = width, height
+
+    if MATCH_WIDTH_MM is not None and width == from_mm(MATCH_WIDTH_MM):
+        new_width = from_mm(NEW_WIDTH_MM)
+    if MATCH_HEIGHT_MM is not None and height == from_mm(MATCH_HEIGHT_MM):
+        new_height = from_mm(NEW_HEIGHT_MM)
+
+    if (new_width, new_height) == (width, height):
+        return False
+    attributes.size = Vector2.from_xy(new_width, new_height)
+    text.attributes = attributes
+    return True
+
+
+def validate_resize_settings():
+    """Require complete, positive match/replacement pairs for each axis."""
+    for axis, match, replacement in (
+        ("width", MATCH_WIDTH_MM, NEW_WIDTH_MM),
+        ("height", MATCH_HEIGHT_MM, NEW_HEIGHT_MM),
+    ):
+        if (match is None) != (replacement is None):
+            raise ValueError(
+                f"MATCH_{axis.upper()}_MM and NEW_{axis.upper()}_MM must "
+                "both be numbers or both be None"
+            )
+        if match is not None and (match <= 0 or replacement <= 0):
+            raise ValueError(f"configured {axis} values must be positive")
 
 
 def current_side(text_bounds, courtyard):
@@ -85,7 +123,8 @@ def intersects(proposed, courtyard, clearance):
 
 
 def main():
-    """Align references and push the successful batch as one editor commit."""
+    """Resize/align references and push one editor commit."""
+    validate_resize_settings()
     client, board = connect_board()
     records = []
     for footprint in board.get_footprints():
@@ -96,12 +135,18 @@ def main():
             print(f"Warning: {reference}: {error}; skipped")
 
     changed = []
+    resized_count = 0
+    aligned_count = 0
     clearance = from_mm(OTHER_COURTYARD_CLEARANCE_MM)
-    with editor_commit(board, "Align component references"):
+    with editor_commit(board, "Update component references"):
         for footprint, reference, courtyard in records:
             if reference in IGNORE_REFERENCES or not footprint.reference_field.visible:
                 continue
             text = footprint.reference_field.text
+            resized = resize_matching_axes(text)
+            if resized:
+                footprint.reference_field.text = text
+                resized_count += 1
             bounds = text_box(client, text)
             side = current_side(bounds, courtyard)
             destination = target_center(bounds, courtyard, side)
@@ -114,19 +159,29 @@ def main():
                 and intersects(proposed, other_courtyard, clearance)
             ]
             if collisions:
-                print(f"Warning: {reference}: would overlap {', '.join(collisions)}; skipped")
+                print(
+                    f"Warning: {reference}: would overlap "
+                    f"{', '.join(collisions)}; alignment skipped"
+                )
+                if resized:
+                    changed.append(footprint)
                 continue
             move_text_center(client, text, destination)
             footprint.reference_field.text = text
             changed.append(footprint)
+            aligned_count += 1
             if DEBUG:
                 print(
                     f"{reference}: {side} at ({to_mm(destination.x):.3f}, "
                     f"{to_mm(destination.y):.3f}) mm"
+                    f"{' (resized)' if resized else ''}"
                 )
         board.update_items(changed)
 
-    print(f"Aligned {len(changed)} reference(s) (undo: Align component references).")
+    print(
+        f"Resized {resized_count} and aligned {aligned_count} reference(s) "
+        "(undo: Update component references)."
+    )
 
 
 if __name__ == "__main__":

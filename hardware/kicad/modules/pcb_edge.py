@@ -39,8 +39,8 @@ from kicad_utils import edge_cuts_centroid
 # Fabrication dimensions are measured along the Edge.Cuts centreline. The
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
-BOARD_WIDTH_MM = 42.0
-BOARD_HEIGHT_MM = 12.0
+BOARD_WIDTH_MM = 26
+BOARD_HEIGHT_MM = 10.0
 ORIGIN_X_MM = 120.0
 ORIGIN_Y_MM = 50.0
 

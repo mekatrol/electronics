@@ -108,7 +108,7 @@ The editor history labels are:
 
 | Script | Undo/Redo entry |
 | --- | --- |
-| `align_component_reference_text.py` | Align component references |
+| `component_reference_text.py` | Update component references |
 | `align_connector_pin_text.py` | Align connector pin labels |
 | `align_holes.py` | Align mounting holes |
 | `center_and_distribute_items.py` | Center and optionally distribute footprints |
@@ -120,9 +120,14 @@ The editor history labels are:
 
 `report_board_dimensions.py` is read-only and creates no history entry.
 
-### `align_component_reference_text.py`
+### `component_reference_text.py`
 
 Positions each visible footprint reference outside its component courtyard.
+It independently replaces matching label widths and heights using
+`MATCH_WIDTH_MM`/`NEW_WIDTH_MM` and `MATCH_HEIGHT_MM`/`NEW_HEIGHT_MM`; set both
+values for an axis to `None` to leave that dimension unchanged. For example,
+`MATCH_HEIGHT_MM = 1.0` and `NEW_HEIGHT_MM = 0.8` changes only labels whose
+current height is 1 mm. Width matching is independent of height matching.
 It retains the reference's current side and existing position along that side:
 top/bottom references move only vertically, while left/right references move
 only horizontally. It applies the configured clearance and skips placements
