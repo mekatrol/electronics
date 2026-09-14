@@ -151,6 +151,32 @@ copper and fabrication process explicitly permit directly abutted PCBs.
 The standard footprint library is auto-detected; use `--fiducial-footprint`
 only for a nonstandard KiCad installation.
 
+### `panelize_routed_pcb.py`
+
+Creates a routed mouse-bite panel for castellated or non-rectangular boards,
+preserving the source `Edge.Cuts` so the router crosses castellated drills:
+
+```sh
+python kicad/modules/panelize_routed_pcb.py power_rail_mosfet_switch/power_rail_mosfet_switch.kicad_pcb -x 4 -y 3 --gap 2
+```
+
+The routing gap is configurable but must be at least 2 mm. Defaults follow
+JLCPCB's published mouse-bite guidance: 5 mm tabs on the non-castellated top
+and bottom edges, 0.6 mm NPTH holes with
+0.25 mm between hole edges, 5 mm rails, four 1 mm library fiducials whose
+centres are 3.85 mm from the panel edges, and four 2 mm NPTH tooling holes in
+the rail corners. Use `--tab-width`,
+`--mouse-bite-diameter`, and `--mouse-bite-clearance` only within the limits
+printed by `--help`. Select **Castellated Holes** and customer-supplied
+panelization when ordering, and have JLCPCB review the routed tab layout before
+production.
+
+KiCad internally identifies each deliberate opening in a routed outline as
+`invalid_outline`; these openings are the solid breakaway tabs, not accidental
+geometry errors. The script captures those expected markers and reports them
+as validated routing features rather than DRC violations. Any other DRC
+violation or any unconnected item rejects and removes the output.
+
 ### `component_reference_text.py`
 
 Positions each visible footprint reference outside its component courtyard.
