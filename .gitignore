@@ -26,6 +26,7 @@
 /hardware/**/*-bak
 /hardware/**/*.bak
 /hardware/**/plots/
+/hardware/.tmp_*.kicad_*
 
 # Generated KiCad fabrication and BOM directories
 /hardware/**/*-gerber/

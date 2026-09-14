@@ -2095,7 +2095,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+		(property "Footprint" "Mekatrol_Footprints:PinHeader_1x02_P2.54mm_With_Right_Castellations"
 			(at 182.88 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -2496,7 +2496,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+		(property "Footprint" "Mekatrol_Footprints:PinHeader_1x03_P2.54mm_With_Left_Castellations"
 			(at 107.95 90.17 0)
 			(hide yes)
 			(show_name no)

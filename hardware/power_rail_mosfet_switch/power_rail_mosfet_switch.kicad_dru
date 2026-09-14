@@ -1,0 +1,7 @@
+(version 1)
+
+# A castellated pad is bisected by Edge.Cuts, so it may have room for only one
+# thermal spoke.  All other pads retain the board-level minimum spoke count.
+(rule "Allow one thermal spoke on castellated pads"
+	(condition "A.Fabrication_Property == 'Castellated pad'")
+	(constraint min_resolved_spokes 1))
