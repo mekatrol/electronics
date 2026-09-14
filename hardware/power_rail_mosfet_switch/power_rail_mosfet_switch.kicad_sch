@@ -1895,9 +1895,40 @@
 		)
 		(uuid "f589a2b3-4835-46bc-ae0c-e35ec8cd18d0")
 	)
+	(label "CTRL"
+		(at 114.3 90.17 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "70d433dc-8bc2-4768-a164-19d4e766e724")
+	)
+	(label "VIN"
+		(at 125.73 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a942ca19-4e96-4c9f-a487-b6c2c90d695e")
+	)
+	(label "VOUT"
+		(at 168.91 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e115b996-81d4-46e5-bd0d-79607104e469")
+	)
 	(symbol
 		(lib_id "Transistor_FET:AO3401A")
-		(at 160.02 71.12 90)
+		(at 160.02 71.12 270)
+		(mirror x)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -1905,7 +1936,6 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "04f6b720-2709-4c70-8598-64253bbd35a2")
 		(property "Reference" "Q2"
 			(at 160.02 62.23 90)
@@ -1928,7 +1958,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 161.925 66.04 0)
+			(at 158.115 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -1941,7 +1971,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.aosmd.com/pdfs/datasheet/AO3401A.pdf"
-			(at 163.83 66.04 0)
+			(at 156.21 66.04 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2669,7 +2699,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.infineon.com/dgdl/irlml0030pbf.pdf?fileId=5546d462533600a401535664773825df"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5148642.pdf?spm=wm.sxq.inf.ggs&lcsc_vid=QVEPAwJRR1gMAgFfRAJWAgADQFdYVlVQQlhdBAUCR1IxVlNeTlJWU1RRQFheXjsOAxUeFF5JWBYZEEoBGA4JCwFIFA4DSA%3D%3D"
 			(at 140.97 90.17 0)
 			(hide yes)
 			(show_name no)
