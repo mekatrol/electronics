@@ -314,6 +314,23 @@ the fabrication order notes; it is intentionally separate from `Edge.Cuts`.
 
 The BOM includes populated components with a non-empty `LCSC Part #` field.
 
+### Generated-panel PCB-only exporter
+
+`generate_jlcpcb_panel.py` is the separate exporter for generated panelized PCB
+files. It intentionally requires a filename containing `panel`, needs only a
+`.kicad_pcb`, performs no schematic ERC/parity check, and produces no BOM:
+
+```powershell
+.\.venv-kicad-ipc\Scripts\python.exe kicad\modules\generate_jlcpcb_panel.py `
+  power_rail_mosfet_switch\power_rail_mosfet_switch_routed_panel_4x3.kicad_pcb
+```
+
+Output goes to `<panel-name>-jlcpcb/` beside the panel and includes Gerbers,
+Excellon drills, a positions CSV, and `<panel-name>-gerbers.zip`. Routed-panel
+DRC permits only the intentional open-outline markers at mouse-bite tabs; any
+other violation or unconnected item stops export. The original
+`generate_jlcpcb.py` schematic/project workflow is unchanged.
+
 ## Support modules
 
 `kicad_ipc.py` centralizes IPC connection handling, nanometre/millimetre
