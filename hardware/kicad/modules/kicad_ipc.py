@@ -13,8 +13,17 @@ from pathlib import Path
 import re
 
 from kipy import KiCad
+from kipy.common_types import Commit
 from kipy.geometry import Box2, Vector2
 from kipy.proto.board.board_types_pb2 import BoardLayer
+from kipy.proto.common.commands.editor_commands_pb2 import (
+    BeginCommit,
+    BeginCommitResponse,
+    CommitAction,
+    EndCommit,
+    EndCommitResponse,
+)
+from kipy.proto.common.types import ItemHeader
 from kipy.util import from_mm, to_mm
 
 
@@ -90,6 +99,52 @@ def board_has_unsaved_changes(board, saved_path=None):
     return live_tokens != saved_tokens
 
 
+def _encode_varint(value):
+    """Encode a non-negative protobuf integer without private protobuf APIs."""
+    encoded = bytearray()
+    while value > 0x7F:
+        encoded.append((value & 0x7F) | 0x80)
+        value >>= 7
+    encoded.append(value)
+    return bytes(encoded)
+
+
+def _set_commit_document(command, field_number, document):
+    """Attach the document header added by KiCad 10.0.7.
+
+    kicad-python 0.7/0.8 was generated before these fields were added. Protobuf
+    preserves unknown fields, so older bindings can still send the new header
+    using its stable wire representation. Prefer the regular generated field
+    once a newer binding provides it.
+    """
+    if hasattr(command, "header"):
+        command.header.document.CopyFrom(document)
+        return
+
+    header = ItemHeader()
+    header.document.CopyFrom(document)
+    payload = header.SerializeToString()
+    tag = (field_number << 3) | 2  # length-delimited embedded message
+    command.MergeFromString(
+        _encode_varint(tag) + _encode_varint(len(payload)) + payload
+    )
+
+
+def _begin_board_commit(board):
+    command = BeginCommit()
+    _set_commit_document(command, 1, board.document)
+    return Commit(board.client.send(command, BeginCommitResponse).id)
+
+
+def _end_board_commit(board, commit, action, message=""):
+    command = EndCommit()
+    command.id.CopyFrom(commit.id)
+    command.action = action
+    command.message = message
+    _set_commit_document(command, 4, board.document)
+    board.client.send(command, EndCommitResponse)
+
+
 @contextmanager
 def editor_commit(board, message, refill_zones=False):
     """Wrap board changes in one atomic PCB Editor undo/redo transaction.
@@ -107,14 +162,14 @@ def editor_commit(board, message, refill_zones=False):
     every mutating script consistent with PCB Editor's B / Fill All Zones
     operation.
     """
-    commit = board.begin_commit()
+    commit = _begin_board_commit(board)
     try:
         yield
     except Exception:
-        board.drop_commit(commit)
+        _end_board_commit(board, commit, CommitAction.CMA_DROP)
         raise
     else:
-        board.push_commit(commit, message)
+        _end_board_commit(board, commit, CommitAction.CMA_COMMIT, message)
         if refill_zones:
             refill_all_zones(board)
 

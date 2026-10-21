@@ -385,6 +385,7 @@
       "pin_to_pin": "warning",
       "power_pin_not_driven": "error",
       "same_local_global_label": "warning",
+      "same_local_global_power": "warning",
       "similar_label_and_power": "warning",
       "similar_labels": "warning",
       "similar_power": "warning",
@@ -620,12 +621,12 @@
       "CPU"
     ],
     [
-      "8e148fa9-06d6-43e4-abec-f71f0d76eb39",
-      "Outputs"
-    ],
-    [
       "87172977-caa3-4d55-8492-42d130999e5e",
       "Inputs"
+    ],
+    [
+      "8e148fa9-06d6-43e4-abec-f71f0d76eb39",
+      "Outputs"
     ]
   ],
   "text_variables": {},
