@@ -2752,7 +2752,7 @@
 	)
 	(text "PWR IN\n24VAC\n"
 		(exclude_from_sim no)
-		(at 47.498 172.974 0)
+		(at 23.368 175.514 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2869,12 +2869,6 @@
 		(uuid "70f641d8-d425-4ff5-b7e3-af247c42aac4")
 	)
 	(junction
-		(at 73.66 182.88)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "98b22549-db3d-44f1-a41a-fa5cee05bcef")
-	)
-	(junction
 		(at 162.56 119.38)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2903,12 +2897,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b8a17281-74ef-4e73-b599-790630f95f06")
-	)
-	(junction
-		(at 62.23 167.64)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "c2b83acc-969b-4014-b77d-d62bec1320e7")
 	)
 	(junction
 		(at 134.62 93.98)
@@ -3054,7 +3042,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 167.64) (xy 62.23 167.64)
+			(xy 59.69 167.64) (xy 66.04 167.64)
 		)
 		(stroke
 			(width 0)
@@ -3064,7 +3052,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.66 176.53) (xy 73.66 182.88)
+			(xy 73.66 176.53) (xy 73.66 186.69)
 		)
 		(stroke
 			(width 0)
@@ -3151,16 +3139,6 @@
 			(type default)
 		)
 		(uuid "238646ed-c6f4-4af8-a0cb-527b490545aa")
-	)
-	(wire
-		(pts
-			(xy 62.23 171.45) (xy 62.23 167.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "23eba1ee-66ed-4bbe-ba1b-6f3001c52f39")
 	)
 	(wire
 		(pts
@@ -3404,16 +3382,6 @@
 	)
 	(wire
 		(pts
-			(xy 58.42 171.45) (xy 62.23 171.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "59ac99f3-98e8-48a2-91ac-76a8d2c01f3c")
-	)
-	(wire
-		(pts
 			(xy 58.42 86.36) (xy 64.77 86.36)
 		)
 		(stroke
@@ -3441,16 +3409,6 @@
 			(type default)
 		)
 		(uuid "6492214b-58db-41be-884f-da1878b525fc")
-	)
-	(wire
-		(pts
-			(xy 58.42 182.88) (xy 73.66 182.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "64a41143-ef40-4e7a-be0e-4e6b5081bd8c")
 	)
 	(wire
 		(pts
@@ -3491,6 +3449,16 @@
 			(type default)
 		)
 		(uuid "68f33047-ae95-40d0-a617-335dc8307391")
+	)
+	(wire
+		(pts
+			(xy 34.29 173.99) (xy 38.1 173.99)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "69796075-7a68-406a-b930-2cb96c43525b")
 	)
 	(wire
 		(pts
@@ -3591,6 +3559,16 @@
 			(type default)
 		)
 		(uuid "86c88f66-bc11-46f2-ac2a-39ab43c3be2a")
+	)
+	(wire
+		(pts
+			(xy 34.29 176.53) (xy 38.1 176.53)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8832f783-a93b-4d3d-8e09-f51ac8bfe143")
 	)
 	(wire
 		(pts
@@ -3721,26 +3699,6 @@
 			(type default)
 		)
 		(uuid "a7a0c7ab-17ab-42bd-890b-e4571f48464b")
-	)
-	(wire
-		(pts
-			(xy 62.23 167.64) (xy 66.04 167.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "aacfcfbe-4735-49a1-8434-e3db8ad63e75")
-	)
-	(wire
-		(pts
-			(xy 58.42 182.88) (xy 58.42 173.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "abd100c2-6b2b-4cbf-b0c8-6b1ea243d69b")
 	)
 	(wire
 		(pts
@@ -3921,16 +3879,6 @@
 			(type default)
 		)
 		(uuid "d682028d-97d0-4a86-9a44-8cdbc4ad54d8")
-	)
-	(wire
-		(pts
-			(xy 73.66 186.69) (xy 73.66 182.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d81d1ea8-e46f-4d46-b398-9e1255522eb5")
 	)
 	(wire
 		(pts
@@ -4200,6 +4148,30 @@
 			)
 		)
 	)
+	(global_label "24VAC_PWR"
+		(shape input)
+		(at 38.1 173.99 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e014bec8-a8fd-4e54-b7dd-865a9dc7f13d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 51.9104 173.99 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
 	(global_label "GND"
 		(shape input)
 		(at 166.37 119.38 0)
@@ -4213,6 +4185,30 @@
 		(uuid "e0b35059-198e-4273-9d97-afb7d8e7daab")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 173.2257 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+	)
+	(global_label "24VAC_COM"
+		(shape input)
+		(at 38.1 176.53 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fc5a1812-6d74-4fb7-b4d7-2c588a9e9a6e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 51.9709 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5661,7 +5657,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x02")
-		(at 53.34 173.99 180)
+		(at 29.21 176.53 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5671,7 +5667,7 @@
 		(dnp no)
 		(uuid "72f8ec73-5f99-45bc-818f-d16dcb732fb0")
 		(property "Reference" "J1"
-			(at 53.34 176.784 0)
+			(at 29.21 179.324 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5681,7 +5677,7 @@
 			)
 		)
 		(property "Value" ""
-			(at 45.72 173.99 0)
+			(at 21.59 176.53 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5691,7 +5687,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal"
-			(at 53.34 173.99 0)
+			(at 29.21 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5702,7 +5698,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 53.34 173.99 0)
+			(at 29.21 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5713,7 +5709,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 53.34 173.99 0)
+			(at 29.21 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5724,7 +5720,7 @@
 			)
 		)
 		(property "KLC_S3.3" ""
-			(at 53.34 173.99 0)
+			(at 29.21 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5735,7 +5731,7 @@
 			)
 		)
 		(property "KLC_S4.1" ""
-			(at 53.34 173.99 0)
+			(at 29.21 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5746,7 +5742,7 @@
 			)
 		)
 		(property "LCSC Part #" "N/A"
-			(at 53.34 173.99 0)
+			(at 29.21 176.53 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

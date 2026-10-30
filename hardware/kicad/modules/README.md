@@ -214,8 +214,16 @@ to `True` and performs a final whole-row move, including OP1, which centres the
 combined physical group bounds horizontally within `Edge.Cuts`; disable it to
 leave OP1's X position fixed. The explicit `GROUPS` mapping prevents schematic
 re-annotation from silently associating unlike components. All copied groups
-are updated in one undoable transaction, and the board is left unsaved for
-inspection.
+are updated in one undoable transaction. Tracks (including curved tracks) that
+form an endpoint-connected route between two or more OP1 components, without
+touching a component outside OP1, are copied with their complete properties
+and mapped to each destination's corresponding pad net. Existing routes
+internal to OP2--OP8 are replaced; unrelated tracks are left alone. Vias in
+those routes are treated as layer-spanning connections and are copied or
+replaced when connected to any group component, including on a route that
+touches only one component. Localized copper zones enclosing those vias are
+also copied, while board-spanning zones are left untouched. The board is left
+unsaved for inspection.
 
 ### `align_holes.py`
 
