@@ -259,8 +259,10 @@ refill of every copper zone through the shared IPC utility.
 
 Creates a rectangular `Edge.Cuts` outline using the configured size, origin,
 corner radius, and line width. By default it deletes the existing outline and
-replaces front/back GND zones, so carefully review
-`DELETE_EXISTING_EDGE_CUTS`, `REPLACE_GROUND_ZONES`, and `GROUND_NET_NAME`
+creates a GND zone on every enabled copper layer. Set `FILL_ZONE_NAMES` in
+physical stack order (`F.Cu`, inner layers, `B.Cu`) to use other board nets;
+missing entries default to GND and extra entries are ignored. Carefully review
+`DELETE_EXISTING_EDGE_CUTS`, `REPLACE_GROUND_ZONES`, and `FILL_ZONE_NAMES`
 before execution. After publishing the rebuilt Edge.Cuts transaction, it runs a
 blocking refill of every board zone—even when GND-zone replacement is disabled.
 The refill must occur after the IPC commit because staged geometry is not yet

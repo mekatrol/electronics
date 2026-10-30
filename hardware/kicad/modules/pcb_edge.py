@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a rectangular board outline and optional GND zones through IPC.
+"""Create a rectangular board outline and optional copper zones through IPC.
 
 Run from the repository root with::
 
@@ -10,7 +10,7 @@ running the script.
 
 The script changes the live board held by PCB Editor; it does not edit a board
 file directly or save automatically. Deletion and creation are grouped into
-one ``Replace board outline and ground zones`` entry in PCB Editor's Undo/Redo
+one ``Replace board outline and fill zones`` entry in PCB Editor's Undo/Redo
 history. The blocking zone refill runs immediately after that staged commit is
 published, because KiCad cannot fill against geometry that is still staged.
 If an edit fails, the IPC transaction is dropped so a partial outline is not
@@ -18,6 +18,7 @@ retained.
 """
 
 import math
+import re
 
 from kicad_ipc import (
     BoardLayer,
@@ -62,13 +63,18 @@ EDGE_LINE_WIDTH_MM = 0.10
 # them; use False only when that duplication is intentional.
 DELETE_EXISTING_EDGE_CUTS = True
 
-# True removes existing front/back zones assigned to GROUND_NET_NAME and creates
-# one rectangular zone on each outer copper layer. All board zones are refilled
-# after the outline is rebuilt, regardless of this setting.
+# True removes existing zones using the configured nets on enabled copper
+# layers and creates one rectangular zone on every copper layer in the stack.
+# Names are ordered from F.Cu through the inner layers to B.Cu. Missing entries
+# default to GND; entries beyond the board's layer count are ignored. Each name
+# must be a net present on the board and is used for both the zone and its net.
+# All board zones are refilled after the outline is rebuilt, regardless of this
+# setting.
 # The zone polygon remains square even when Edge.Cuts has rounded corners;
 # KiCad clips its copper fill to the actual board boundary.
 REPLACE_GROUND_ZONES = True
 GROUND_NET_NAME = "GND"
+FILL_ZONE_NAMES = ["GND", "GND", "GND", "GND"]
 
 
 def validate_settings():
@@ -194,16 +200,52 @@ def rectangular_polygon(origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
     return polygon
 
 
-def ground_zones(board, origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
-    """Construct one rectangular GND zone for each outer copper layer."""
-    net = next((net for net in board.get_nets() if net.name == GROUND_NET_NAME), None)
-    if net is None:
-        raise RuntimeError(f'net "{GROUND_NET_NAME}" was not found')
+def copper_layers(board):
+    """Return enabled copper layers in physical top-to-bottom stack order."""
+    contents = board.get_as_string()
+    match = re.search(r"\(layers\s*\n(?P<body>.*?\n\s*\))", contents, re.DOTALL)
+    if match is None:
+        raise RuntimeError("could not read the copper layer stack from the board")
+
+    layer_names = re.findall(
+        r'^\s*\(\d+\s+"((?:F|B|In\d+)\.Cu)"\s+',
+        match.group("body"),
+        re.MULTILINE,
+    )
+    if not layer_names:
+        raise RuntimeError("the board has no enabled copper layers")
+
+    layers = []
+    for name in layer_names:
+        try:
+            layers.append(getattr(BoardLayer, f"BL_{name.replace('.', '_')}"))
+        except AttributeError as error:
+            raise RuntimeError(f'unsupported copper layer "{name}"') from error
+    return layers
+
+
+def configured_zone_names(layer_count):
+    """Return exactly one configured net/zone name for each copper layer."""
+    return [
+        FILL_ZONE_NAMES[index] if index < len(FILL_ZONE_NAMES) else GROUND_NET_NAME
+        for index in range(layer_count)
+    ]
+
+
+def fill_zones(board, layers, origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
+    """Construct one configured rectangular fill zone per copper layer."""
+    nets = {net.name: net for net in board.get_nets()}
+    names = configured_zone_names(len(layers))
+    missing = sorted({name for name in names if name not in nets})
+    if missing:
+        quoted = ", ".join(f'"{name}"' for name in missing)
+        raise RuntimeError(f"board net(s) not found: {quoted}")
+
     zones = []
-    for layer in (BoardLayer.BL_F_Cu, BoardLayer.BL_B_Cu):
+    for layer, name in zip(layers, names):
         zone = Zone()
-        zone.name = GROUND_NET_NAME
-        zone.net = net
+        zone.name = name
+        zone.net = nets[name]
         zone.layers = [layer]
         zone.outline = rectangular_polygon(origin_x_mm, origin_y_mm)
         zones.append(zone)
@@ -228,30 +270,32 @@ def main():
     # Construct and validate all replacement objects before starting the editor
     # transaction. Configuration failures therefore cannot remove live items.
     new_outline = create_outline_items(origin_x_mm, origin_y_mm)
-    existing_ground_zones = [
+    layers = copper_layers(board) if REPLACE_GROUND_ZONES else []
+    replacement_names = set(configured_zone_names(len(layers)))
+    existing_fill_zones = [
         zone
         for zone in board.get_zones()
         if zone.net is not None
-        and zone.net.name == GROUND_NET_NAME
-        and any(
-            layer in (BoardLayer.BL_F_Cu, BoardLayer.BL_B_Cu) for layer in zone.layers
-        )
+        and zone.net.name in replacement_names
+        and any(layer in layers for layer in zone.layers)
     ]
     new_zones = (
-        ground_zones(board, origin_x_mm, origin_y_mm) if REPLACE_GROUND_ZONES else []
+        fill_zones(board, layers, origin_x_mm, origin_y_mm)
+        if REPLACE_GROUND_ZONES
+        else []
     )
 
     # The shared context manager calls begin_commit/push_commit, producing one
     # named Undo/Redo entry. It calls drop_commit if any IPC request raises.
     with editor_commit(
         board,
-        "Replace board outline and ground zones",
+        "Replace board outline and fill zones",
         refill_zones=True,
     ):
         if DELETE_EXISTING_EDGE_CUTS and existing_edges:
             board.remove_items(existing_edges)
-        if REPLACE_GROUND_ZONES and existing_ground_zones:
-            board.remove_items(existing_ground_zones)
+        if REPLACE_GROUND_ZONES and existing_fill_zones:
+            board.remove_items(existing_fill_zones)
 
         board.create_items(new_outline)
 
