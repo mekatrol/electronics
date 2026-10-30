@@ -483,153 +483,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector:TestPoint_2Pole"
-			(pin_names
-				(offset 0.762)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "TP"
-				(at 0 1.524 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "TestPoint_2Pole"
-				(at 0 -1.778 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "2-polar test point"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "point tp"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Pin* Test*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "TestPoint_2Pole_0_1"
-				(circle
-					(center -1.778 0)
-					(radius 0.762)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 1.778 0)
-					(radius 0.762)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -5.08 0 0)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 0 180)
-					(length 2.54)
-					(name "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:C_Polarized"
 			(pin_numbers
 				(hide yes)
@@ -2980,12 +2833,6 @@
 		(uuid "4fe25f12-0a7f-4a94-9a8f-18a25ebbb588")
 	)
 	(junction
-		(at 116.84 182.88)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "50030565-3704-4065-9491-1965aaf014ea")
-	)
-	(junction
 		(at 110.49 182.88)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3050,12 +2897,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b4820a93-9eae-4f0a-824d-01992b9f8548")
-	)
-	(junction
-		(at 133.35 162.56)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b4a34725-2f97-457d-a38a-ad3b0c5167d7")
 	)
 	(junction
 		(at 134.62 109.22)
@@ -3403,7 +3244,7 @@
 	)
 	(wire
 		(pts
-			(xy 116.84 162.56) (xy 133.35 162.56)
+			(xy 116.84 162.56) (xy 138.43 162.56)
 		)
 		(stroke
 			(width 0)
@@ -3643,16 +3484,6 @@
 	)
 	(wire
 		(pts
-			(xy 133.35 162.56) (xy 133.35 166.37)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "68ec0928-4108-4c86-9122-c327be4095a4")
-	)
-	(wire
-		(pts
 			(xy 110.49 86.36) (xy 110.49 87.63)
 		)
 		(stroke
@@ -3680,16 +3511,6 @@
 			(type default)
 		)
 		(uuid "69e9e09b-6f9d-4902-a163-40101e8cbf3a")
-	)
-	(wire
-		(pts
-			(xy 133.35 162.56) (xy 138.43 162.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6de3ebef-a2f5-4d87-8425-e5069f5ac57d")
 	)
 	(wire
 		(pts
@@ -3900,16 +3721,6 @@
 			(type default)
 		)
 		(uuid "a7a0c7ab-17ab-42bd-890b-e4571f48464b")
-	)
-	(wire
-		(pts
-			(xy 116.84 182.88) (xy 133.35 182.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a9561d08-e14d-4914-ba91-52a39cca7792")
 	)
 	(wire
 		(pts
@@ -4220,16 +4031,6 @@
 			(type default)
 		)
 		(uuid "faac9fc1-99e6-4931-9581-cc5467bbe681")
-	)
-	(wire
-		(pts
-			(xy 133.35 176.53) (xy 133.35 182.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fe5ba0b1-a544-4aad-9902-d0ce67a5722a")
 	)
 	(global_label "+5V"
 		(shape input)
@@ -5374,119 +5175,6 @@
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/021753ef-9e56-4253-8d75-5ca8ab357aa4"
 					(reference "F1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Connector:TestPoint_2Pole")
-		(at 133.35 171.45 270)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "4931a42c-8a99-46ca-acd6-d02285f3da77")
-		(property "Reference" "TP1"
-			(at 135.89 171.45 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TestPoint_2Pole"
-			(at 137.16 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_2Pads_Pitch5.08mm_Drill1.3mm"
-			(at 133.35 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 133.35 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" ""
-			(at 133.35 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "LCSC Part #" "N/A"
-			(at 133.35 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "KLC_S3.3" ""
-			(at 133.35 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "KLC_S4.1" ""
-			(at 133.35 171.45 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "998c300e-5a77-43c9-bba9-d65d89d6894a")
-		)
-		(pin "2"
-			(uuid "ba5b9247-1bb2-42e0-a990-1e59d5111151")
-		)
-		(instances
-			(project "mek-output-expander"
-				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/021753ef-9e56-4253-8d75-5ca8ab357aa4"
-					(reference "TP1")
 					(unit 1)
 				)
 			)
@@ -7273,7 +6961,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C278365.pdf"
 			(at 120.65 93.98 0)
 			(hide yes)
 			(show_name no)

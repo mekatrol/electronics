@@ -37,7 +37,7 @@ from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
 # Fabrication dimensions are measured along the Edge.Cuts centreline. The
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
-BOARD_WIDTH_MM = 150
+BOARD_WIDTH_MM = 150.0
 BOARD_HEIGHT_MM = 80.0
 ORIGIN_X_MM = 70.0
 ORIGIN_Y_MM = 40.0

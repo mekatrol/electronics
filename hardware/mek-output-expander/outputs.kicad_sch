@@ -10818,7 +10818,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_SO:SOP-18_7.495x11.515mm_P1.27mm"
+		(property "Footprint" "Package_SO:SOIC-18W_7.5x11.6mm_P1.27mm"
 			(at 54.61 48.26 0)
 			(hide yes)
 			(show_name no)

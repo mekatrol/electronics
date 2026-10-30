@@ -110,6 +110,7 @@ The editor history labels are:
 | --- | --- |
 | `component_reference_text.py` | Update component references |
 | `align_connector_pin_text.py` | Align connector pin labels |
+| `align_groups.py` | Align repeated component groups |
 | `align_holes.py` | Align mounting holes |
 | `center_and_distribute_items.py` | Center and optionally distribute footprints |
 | `center_edge_around_components.py` | Center Edge.Cuts around all components |
@@ -200,6 +201,21 @@ outside the connector courtyard. Configure `CONNECTOR_REFERENCES` and the
 label, clearance, proximity, row, and angle tolerances. Labels are matched by
 position and orientation; unmatched or ambiguous connectors are reported and
 skipped. Save the board manually after checking the result.
+
+### `align_groups.py`
+
+Uses the configured OP1 footprint list as a layout template for seven repeated
+output groups. It copies each corresponding footprint's relative position and
+rotation together with its Reference and Value label positions and text
+angles, then places OP2 through OP8 to the right of OP1 in one top-aligned row.
+Each destination keeps its own label text. `GROUP_SPACING_MM` controls the clear
+gap between adjacent group bounding boxes. `CENTER_GROUPS_HORIZONTALLY` defaults
+to `True` and performs a final whole-row move, including OP1, which centres the
+combined physical group bounds horizontally within `Edge.Cuts`; disable it to
+leave OP1's X position fixed. The explicit `GROUPS` mapping prevents schematic
+re-annotation from silently associating unlike components. All copied groups
+are updated in one undoable transaction, and the board is left unsaved for
+inspection.
 
 ### `align_holes.py`
 
