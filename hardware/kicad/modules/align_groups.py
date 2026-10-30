@@ -23,7 +23,7 @@ from kicad_ipc import (
     to_mm,
     vector,
 )
-from kipy.board_types import ArcTrack, Track, Via, Zone
+from kipy.board_types import ArcTrack, Track, Via
 
 # Each tuple has the same logical component order. For example, item zero is
 # the input resistor in every channel, item one is the indicator LED, and so
@@ -154,9 +154,7 @@ def track_set_pad_connections(board, track_set, footprints, vias=()):
         for track in track_set
         for point in (track.start, track.end)
     }
-    endpoints.update(
-        {(via.position.x, via.position.y): via.position for via in vias}
-    )
+    endpoints.update({(via.position.x, via.position.y): via.position for via in vias})
     net_names = {track.net.name for track in track_set}
     net_names.update(via.net.name for via in vias)
     connections = []
@@ -225,40 +223,6 @@ def group_local_vias(group_box_value, footprints, references, vias):
         and left <= via.position.x <= right
         and top <= via.position.y <= bottom
     ]
-
-
-def group_local_via_zones(board, group_box_value, vias, zones):
-    """Return localized zones that contain one of a group's selected vias."""
-    group_left, group_right, group_top, group_bottom = box_edges(group_box_value)
-    result = []
-    for zone in zones:
-        box = board.get_item_bounding_box(zone)
-        if box is None:
-            continue
-        left, right, top, bottom = box_edges(box)
-        if not (
-            group_left <= left <= right <= group_right
-            and group_top <= top <= bottom <= group_bottom
-        ):
-            continue
-        if any(
-            via.net.name == zone.net.name
-            and left <= via.position.x <= right
-            and top <= via.position.y <= bottom
-            for via in vias
-        ):
-            result.append(zone)
-    return result
-
-
-def copy_zone(zone, delta_x, delta_y, net):
-    """Clone and translate a localized copper zone."""
-    copied = Zone(proto=zone.proto)
-    copied.proto.ClearField("id")
-    copied.proto.ClearField("parent")
-    copied.net = net
-    copied.move(vector(delta_x, delta_y))
-    return copied
 
 
 def group_box(board, footprints, references):
@@ -357,20 +321,15 @@ def main():
     template_orientations = [
         footprints[reference].orientation for reference in template
     ]
-    template_labels = [
-        label_layout(footprints[reference]) for reference in template
-    ]
+    template_labels = [label_layout(footprints[reference]) for reference in template]
 
     # Use endpoint connectivity instead of whole nets so a local branch of a
     # shared net (for example GND) cannot pull unrelated board tracks into the
     # copy. Snapshot route membership before any footprints are moved.
     tracks = [
-        track
-        for track in board.get_tracks()
-        if isinstance(track, (Track, ArcTrack))
+        track for track in board.get_tracks() if isinstance(track, (Track, ArcTrack))
     ]
     vias = list(board.get_vias())
-    zones = list(board.get_zones())
     track_sets_and_connections = [
         (
             track_set,
@@ -399,9 +358,7 @@ def main():
         or (
             route_vias
             and 0 < len({reference for reference, _pad in connections})
-            and {
-                reference for reference, _pad in connections
-            } <= template_reference_set
+            and {reference for reference, _pad in connections} <= template_reference_set
         )
     ]
     routed_template_via_ids = {
@@ -420,16 +377,8 @@ def main():
         ]
         template_routes.append(([], [matching_pads[0]], [via]))
 
-    template_local_vias = group_local_vias(
-        template_box, footprints, template, vias
-    )
-    template_zones = group_local_via_zones(
-        board, template_box, template_local_vias, zones
-    )
-
     destination_tracks = []
     destination_vias = []
-    destination_zones = []
     for group in GROUPS[1:]:
         group_reference_set = set(group)
         destination_box = group_box(board, footprints, group)
@@ -444,9 +393,7 @@ def main():
             id(route_tracks) for route_tracks, _connections in internal
         }
         for route_tracks, connections, route_vias in track_sets_and_connections:
-            connected_references = {
-                reference for reference, _pad in connections
-            }
+            connected_references = {reference for reference, _pad in connections}
             if id(route_tracks) in internal_track_ids:
                 destination_tracks.extend(route_tracks)
             if (
@@ -458,23 +405,15 @@ def main():
         destination_vias.extend(
             group_local_vias(destination_box, footprints, group, vias)
         )
-        group_vias = group_local_vias(
-            destination_box, footprints, group, vias
-        )
-        destination_zones.extend(
-            group_local_via_zones(board, destination_box, group_vias, zones)
-        )
 
-    # A routed via can also satisfy the local-zone fallback. Send every board
+    # A routed via can also satisfy the local-via fallback. Send every board
     # item to KiCad only once when deleting the destination routes.
     destination_vias = list({id(via): via for via in destination_vias}.values())
 
     template_index = {reference: index for index, reference in enumerate(template)}
     route_templates = []
     for track_set, connections, route_vias in template_routes:
-        source_net_name = (
-            track_set[0].net.name if track_set else route_vias[0].net.name
-        )
+        source_net_name = track_set[0].net.name if track_set else route_vias[0].net.name
         source_pads = [
             (template_index[reference], pad.number)
             for reference, pad in connections
@@ -486,29 +425,13 @@ def main():
             )
         route_templates.append((track_set, route_vias, source_pads))
 
-    zone_templates = []
-    for zone in template_zones:
-        matching_pads = [
-            (template_index[reference], pad.number)
-            for reference in template
-            for pad in footprint_pads(footprints[reference])
-            if pad.net.name == zone.net.name
-        ]
-        if not matching_pads:
-            raise RuntimeError(
-                f"could not map local zone net {zone.net.name!r} to a template pad"
-            )
-        zone_templates.append((zone, matching_pads[0]))
-
     changed = []
     created_tracks = []
     created_vias = []
-    created_zones = []
     action = "Align repeated component groups"
     with editor_commit(board, action, refill_zones=True):
         board.remove_items(destination_tracks)
         board.remove_items(destination_vias)
-        board.remove_items(destination_zones)
         for group_index, group in enumerate(GROUPS[1:], start=1):
             # Moving every member by the same whole-group offset preserves all
             # of OP1's relative X/Y distances. KiCad's Y axis increases down
@@ -584,25 +507,6 @@ def main():
                     for via in route_vias
                 )
 
-            for zone, (item_index, pad_number) in zone_templates:
-                matching_pads = [
-                    pad
-                    for pad in footprint_pads(footprints[group[item_index]])
-                    if pad.number == pad_number
-                ]
-                if len(matching_pads) != 1:
-                    raise RuntimeError(
-                        f"{group[item_index]} must have exactly one pad {pad_number}"
-                    )
-                created_zones.append(
-                    copy_zone(
-                        zone,
-                        delta_x,
-                        delta_y,
-                        matching_pads[0].net,
-                    )
-                )
-
         if CENTER_GROUPS_HORIZONTALLY:
             # All groups have the same physical geometry as OP1 after their
             # rotations are copied. Their complete row therefore begins at
@@ -612,8 +516,8 @@ def main():
             # geometry through a fresh bounding-box request.
             row_left = left
             row_right = right + (len(GROUPS) - 1) * pitch
-            board_left, board_right, _board_top, _board_bottom = (
-                board_edge_bounds(board)
+            board_left, board_right, _board_top, _board_bottom = board_edge_bounds(
+                board
             )
             row_center_x = (row_left + row_right) // 2
             board_center_x = (board_left + board_right) // 2
@@ -654,12 +558,6 @@ def main():
                     track.mid = vector(track.mid.x + center_delta_x, track.mid.y)
             for via in created_vias:
                 via.position = vector(via.position.x + center_delta_x, via.position.y)
-            for zone in template_zones:
-                zone.move(vector(center_delta_x, 0))
-                changed.append(zone)
-            for zone in created_zones:
-                zone.move(vector(center_delta_x, 0))
-
             if DEBUG:
                 print(
                     "All groups: horizontally centered on Edge.Cuts; "
@@ -667,13 +565,13 @@ def main():
                 )
 
         board.update_items(changed)
-        board.create_items(created_tracks + created_vias + created_zones)
+        board.create_items(created_tracks + created_vias)
 
     print(
         f"Aligned {len(GROUPS)} groups, copied {len(created_tracks)} track(s) and "
-        f"{len(created_vias)} via(s) and {len(created_zones)} local zone(s), and "
+        f"{len(created_vias)} via(s), and "
         f"replaced {len(destination_tracks)} destination track(s), "
-        f"{len(destination_vias)} via(s), and {len(destination_zones)} local zone(s) "
+        f"and {len(destination_vias)} via(s) "
         f"(undo: {action})."
     )
 
