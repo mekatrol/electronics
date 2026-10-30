@@ -19,9 +19,6 @@ retained.
 
 import math
 
-from kipy.board_types import BoardArc, BoardSegment, Zone
-from kipy.geometry import PolyLine, PolyLineNode, PolygonWithHoles
-
 from kicad_ipc import (
     BoardLayer,
     connect_board,
@@ -31,7 +28,8 @@ from kicad_ipc import (
     to_mm,
 )
 from kicad_utils import edge_cuts_centroid
-
+from kipy.board_types import BoardArc, BoardSegment, Zone
+from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
 
 # ============================================================
 # User settings: board geometry
@@ -40,7 +38,7 @@ from kicad_utils import edge_cuts_centroid
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
 BOARD_WIDTH_MM = 150
-BOARD_HEIGHT_MM = 100.0
+BOARD_HEIGHT_MM = 80.0
 ORIGIN_X_MM = 70.0
 ORIGIN_Y_MM = 40.0
 
@@ -217,8 +215,7 @@ def main():
     _client, board = connect_board()
 
     existing_edges = [
-        shape for shape in board.get_shapes()
-        if shape.layer == BoardLayer.BL_Edge_Cuts
+        shape for shape in board.get_shapes() if shape.layer == BoardLayer.BL_Edge_Cuts
     ]
     origin_x_mm = ORIGIN_X_MM
     origin_y_mm = ORIGIN_Y_MM
@@ -232,17 +229,16 @@ def main():
     # transaction. Configuration failures therefore cannot remove live items.
     new_outline = create_outline_items(origin_x_mm, origin_y_mm)
     existing_ground_zones = [
-        zone for zone in board.get_zones()
-        if zone.net is not None and zone.net.name == GROUND_NET_NAME
+        zone
+        for zone in board.get_zones()
+        if zone.net is not None
+        and zone.net.name == GROUND_NET_NAME
         and any(
-            layer in (BoardLayer.BL_F_Cu, BoardLayer.BL_B_Cu)
-            for layer in zone.layers
+            layer in (BoardLayer.BL_F_Cu, BoardLayer.BL_B_Cu) for layer in zone.layers
         )
     ]
     new_zones = (
-        ground_zones(board, origin_x_mm, origin_y_mm)
-        if REPLACE_GROUND_ZONES
-        else []
+        ground_zones(board, origin_x_mm, origin_y_mm) if REPLACE_GROUND_ZONES else []
     )
 
     # The shared context manager calls begin_commit/push_commit, producing one

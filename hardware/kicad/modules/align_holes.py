@@ -18,7 +18,6 @@ from kicad_ipc import (
     vector,
 )
 
-
 # Footprint references for the four physical corners.
 TOP_LEFT_HOLE_REF = "H1"
 TOP_RIGHT_HOLE_REF = "H2"
@@ -26,10 +25,10 @@ BOTTOM_LEFT_HOLE_REF = "H3"
 BOTTOM_RIGHT_HOLE_REF = "H4"
 
 # Hole-centre distances from the corresponding fabrication edges.
-LEFT_OFFSET_MM = 3.50
-RIGHT_OFFSET_MM = 3.50
-TOP_OFFSET_MM = 3.50
-BOTTOM_OFFSET_MM = 3.50
+LEFT_OFFSET_MM = 6.50
+RIGHT_OFFSET_MM = 6.50
+TOP_OFFSET_MM = 6.50
+BOTTOM_OFFSET_MM = 6.50
 DEBUG = True
 
 
@@ -39,8 +38,12 @@ def main():
     footprints = footprints_by_reference(board)
     left, right, top, bottom = board_edge_bounds(board)
     targets = {
-        TOP_LEFT_HOLE_REF: vector(left + from_mm(LEFT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)),
-        TOP_RIGHT_HOLE_REF: vector(right - from_mm(RIGHT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)),
+        TOP_LEFT_HOLE_REF: vector(
+            left + from_mm(LEFT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)
+        ),
+        TOP_RIGHT_HOLE_REF: vector(
+            right - from_mm(RIGHT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)
+        ),
         BOTTOM_LEFT_HOLE_REF: vector(
             left + from_mm(LEFT_OFFSET_MM), bottom - from_mm(BOTTOM_OFFSET_MM)
         ),

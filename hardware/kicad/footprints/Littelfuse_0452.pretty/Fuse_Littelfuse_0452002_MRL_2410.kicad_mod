@@ -1,0 +1,131 @@
+(footprint "Fuse_Littelfuse_0452002_MRL_2410"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "Littelfuse 0452002.MRL (452 series) 2A time-delay 2410 SMD fuse, LCSC C142852. Manufacturer-recommended 1.96x3.15 mm pads separated by 2.95 mm. Body 6.10x2.69 mm. Datasheet: https://www.littelfuse.com/assetdocs/fuse-452-and-454-datasheet?assetguid=8c87aa93-80a7-4ea8-8749-a19ba03901c2")
+	(tags "Littelfuse 0452 0452002 MRL 2410 2A Slo-Blo fuse C142852")
+	(property "Reference" "F?"
+		(at 0 -2.8 0)
+		(layer "F.SilkS")
+		(uuid "b281d246-6607-4b76-ba8b-e07800ec9b9b")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "0452002.MRL"
+		(at 0 2.75 0)
+		(layer "F.Fab")
+		(uuid "e95588ed-67f9-4096-addf-bfd481a21dea")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "40443e47-307e-453f-b373-4a49f574683a")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "0380705d-4dd3-4122-9911-e1f2a19a7204")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -1.25 -1.78)
+		(end 1.25 -1.78)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "9da8777c-5b73-4317-bc27-9f7c4bb6747f")
+	)
+	(fp_line
+		(start -1.25 1.78)
+		(end 1.25 1.78)
+		(stroke
+			(width 0.12)
+			(type default)
+		)
+		(layer "F.SilkS")
+		(uuid "ec0a020e-4daf-448a-998a-d8b863278996")
+	)
+	(fp_rect
+		(start -3.7 -1.95)
+		(end 3.7 1.95)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "a23daf4f-45ab-45be-8a58-47168a26e93a")
+	)
+	(fp_rect
+		(start -3.05 -1.345)
+		(end 3.05 1.345)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "a2dba275-8a6d-4b71-b30e-bd9fe67751d9")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(uuid "4d29a129-b0d7-4141-a388-9cc83bdd1086")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(pad "1" smd rect
+		(at -2.455 0)
+		(size 1.96 3.15)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "7bf2ed68-3a8c-4c73-95d8-8a0ae549145d")
+	)
+	(pad "2" smd rect
+		(at 2.455 0)
+		(size 1.96 3.15)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(uuid "7c1fea5f-c0b5-401f-b0aa-81e2deee11f5")
+	)
+	(embedded_fonts no)
+	(model "${MY_KICAD_LIBS}/Littelfuse_0452.pretty/C142852_Littelfuse_0452002_MRL.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
