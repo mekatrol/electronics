@@ -18,7 +18,6 @@ from kicad_ipc import (
 )
 from kicad_utils import centering_delta, distribution_offsets
 
-
 # Centre all footprints to the first component listed in REFERENCES.
 # Optional distribution occurs on the axis perpendicular to the alignment.
 REFERENCES = ["J1", "J2", "J3", "J4"]
@@ -55,14 +54,20 @@ def main():
     if DISTRIBUTE_SPACING:
         if ALIGNMENT == "vertical":
             axis_items = [
-                (reference, boxes[reference].pos.x,
-                 boxes[reference].pos.x + boxes[reference].size.x)
+                (
+                    reference,
+                    boxes[reference].pos.x,
+                    boxes[reference].pos.x + boxes[reference].size.x,
+                )
                 for reference in REFERENCES
             ]
         else:
             axis_items = [
-                (reference, boxes[reference].pos.y,
-                 boxes[reference].pos.y + boxes[reference].size.y)
+                (
+                    reference,
+                    boxes[reference].pos.y,
+                    boxes[reference].pos.y + boxes[reference].size.y,
+                )
                 for reference in REFERENCES
             ]
         # Bounding boxes can have negative sizes; normalise their axis edges.
@@ -72,7 +77,7 @@ def main():
         ]
         distribute_offsets = distribution_offsets(axis_items)
 
-    action = f'Center footprints {ALIGNMENT}ly'
+    action = f"Center footprints {ALIGNMENT}ly"
     if DISTRIBUTE_SPACING:
         action += " and distribute items"
     changed = []

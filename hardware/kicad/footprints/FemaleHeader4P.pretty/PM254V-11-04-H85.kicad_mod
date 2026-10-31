@@ -1,0 +1,231 @@
+(footprint "PM254V-11-04-H85"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "XFCN C541851, PM254V-11-04-H85, 1x04 vertical female socket, 2.54mm pitch, 1.02mm nominal PCB drills; supplied STEP is a simplified envelope, not manufacturer CAD")
+	(tags "XFCN C541851 PM254V female header 1x04 2.54 THT")
+	(property "Reference" "REF**"
+		(at 3.81 -2.43 0)
+		(layer "F.SilkS")
+		(uuid "34d5ab9b-228c-433b-b7d7-0730d69117ce")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "PM254V-11-04-H85"
+		(at 3.81 2.5 0)
+		(layer "F.Fab")
+		(uuid "1c2769de-ff12-4fd0-940c-b696f498e2e5")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "1be9b2f4-585c-43df-85e4-62726781b098")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Description" "XFCN 1x04 2.54mm female header, LCSC C541851; simplified 3D model"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "c787fb23-e9c4-4724-b303-5f401acf18c3")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+		(start -1.52 -1.25)
+		(end 9.14 -1.25)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "f971d37a-42ab-4dc6-b267-9ad1d9187cd2")
+	)
+	(fp_line
+		(start -1.52 1.25)
+		(end -1.52 -1.25)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "fcfe7ca1-6510-46de-99ab-cf9b684578bd")
+	)
+	(fp_line
+		(start 9.14 -1.25)
+		(end 9.14 1.25)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "d58fd6a3-c1fc-4276-944f-be996ed1a129")
+	)
+	(fp_line
+		(start 9.14 1.25)
+		(end -1.52 1.25)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "ddf6c6b5-156f-4e45-933c-46bdf55ba8dc")
+	)
+	(fp_line
+		(start -1.77 -1.5)
+		(end 9.39 -1.5)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "1683c53b-4db1-4b6a-b2d0-4a7b5fc10d24")
+	)
+	(fp_line
+		(start -1.77 1.5)
+		(end -1.77 -1.5)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "f0b08fd4-7d40-4c38-a772-35a6c35b13c2")
+	)
+	(fp_line
+		(start 9.39 -1.5)
+		(end 9.39 1.5)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "dde506c6-f0d7-4ebb-b2ca-13528af8196b")
+	)
+	(fp_line
+		(start 9.39 1.5)
+		(end -1.77 1.5)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(layer "F.CrtYd")
+		(uuid "36cb51ea-c816-42e4-81a0-d1fdffddd2fb")
+	)
+	(fp_line
+		(start -1.52 -1.25)
+		(end 9.14 -1.25)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "78ed535b-7666-4a8d-a425-9c6054f848f5")
+	)
+	(fp_line
+		(start -1.52 1.25)
+		(end -1.52 -1.25)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "d58a2cc2-261b-4eaa-9107-a275c547109e")
+	)
+	(fp_line
+		(start 9.14 -1.25)
+		(end 9.14 1.25)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "de32854c-d3a9-4a4e-afc5-cfa588cbde89")
+	)
+	(fp_line
+		(start 9.14 1.25)
+		(end -1.52 1.25)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(layer "F.Fab")
+		(uuid "988fa8c8-1c71-4f5e-991f-7671eb416a31")
+	)
+	(fp_text user "1"
+		(at -2.04 0 0)
+		(layer "F.Fab")
+		(uuid "647b897e-0fc3-4352-8420-cf0bc41610c5")
+		(effects
+			(font
+				(size 0.7 0.7)
+				(thickness 0.11)
+			)
+		)
+	)
+	(pad "1" thru_hole rect
+		(at 0 0)
+		(size 1.8 1.8)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "a16c608d-5fb0-4c5a-9fb7-30ab141d83d6")
+	)
+	(pad "2" thru_hole circle
+		(at 2.54 0)
+		(size 1.8 1.8)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "7a17459c-9b51-4889-b162-e7c441d15929")
+	)
+	(pad "3" thru_hole circle
+		(at 5.08 0)
+		(size 1.8 1.8)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "96d8f263-9e79-4a05-9af0-fbc1544d2e0a")
+	)
+	(pad "4" thru_hole circle
+		(at 7.62 0)
+		(size 1.8 1.8)
+		(drill 1.02)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "2db4935a-2111-4f53-977c-21dcba00f45c")
+	)
+	(embedded_fonts no)
+	(model "${MY_KICAD_LIBS}/FemaleHeader4P.pretty/PM254V-11-04-H85.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)

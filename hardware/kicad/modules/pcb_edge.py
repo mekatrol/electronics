@@ -38,14 +38,19 @@ from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
 # Fabrication dimensions are measured along the Edge.Cuts centreline. The
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
-BOARD_WIDTH_MM = 150.0
-BOARD_HEIGHT_MM = 80.0
-ORIGIN_X_MM = 70.0
-ORIGIN_Y_MM = 40.0
+BOARD_WIDTH_MM = 25.0
+BOARD_HEIGHT_MM = 45.0
+ORIGIN_X_MM = 136.0
+ORIGIN_Y_MM = 80.0
 
 # Preserve the area centroid of the current connected Edge.Cuts contour when
 # replacing it. If no outline exists, the configured origin above is used.
 KEEP_CENTRE = False
+
+# Centre the new PCB on the drawing page. This takes precedence over
+# KEEP_CENTRE and the configured origin. The page size and orientation are
+# read from the live board (including custom User page sizes).
+CENTRE_ON_PAGE = False
 
 # Use 0 for square corners. A positive value creates four tangent quarter-circle
 # arcs and must not exceed half of the board's smaller dimension.
@@ -75,6 +80,48 @@ DELETE_EXISTING_EDGE_CUTS = True
 REPLACE_GROUND_ZONES = True
 GROUND_NET_NAME = "GND"
 FILL_ZONE_NAMES = ["GND", "GND", "GND", "GND"]
+
+
+PAPER_SIZES_MM = {
+    "A0": (1189.0, 841.0),
+    "A1": (841.0, 594.0),
+    "A2": (594.0, 420.0),
+    "A3": (420.0, 297.0),
+    "A4": (297.0, 210.0),
+    "A5": (210.0, 148.0),
+    "Letter": (279.4, 215.9),
+    "Legal": (355.6, 215.9),
+    "Ledger": (431.8, 279.4),
+}
+
+
+def page_centre_mm(board):
+    """Return the centre of the board's drawing page in millimetres."""
+    contents = board.get_as_string()
+    match = re.search(
+        r'\(paper\s+"(?P<name>[^"]+)"'
+        r"(?:\s+(?P<width>[0-9.]+)\s+(?P<height>[0-9.]+))?"
+        r"(?P<portrait>\s+portrait)?\s*\)",
+        contents,
+    )
+    if match is None:
+        raise RuntimeError("could not read the drawing page size from the board")
+
+    name = match.group("name")
+    if name == "User":
+        if match.group("width") is None or match.group("height") is None:
+            raise RuntimeError("the board's custom User page has no dimensions")
+        width = float(match.group("width"))
+        height = float(match.group("height"))
+    else:
+        try:
+            width, height = PAPER_SIZES_MM[name]
+        except KeyError as error:
+            raise RuntimeError(f'unsupported drawing page size "{name}"') from error
+
+    if match.group("portrait"):
+        width, height = height, width
+    return width / 2.0, height / 2.0
 
 
 def validate_settings():
@@ -261,11 +308,18 @@ def main():
     ]
     origin_x_mm = ORIGIN_X_MM
     origin_y_mm = ORIGIN_Y_MM
-    if KEEP_CENTRE and existing_edges:
+    position_description = "using the configured origin"
+    if CENTRE_ON_PAGE:
+        centre_x_mm, centre_y_mm = page_centre_mm(board)
+        origin_x_mm = centre_x_mm - BOARD_WIDTH_MM / 2
+        origin_y_mm = centre_y_mm - BOARD_HEIGHT_MM / 2
+        position_description = "centred on the drawing page"
+    elif KEEP_CENTRE and existing_edges:
         centre = edge_cuts_centroid(existing_edges)
         centre_x_mm, centre_y_mm = to_mm(centre.x), to_mm(centre.y)
         origin_x_mm = centre_x_mm - BOARD_WIDTH_MM / 2
         origin_y_mm = centre_y_mm - BOARD_HEIGHT_MM / 2
+        position_description = "while preserving the previous centroid"
 
     # Construct and validate all replacement objects before starting the editor
     # transaction. Configuration failures therefore cannot remove live items.
@@ -306,7 +360,7 @@ def main():
         f"Created {BOARD_WIDTH_MM:.3f} x {BOARD_HEIGHT_MM:.3f} mm outline with "
         f"{CORNER_RADIUS_MM:.3f} mm corners at "
         f"({origin_x_mm:.3f}, {origin_y_mm:.3f}) mm"
-        f"{' while preserving the previous centroid' if KEEP_CENTRE and existing_edges else ''} "
+        f" {position_description} "
         f"(undo: Replace board outline and ground zones)."
     )
 

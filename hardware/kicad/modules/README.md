@@ -266,8 +266,11 @@ refill of every copper zone through the shared IPC utility.
 ### `pcb_edge.py`
 
 Creates a rectangular `Edge.Cuts` outline using the configured size, origin,
-corner radius, and line width. By default it deletes the existing outline and
-creates a GND zone on every enabled copper layer. Set `FILL_ZONE_NAMES` in
+corner radius, and line width. Set `CENTRE_ON_PAGE` to place the centre of the
+PCB at the centre of the board's configured drawing page; this overrides both
+`KEEP_CENTRE` and the configured origin. By default it deletes the existing
+outline and creates a GND zone on every enabled copper layer. Set
+`FILL_ZONE_NAMES` in
 physical stack order (`F.Cu`, inner layers, `B.Cu`) to use other board nets;
 missing entries default to GND and extra entries are ignored. Carefully review
 `DELETE_EXISTING_EDGE_CUTS`, `REPLACE_GROUND_ZONES`, and `FILL_ZONE_NAMES`
