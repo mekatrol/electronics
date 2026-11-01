@@ -116,10 +116,17 @@ The editor history labels are:
 | `center_edge_around_components.py` | Center Edge.Cuts around all components |
 | `check_fiducials.py` | Align and check fiducials |
 | `pcb_edge.py` | Replace board outline and ground zones |
+| `remove_tracks_and_vias.py` | Remove all tracks, vias, and zones |
 | `resize_matching_text.py` | Resize matching board text |
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
 
 `report_board_dimensions.py` is read-only and creates no history entry.
+
+### `remove_tracks_and_vias.py`
+
+Removes every copper track (straight or curved), via, and zone on every layer
+from the board active in PCB Editor. The removal is one undoable transaction;
+the script leaves the board unsaved for inspection.
 
 ### `panelize_pcb.py`
 

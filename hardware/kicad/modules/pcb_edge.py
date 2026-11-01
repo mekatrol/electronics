@@ -39,7 +39,7 @@ from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
 BOARD_WIDTH_MM = 25.0
-BOARD_HEIGHT_MM = 45.0
+BOARD_HEIGHT_MM = 42.0
 ORIGIN_X_MM = 136.0
 ORIGIN_Y_MM = 80.0
 

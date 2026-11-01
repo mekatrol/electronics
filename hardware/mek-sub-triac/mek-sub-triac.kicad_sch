@@ -1234,13 +1234,9 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Mechanical:MountingHole_Pad"
-			(pin_numbers
-				(hide yes)
-			)
+		(symbol "Mechanical:MountingHole"
 			(pin_names
 				(offset 1.016)
-				(hide yes)
 			)
 			(exclude_from_sim no)
 			(in_bom no)
@@ -1248,7 +1244,7 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "H"
-				(at 0 6.35 0)
+				(at 0 5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -1257,8 +1253,8 @@
 					)
 				)
 			)
-			(property "Value" "MountingHole_Pad"
-				(at 0 4.445 0)
+			(property "Value" "MountingHole"
+				(at 0 3.175 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -1289,7 +1285,7 @@
 					)
 				)
 			)
-			(property "Description" "Mounting Hole with connection"
+			(property "Description" "Mounting Hole without connection"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1311,7 +1307,7 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "MountingHole*Pad*"
+			(property "ki_fp_filters" "MountingHole*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1322,9 +1318,9 @@
 					)
 				)
 			)
-			(symbol "MountingHole_Pad_0_1"
+			(symbol "MountingHole_0_1"
 				(circle
-					(center 0 1.27)
+					(center 0 0)
 					(radius 1.27)
 					(stroke
 						(width 1.27)
@@ -1332,26 +1328,6 @@
 					)
 					(fill
 						(type none)
-					)
-				)
-			)
-			(symbol "MountingHole_Pad_1_1"
-				(pin input line
-					(at 0 -2.54 90)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
 					)
 				)
 			)
@@ -2233,145 +2209,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:+3V3"
-			(power global)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "+3V3"
-				(at 0 3.556 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"+3V3\""
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "+3V3_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "+3V3_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name ""
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:+5V"
 			(power global)
 			(pin_numbers
@@ -2785,18 +2622,6 @@
 		(uuid "686ac486-81cc-4590-b3e8-35d837494a7c")
 	)
 	(junction
-		(at 158.75 130.81)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "75342b87-afab-4038-8bdd-ba998bd39b38")
-	)
-	(junction
-		(at 158.75 135.89)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "7e7d6050-58bc-4862-8b6c-85a6e0b96538")
-	)
-	(junction
 		(at 125.73 90.17)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2844,11 +2669,9 @@
 		(color 0 0 0 0)
 		(uuid "de0b3f70-4d7c-45d8-97ad-970bbd0681f6")
 	)
-	(junction
-		(at 127 130.81)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "dfc57cea-aa86-43e4-9ec5-95a63e2f3193")
+	(no_connect
+		(at 114.3 130.81)
+		(uuid "8ad5320b-8b4f-46fe-9f85-ef3f1c3ae3a7")
 	)
 	(wire
 		(pts
@@ -3092,16 +2915,6 @@
 	)
 	(wire
 		(pts
-			(xy 158.75 130.81) (xy 158.75 116.84)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4c39decc-f1ef-41f8-9795-3faca4513fae")
-	)
-	(wire
-		(pts
 			(xy 132.08 90.17) (xy 133.35 90.17)
 		)
 		(stroke
@@ -3189,26 +3002,6 @@
 			(type default)
 		)
 		(uuid "6fab7452-71f6-48e3-93ef-5333a93f36ff")
-	)
-	(wire
-		(pts
-			(xy 127 130.81) (xy 158.75 130.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "70cceecf-2dce-4518-b631-e546c3de45ee")
-	)
-	(wire
-		(pts
-			(xy 179.07 130.81) (xy 179.07 138.43)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7a3a0448-7bdb-4eee-86ad-37cd7dae27d8")
 	)
 	(wire
 		(pts
@@ -3352,16 +3145,6 @@
 	)
 	(wire
 		(pts
-			(xy 114.3 130.81) (xy 127 130.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ca476443-e473-47a1-9017-3f3cf425aabb")
-	)
-	(wire
-		(pts
 			(xy 119.38 128.27) (xy 142.24 128.27)
 		)
 		(stroke
@@ -3439,6 +3222,46 @@
 			(type default)
 		)
 		(uuid "fa57c44d-ff28-4647-920e-87b947c46e0b")
+	)
+	(label "MT2"
+		(at 163.83 80.01 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0965bc0c-8dc5-478e-bcfa-a03863bcb310")
+	)
+	(label "MT1_FB"
+		(at 149.86 97.79 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "33c437b2-8dc6-4aa5-9eed-3510f142d940")
+	)
+	(label "MT2_FB"
+		(at 149.86 83.82 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5692b3ae-537d-401c-80bf-b791f8ce9688")
+	)
+	(label "MT1"
+		(at 165.1 101.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "cf62f21f-8d48-459a-b493-ead406078725")
 	)
 	(global_label "SIGNAL"
 		(shape input)
@@ -3597,7 +3420,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 156.21 80.01 0)
 			(hide yes)
 			(show_name no)
@@ -3709,7 +3532,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
 			(at 111.76 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -3868,85 +3691,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 127 130.81 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "23dcfe2a-2e2e-43f7-8fad-3c2bedd4d51f")
-		(property "Reference" "#FLG02"
-			(at 127 128.905 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 127 125.73 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 127 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 127 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 127 130.81 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "3d3f6cc8-95ee-4219-8dd9-9ab75ea3e0dd")
-		)
-		(instances
-			(project "mek-sub-triac"
-				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#FLG02")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Transistor_BJT:MMBT3904")
 		(at 123.19 99.06 0)
 		(unit 1)
@@ -4087,7 +3831,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
 			(at 113.03 99.06 0)
 			(hide yes)
 			(show_name no)
@@ -4330,7 +4074,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Mekatrol:C_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
 			(at 147.32 123.19 0)
 			(hide yes)
 			(show_name no)
@@ -4695,7 +4439,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "530797d7-8421-4817-9ee1-278b52ce01d2")
-		(property "Reference" "C3"
+		(property "Reference" "C2"
 			(at 171.958 94.742 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4792,7 +4536,7 @@
 		(instances
 			(project "mek-sub-triac"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "C3")
+					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -4831,7 +4575,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_2512_6332Metric"
 			(at 171.45 87.63 0)
 			(hide yes)
 			(show_name no)
@@ -5019,7 +4763,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 129.54 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -5131,7 +4875,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
 			(at 116.84 105.41 0)
 			(hide yes)
 			(show_name no)
@@ -5367,7 +5111,117 @@
 		)
 	)
 	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
+		(lib_id "Mechanical:MountingHole")
+		(at 187.96 128.27 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "84f1bb3e-d333-4f8a-87bc-e1d41d2439e1")
+		(property "Reference" "H2"
+			(at 190.5 128.2699 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole_Pad"
+			(at 190.5 128.2699 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.7mm"
+			(at 187.96 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 187.96 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 187.96 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "KLC_S3.3" ""
+			(at 187.96 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "KLC_S4.1" ""
+			(at 187.96 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "N/A"
+			(at 187.96 128.27 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "mek-sub-triac"
+				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
+					(reference "H2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
 		(at 179.07 128.27 0)
 		(unit 1)
 		(body_style 1)
@@ -5379,7 +5233,7 @@
 		(fields_autoplaced yes)
 		(uuid "8d2c10a4-0440-4ee9-8278-2f50fcd30542")
 		(property "Reference" "H1"
-			(at 181.61 126.9999 0)
+			(at 181.61 128.2699 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5401,7 +5255,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+		(property "Footprint" "MountingHole:MountingHole_2.7mm"
 			(at 179.07 128.27 0)
 			(hide yes)
 			(show_name no)
@@ -5423,7 +5277,7 @@
 				)
 			)
 		)
-		(property "Description" "Mounting Hole with connection"
+		(property "Description" "Mounting Hole without connection"
 			(at 179.07 128.27 0)
 			(hide yes)
 			(show_name no)
@@ -5467,95 +5321,10 @@
 				)
 			)
 		)
-		(pin "1"
-			(uuid "6f3eb371-e47e-497a-962c-ffd2cb46b2bd")
-		)
 		(instances
 			(project "mek-sub-triac"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
 					(reference "H1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C_Small")
-		(at 158.75 133.35 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "9416c2ce-5438-4a14-9de7-917bbf97cbc5")
-		(property "Reference" "C2"
-			(at 161.29 132.0799 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "100n"
-			(at 161.29 134.6199 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Mekatrol:C_0603_1206_Combo_Paste0603"
-			(at 158.75 133.35 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 158.75 133.35 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Unpolarized capacitor, small symbol"
-			(at 158.75 143.51 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c2795f95-4a1a-463e-a919-5d90b5c1d68c")
-		)
-		(pin "2"
-			(uuid "475728c0-b5c7-44c1-95e3-db2fa9fa3b9f")
-		)
-		(instances
-			(project "mek-sub-triac"
-				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -5592,7 +5361,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:D_0603_1206_Combo_Diode_Paste0603"
+		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
 			(at 120.65 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -5696,7 +5465,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a9cab131-cb22-4328-9ffa-587e33e9458c")
-		(property "Reference" "#FLG03"
+		(property "Reference" "#FLG02"
 			(at 135.89 133.985 0)
 			(hide yes)
 			(show_name no)
@@ -5757,7 +5526,7 @@
 		(instances
 			(project "mek-sub-triac"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#FLG03")
+					(reference "#FLG02")
 					(unit 1)
 				)
 			)
@@ -5794,7 +5563,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Mekatrol:R_0603_1206_Combo_Paste0603"
+		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
 			(at 156.21 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -5962,84 +5731,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+3V3")
-		(at 158.75 116.84 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "df7694b6-2479-4e18-8eaf-b3ccc87bf45d")
-		(property "Reference" "#PWR04"
-			(at 158.75 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "+3V3"
-			(at 158.75 111.76 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 158.75 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 158.75 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"+3V3\""
-			(at 158.75 116.84 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "e991432b-c72d-414b-a3f5-e99624374e39")
-		)
-		(instances
-			(project "mek-sub-triac"
-				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR04")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Mechanical:Fiducial")
 		(at 185.42 115.57 0)
 		(unit 1)
@@ -6117,84 +5808,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 179.07 138.43 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "ea91884f-2d10-438e-85cd-3dd9b98c43b4")
-		(property "Reference" "#PWR06"
-			(at 179.07 144.78 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 179.07 143.51 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 179.07 138.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 179.07 138.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 179.07 138.43 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c335032a-75ac-4df3-a049-1588ef8c55a2")
-		)
-		(instances
-			(project "mek-sub-triac"
-				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR06")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 158.75 138.43 0)
 		(unit 1)
 		(body_style 1)
@@ -6205,7 +5818,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f0320ed4-39a6-4dbe-b530-1339291d6fa8")
-		(property "Reference" "#PWR05"
+		(property "Reference" "#PWR04"
 			(at 158.75 144.78 0)
 			(hide yes)
 			(show_name no)
@@ -6265,7 +5878,7 @@
 		(instances
 			(project "mek-sub-triac"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR05")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
