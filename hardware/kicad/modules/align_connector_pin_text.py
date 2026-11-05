@@ -8,15 +8,24 @@ Run from the repository root with::
 The moved labels are one PCB Editor undo/redo transaction.
 """
 
+from kicad_ipc import (
+    BoardLayer,
+    board_edge_bounds,
+    box_center,
+    box_edges,
+    connect_board,
+    courtyard_box,
+    distance,
+    editor_commit,
+    footprints_by_reference,
+    from_mm,
+    move_text_center,
+    text_box,
+    to_mm,
+    vector,
+)
 from kipy.board_types import BoardText
 from kipy.proto.common.types.enums_pb2 import KiCadObjectType
-
-from kicad_ipc import (
-    BoardLayer, board_edge_bounds, box_center, box_edges, connect_board,
-    courtyard_box, distance, editor_commit, footprints_by_reference, from_mm,
-    move_text_center, text_box, to_mm, vector,
-)
-
 
 CONNECTOR_REFERENCES = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
 FRONT_LABEL_OFFSET_MM = 0.3
@@ -54,7 +63,9 @@ def orientation(pads):
         return "vertical"
     if y_span <= tolerance < x_span:
         return "horizontal"
-    raise RuntimeError(f"ambiguous pad row ({to_mm(x_span):.3f} x {to_mm(y_span):.3f} mm)")
+    raise RuntimeError(
+        f"ambiguous pad row ({to_mm(x_span):.3f} x {to_mm(y_span):.3f} mm)"
+    )
 
 
 def outward_direction(pads, row_orientation, edges):
@@ -164,9 +175,7 @@ def target_center(client, text, pad, row_orientation, direction, courtyard):
     t_left, t_right, t_top, t_bottom = box_edges(bounds)
     back = text.layer == BoardLayer.BL_B_SilkS
     offset = from_mm(BACK_LABEL_OFFSET_MM if back else FRONT_LABEL_OFFSET_MM)
-    clearance = from_mm(
-        BACK_PIN_CLEARANCE_MM if back else FRONT_COURTYARD_CLEARANCE_MM
-    )
+    clearance = from_mm(BACK_PIN_CLEARANCE_MM if back else FRONT_COURTYARD_CLEARANCE_MM)
     if row_orientation == "vertical":
         half = (t_right - t_left) // 2
         normal = max(offset, half + clearance)
@@ -218,9 +227,7 @@ def main():
                     continue
                 assessments = [
                     (
-                        *assess_candidate(
-                            text, pad, row, direction, courtyard, client
-                        ),
+                        *assess_candidate(text, pad, row, direction, courtyard, client),
                         text,
                     )
                     for text in available
@@ -250,7 +257,7 @@ def main():
                     changed.append(text)
                     available.remove(text)
                     print(
-                        f'  pad {pad.number} [{layer_name(layer)}]: aligned '
+                        f"  pad {pad.number} [{layer_name(layer)}]: aligned "
                         f'"{text.value}" to ({to_mm(destination.x):.3f}, '
                         f"{to_mm(destination.y):.3f}) mm"
                     )
@@ -261,12 +268,14 @@ def main():
                         chosen = selected[assessed_text.layer]
                         reason = f"eligible, but {chosen.value!r} was the closer match"
                     print(
-                        f'    [{layer_name(assessed_text.layer)}] '
+                        f"    [{layer_name(assessed_text.layer)}] "
                         f'"{assessed_text.value}": skipped ({reason})'
                     )
         board.update_items(changed)
 
-    print(f"Aligned {len(changed)} connector label(s) (undo: Align connector pin labels).")
+    print(
+        f"Aligned {len(changed)} connector label(s) (undo: Align connector pin labels)."
+    )
 
 
 if __name__ == "__main__":

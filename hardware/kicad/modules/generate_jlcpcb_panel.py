@@ -20,10 +20,12 @@ from generate_jlcpcb import (
     GERBER_LAYERS,
     convert_positions,
     copper_layers,
-    find_kicad_cli as find_common_kicad_cli,
     reject_newer_autosaves,
     reject_unsaved_open_board,
     run,
+)
+from generate_jlcpcb import (
+    find_kicad_cli as find_common_kicad_cli,
 )
 
 
@@ -50,8 +52,16 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> int:
     """Refill/save and reject every finding except intentional routed tabs."""
     completed = subprocess.run(
         [
-            *cli, "pcb", "drc", "--refill-zones", "--save-board",
-            "--format", "json", "--output", str(report), str(board),
+            *cli,
+            "pcb",
+            "drc",
+            "--refill-zones",
+            "--save-board",
+            "--format",
+            "json",
+            "--output",
+            str(report),
+            str(board),
         ],
         text=True,
         capture_output=True,
@@ -62,7 +72,8 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> int:
         raise RuntimeError("KiCad could not validate the panel PCB")
     data = json.loads(report.read_text(encoding="utf-8"))
     unexpected = [
-        violation for violation in data.get("violations", [])
+        violation
+        for violation in data.get("violations", [])
         if violation.get("type") != "invalid_outline"
     ]
     unconnected = data.get("unconnected_items", [])
@@ -85,12 +96,25 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> int:
 def archive_panel_files(output_dir: Path, archive: Path) -> None:
     """Create a ZIP containing only this isolated output directory's fab files."""
     extensions = {
-        ".gbr", ".gbl", ".gbo", ".gbp", ".gbs", ".gm1", ".gml",
-        ".gko", ".gtl", ".gto", ".gtp", ".gts", ".drl",
+        ".gbr",
+        ".gbl",
+        ".gbo",
+        ".gbp",
+        ".gbs",
+        ".gm1",
+        ".gml",
+        ".gko",
+        ".gtl",
+        ".gto",
+        ".gtp",
+        ".gts",
+        ".drl",
     }
     files = sorted(
-        path for path in output_dir.iterdir()
-        if path.is_file() and (
+        path
+        for path in output_dir.iterdir()
+        if path.is_file()
+        and (
             path.suffix.lower() in extensions
             or (path.suffix.lower().startswith(".g") and path.suffix[2:].isdigit())
         )
@@ -110,8 +134,7 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     reject_unsaved_open_board(board)
     reject_newer_autosaves([board])
     destination = (
-        output_dir.resolve() if output_dir
-        else board.parent / f"{board.stem}-jlcpcb"
+        output_dir.resolve() if output_dir else board.parent / f"{board.stem}-jlcpcb"
     )
     destination.mkdir(parents=True, exist_ok=True)
     report = destination / f"{board.stem}-panel-drc.json"
@@ -122,21 +145,55 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     )
 
     layers = copper_layers(board) + list(GERBER_LAYERS[2:])
-    run([
-        *cli, "pcb", "export", "gerbers", "--output", str(destination),
-        "--layers", ",".join(layers), "--check-zones", str(board),
-    ])
-    run([
-        *cli, "pcb", "export", "drill", "--output", str(destination),
-        "--format", "excellon", "--excellon-units", "mm", str(board),
-    ])
+    run(
+        [
+            *cli,
+            "pcb",
+            "export",
+            "gerbers",
+            "--output",
+            str(destination),
+            "--layers",
+            ",".join(layers),
+            "--check-zones",
+            str(board),
+        ]
+    )
+    run(
+        [
+            *cli,
+            "pcb",
+            "export",
+            "drill",
+            "--output",
+            str(destination),
+            "--format",
+            "excellon",
+            "--excellon-units",
+            "mm",
+            str(board),
+        ]
+    )
 
     raw_positions = destination / f".{board.stem}-positions-kicad.csv"
     try:
-        run([
-            *cli, "pcb", "export", "pos", "--output", str(raw_positions),
-            "--format", "csv", "--units", "mm", "--side", "both", str(board),
-        ])
+        run(
+            [
+                *cli,
+                "pcb",
+                "export",
+                "pos",
+                "--output",
+                str(raw_positions),
+                "--format",
+                "csv",
+                "--units",
+                "mm",
+                "--side",
+                "both",
+                str(board),
+            ]
+        )
         convert_positions(raw_positions, destination / f"{board.stem}-positions.csv")
     finally:
         raw_positions.unlink(missing_ok=True)
@@ -155,8 +212,15 @@ def main() -> int:
     parser.add_argument("--kicad-cli", help="path to KiCad 10 kicad-cli")
     args = parser.parse_args()
     try:
-        generate_panel(args.panel, find_panel_kicad_cli(args.kicad_cli), args.output_dir)
-    except (FileNotFoundError, RuntimeError, ValueError, subprocess.CalledProcessError) as error:
+        generate_panel(
+            args.panel, find_panel_kicad_cli(args.kicad_cli), args.output_dir
+        )
+    except (
+        FileNotFoundError,
+        RuntimeError,
+        ValueError,
+        subprocess.CalledProcessError,
+    ) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
     return 0

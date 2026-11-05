@@ -10,7 +10,6 @@ This script is read-only and therefore creates no undo entry.
 
 from kicad_ipc import board_edge_bounds, connect_board, footprints_by_reference, to_mm
 
-
 HOLE_REFERENCE_PREFIX = "H"
 FIDUCIAL_REFERENCE_PREFIX = "FID"
 DECIMAL_PLACES = 3
@@ -40,8 +39,16 @@ def report_offsets(title, items, edges):
         print("  None found.")
     for reference, footprint in items:
         position = footprint.position
-        horizontal = min(("left", position.x-left), ("right", right-position.x), key=lambda x: x[1])
-        vertical = min(("top", position.y-top), ("bottom", bottom-position.y), key=lambda x: x[1])
+        horizontal = min(
+            ("left", position.x - left),
+            ("right", right - position.x),
+            key=lambda x: x[1],
+        )
+        vertical = min(
+            ("top", position.y - top),
+            ("bottom", bottom - position.y),
+            key=lambda x: x[1],
+        )
         print(
             f"  {reference}: {horizontal[0]} {format_mm(horizontal[1])}, "
             f"{vertical[0]} {format_mm(vertical[1])}"
@@ -65,11 +72,11 @@ def main():
     report_offsets("Mounting holes", holes, edges)
     print("\nHole-to-hole spacing")
     for index, (first_ref, first) in enumerate(holes[:-1]):
-        for second_ref, second in holes[index + 1:]:
+        for second_ref, second in holes[index + 1 :]:
             print(
                 f"  {first_ref} to {second_ref}: X "
-                f"{format_mm(abs(second.position.x-first.position.x))}, "
-                f"Y {format_mm(abs(second.position.y-first.position.y))}"
+                f"{format_mm(abs(second.position.x - first.position.x))}, "
+                f"Y {format_mm(abs(second.position.y - first.position.y))}"
             )
     report_offsets("Fiducials", fiducials, edges)
 

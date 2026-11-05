@@ -24,9 +24,9 @@ from kicad_ipc import (
 
 # User settings
 ANCHOR_REFERENCE = "J1"
-MOVING_REFERENCE = "H1"
+MOVING_REFERENCE = "H2"
 ALIGNMENT = "vertical"  # "horizontal" spaces X centres; "vertical" spaces Y centres.
-SPACING_MM = 15.0
+SPACING_MM = 35.0
 INCLUDE_TEXT = False
 
 

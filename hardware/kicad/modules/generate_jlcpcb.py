@@ -26,11 +26,10 @@ import subprocess
 import sys
 import textwrap
 import zipfile
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 import kicad_netlist_reader
-
 
 GERBER_LAYERS = (
     "F.Cu",
@@ -129,7 +128,8 @@ def find_project_files(source: Path) -> tuple[Path, Path | None]:
         board = source.with_suffix(".kicad_pcb")
     elif source.is_dir():
         boards = sorted(
-            path for path in source.glob("*.kicad_pcb")
+            path
+            for path in source.glob("*.kicad_pcb")
             if not path.name.startswith("_autosave-")
         )
         if len(boards) != 1:
@@ -229,7 +229,9 @@ def convert_positions(source: Path, destination: Path) -> None:
         reader = csv.DictReader(input_stream)
         required = {"Ref", "PosX", "PosY", "Rot", "Side"}
         if not reader.fieldnames or not required.issubset(reader.fieldnames):
-            raise ValueError(f"unexpected KiCad position-file columns: {reader.fieldnames}")
+            raise ValueError(
+                f"unexpected KiCad position-file columns: {reader.fieldnames}"
+            )
         with destination.open("w", newline="", encoding="utf-8") as output_stream:
             writer = csv.writer(output_stream)
             writer.writerow(["Designator", "Mid X", "Mid Y", "Rotation", "Layer"])
@@ -249,8 +251,19 @@ def convert_positions(source: Path, destination: Path) -> None:
 def archive_fabrication_files(output_dir: Path, archive: Path) -> None:
     """Bundle only Gerber and drill outputs into the fabrication archive."""
     extensions = {
-        ".gbr", ".gbl", ".gbo", ".gbp", ".gbs", ".gm1", ".gml",
-        ".gko", ".gtl", ".gto", ".gtp", ".gts", ".drl",
+        ".gbr",
+        ".gbl",
+        ".gbo",
+        ".gbp",
+        ".gbs",
+        ".gm1",
+        ".gml",
+        ".gko",
+        ".gtl",
+        ".gto",
+        ".gtp",
+        ".gts",
+        ".drl",
     }
     files = sorted(
         path
@@ -285,16 +298,22 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     # a non-zero exit code for violations makes both checks hard release gates.
     run(
         [
-            *kicad_cli, "sch", "erc",
-            "--output", str(erc_report),
+            *kicad_cli,
+            "sch",
+            "erc",
+            "--output",
+            str(erc_report),
             "--exit-code-violations",
             str(schematic),
         ]
     )
     run(
         [
-            *kicad_cli, "pcb", "drc",
-            "--output", str(drc_report),
+            *kicad_cli,
+            "pcb",
+            "drc",
+            "--output",
+            str(drc_report),
             "--refill-zones",
             "--save-board",
             # Include the same schematic/PCB consistency checks shown by
@@ -311,19 +330,30 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     layers = copper_layers(board) + list(GERBER_LAYERS[2:])
     run(
         [
-            *kicad_cli, "pcb", "export", "gerbers",
-            "--output", str(output_dir),
-            "--layers", ",".join(layers),
+            *kicad_cli,
+            "pcb",
+            "export",
+            "gerbers",
+            "--output",
+            str(output_dir),
+            "--layers",
+            ",".join(layers),
             "--check-zones",
             str(board),
         ]
     )
     run(
         [
-            *kicad_cli, "pcb", "export", "drill",
-            "--output", str(output_dir),
-            "--format", "excellon",
-            "--excellon-units", "mm",
+            *kicad_cli,
+            "pcb",
+            "export",
+            "drill",
+            "--output",
+            str(output_dir),
+            "--format",
+            "excellon",
+            "--excellon-units",
+            "mm",
             str(board),
         ]
     )
@@ -332,9 +362,18 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     try:
         run(
             [
-                *kicad_cli, "pcb", "export", "pos",
-                "--output", str(raw_positions),
-                "--format", "csv", "--units", "mm", "--side", "both",
+                *kicad_cli,
+                "pcb",
+                "export",
+                "pos",
+                "--output",
+                str(raw_positions),
+                "--format",
+                "csv",
+                "--units",
+                "mm",
+                "--side",
+                "both",
                 str(board),
             ]
         )
@@ -346,8 +385,13 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     try:
         run(
             [
-                *kicad_cli, "sch", "export", "python-bom",
-                "--output", str(netlist), str(schematic),
+                *kicad_cli,
+                "sch",
+                "export",
+                "python-bom",
+                "--output",
+                str(netlist),
+                str(schematic),
             ]
         )
         write_bom(netlist, output_dir / f"{project_name}-bom.csv")
