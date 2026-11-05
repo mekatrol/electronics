@@ -5389,6 +5389,18 @@
 		(layer "Edge.Cuts")
 		(uuid "b482c770-147c-4d4e-b964-6d48e05f2f12")
 	)
+	(gr_text "24 VAC MAX"
+		(at 153.062937 119.9 0)
+		(layer "B.SilkS")
+		(uuid "98271cd0-2cb6-42b1-9919-7e0b15cb2633")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.1)
+			)
+			(justify left bottom mirror)
+		)
+	)
 	(gr_text "GND"
 		(at 145.3 84.9 90)
 		(layer "B.SilkS")
@@ -5414,7 +5426,7 @@
 		)
 	)
 	(gr_text "TRIAC Solenoid Controller V1.0"
-		(at 151.4 90.5 90)
+		(at 151.4 88.380331 90)
 		(layer "B.SilkS")
 		(uuid "f2f2573b-0088-4763-b557-1a6fa0a9334a")
 		(effects
@@ -5438,7 +5450,7 @@
 		)
 	)
 	(gr_text "Nov 2026"
-		(at 153.5 90.5 90)
+		(at 153.5 88.380331 90)
 		(layer "B.SilkS")
 		(uuid "8ec53f11-c6b2-418d-8b1a-aa8aae4534b1")
 		(effects
