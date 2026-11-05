@@ -3453,7 +3453,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C2933683"
+		(property "LCSC Part #" "C22962"
 			(at 156.21 80.01 90)
 			(hide yes)
 			(show_name no)
@@ -3875,7 +3875,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C22962"
+		(property "LCSC Part #" "C4410"
 			(at 113.03 99.06 90)
 			(hide yes)
 			(show_name no)
@@ -4941,7 +4941,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C22962"
+		(property "LCSC Part #" "C25803"
 			(at 116.84 105.41 90)
 			(hide yes)
 			(show_name no)
@@ -5710,7 +5710,7 @@
 				)
 			)
 		)
-		(property "Value" "Connector:Conn_01x04_Female"
+		(property "Value" "Connector:Conn_01x04_Pin"
 			(at 109.855 125.73 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5720,7 +5720,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 			(at 109.22 130.81 0)
 			(hide yes)
 			(show_name no)
@@ -5753,7 +5753,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C541851"
+		(property "LCSC Part #" "C2691448"
 			(at 109.22 130.81 0)
 			(hide yes)
 			(show_name no)
