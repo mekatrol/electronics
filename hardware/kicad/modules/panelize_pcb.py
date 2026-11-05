@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Create a V-scored PCB panel without modifying the source board.
 
+Run from the repository root with::
+
+    python3 hardware/kicad/modules/panelize_pcb.py hardware/power_rail_mosfet_switch/power_rail_mosfet_switch.kicad_pcb -x 2 -y 2
+    python3 hardware/kicad/modules/panelize_pcb.py --help
+
 The generated panel is a standalone KiCad 10 board.  Source board items are
 copied into an X/Y grid, their UUIDs and nets are made unique per instance,
 the individual Edge.Cuts are replaced by one panel outline, and V-score lines
@@ -16,14 +21,13 @@ from __future__ import annotations
 
 import argparse
 import copy
-import os
 import re
-import shutil
 import subprocess
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
+from kicad_discovery import find_fiducial_library_file, find_kicad_cli
 
 Atom = str
 Node = list["Atom | Node"]
@@ -65,7 +69,6 @@ def dump_sexpr(node: Node, level: int = 0) -> str:
     head = str(node[0])
     if all(not isinstance(value, list) for value in node):
         return "(" + " ".join(str(value) for value in node) + ")"
-    indent = "\t" * level
     child_indent = "\t" * (level + 1)
     parts = ["(" + head]
     for value in node[1:]:
@@ -85,7 +88,9 @@ def head(node: Node) -> str:
 
 
 def children(node: Node, name: str) -> list[Node]:
-    return [value for value in node[1:] if isinstance(value, list) and head(value) == name]
+    return [
+        value for value in node[1:] if isinstance(value, list) and head(value) == name
+    ]
 
 
 def first_child(node: Node, name: str) -> Node | None:
@@ -123,7 +128,13 @@ def translate_item(item: Node, dx: float, dy: float) -> None:
             translate_pair(at, dx, dy)
         return
     coordinate_names = {
-        "at", "start", "mid", "end", "center", "xy", "position",
+        "at",
+        "start",
+        "mid",
+        "end",
+        "center",
+        "xy",
+        "position",
     }
     for node in walk(item):
         if head(node) in coordinate_names:
@@ -132,7 +143,8 @@ def translate_item(item: Node, dx: float, dy: float) -> None:
 
 def remove_zone_fills(item: Node) -> None:
     item[:] = [
-        value for value in item
+        value
+        for value in item
         if not (isinstance(value, list) and head(value) == "filled_polygon")
     ]
     for value in item[1:]:
@@ -151,7 +163,11 @@ def renew_uuids(item: Node) -> None:
             if isinstance(value, str):
                 bare = value.strip('"')
                 if bare in replacements:
-                    node[index] = quoted(replacements[bare]) if value.startswith('"') else replacements[bare]
+                    node[index] = (
+                        quoted(replacements[bare])
+                        if value.startswith('"')
+                        else replacements[bare]
+                    )
 
 
 def remap_nets(item: Node, net_map: dict[int, int], suffix: str) -> None:
@@ -227,38 +243,17 @@ def has_non_rectangular_edges(root: Node) -> bool:
     return False
 
 
-def graphic_line(x1: float, y1: float, x2: float, y2: float, layer: str, width: float) -> Node:
+def graphic_line(
+    x1: float, y1: float, x2: float, y2: float, layer: str, width: float
+) -> Node:
     return [
-        "gr_line", ["start", number(x1), number(y1)], ["end", number(x2), number(y2)],
+        "gr_line",
+        ["start", number(x1), number(y1)],
+        ["end", number(x2), number(y2)],
         ["stroke", ["width", number(width)], ["type", "default"]],
-        ["layer", quoted(layer)], ["uuid", quoted(str(uuid.uuid4()))],
+        ["layer", quoted(layer)],
+        ["uuid", quoted(str(uuid.uuid4()))],
     ]
-
-
-FIDUCIAL_RELATIVE_PATH = Path("Fiducial.pretty") / "Fiducial_1mm_Mask2mm.kicad_mod"
-
-
-def find_fiducial_library_file(explicit: Path | None = None) -> Path:
-    """Locate KiCad's installed standard fiducial footprint."""
-    candidates: list[Path] = []
-    if explicit:
-        candidates.append(explicit)
-    footprint_dir = os.environ.get("KICAD10_FOOTPRINT_DIR")
-    if footprint_dir:
-        candidates.append(Path(footprint_dir) / FIDUCIAL_RELATIVE_PATH)
-    candidates.extend([
-        Path(r"C:\Program Files\KiCad\10.0\share\kicad\footprints") / FIDUCIAL_RELATIVE_PATH,
-        Path("/usr/share/kicad/footprints") / FIDUCIAL_RELATIVE_PATH,
-        Path("/usr/local/share/kicad/footprints") / FIDUCIAL_RELATIVE_PATH,
-        Path("/Applications/KiCad/KiCad.app/Contents/SharedSupport/footprints") / FIDUCIAL_RELATIVE_PATH,
-    ])
-    for candidate in candidates:
-        if candidate.is_file():
-            return candidate.resolve()
-    raise FileNotFoundError(
-        "KiCad 10 library footprint Fiducial:Fiducial_1mm_Mask2mm was not found; "
-        "pass --fiducial-footprint or set KICAD10_FOOTPRINT_DIR"
-    )
 
 
 def load_fiducial_template(path: Path) -> Node:
@@ -275,19 +270,24 @@ def fiducial(template: Node, reference: str, x: float, y: float) -> Node:
     # Library-only serialization metadata is not stored in an embedded board
     # footprint. KiCad assigns UUIDs to the footprint and its graphical items.
     result[:] = [
-        value for value in result
+        value
+        for value in result
         if not (isinstance(value, list) and head(value) in {"version", "generator"})
     ]
     layer_index = next(
-        index for index, value in enumerate(result)
+        index
+        for index, value in enumerate(result)
         if isinstance(value, list) and head(value) == "layer"
     )
     result.insert(layer_index + 1, ["uuid", quoted(str(uuid.uuid4()))])
     result.insert(layer_index + 2, ["at", number(x), number(y)])
     reference_property = next(
-        value for value in result
-        if isinstance(value, list) and head(value) == "property"
-        and len(value) >= 3 and str(value[1]).strip('"') == "Reference"
+        value
+        for value in result
+        if isinstance(value, list)
+        and head(value) == "property"
+        and len(value) >= 3
+        and str(value[1]).strip('"') == "Reference"
     )
     reference_property[2] = quoted(reference)
     if not first_child(reference_property, "hide"):
@@ -295,19 +295,31 @@ def fiducial(template: Node, reference: str, x: float, y: float) -> Node:
         # silkscreen. Hiding the instance field also prevents edge-clearance
         # warnings when the library's default text extends beyond a narrow rail.
         layer_position = next(
-            index for index, value in enumerate(reference_property)
+            index
+            for index, value in enumerate(reference_property)
             if isinstance(value, list) and head(value) == "layer"
         )
         reference_property.insert(layer_position + 1, ["hide", "yes"])
     for node in walk(result):
         if node is result:
             continue
-        if (head(node).startswith("fp_") or head(node) == "pad") and not first_child(node, "uuid"):
+        if (head(node).startswith("fp_") or head(node) == "pad") and not first_child(
+            node, "uuid"
+        ):
             node.append(["uuid", quoted(str(uuid.uuid4()))])
     return result
 
 
-STRUCTURAL = {"version", "generator", "generator_version", "general", "paper", "layers", "setup", "embedded_fonts"}
+STRUCTURAL = {
+    "version",
+    "generator",
+    "generator_version",
+    "general",
+    "paper",
+    "layers",
+    "setup",
+    "embedded_fonts",
+}
 
 
 def build_panel(
@@ -375,22 +387,26 @@ def build_panel(
 
     # One continuous routed panel outline. Internal score locations live on
     # User.Drawings because Edge.Cuts would incorrectly make them routed slots.
-    result.extend([
-        graphic_line(0, 0, panel_width, 0, "Edge.Cuts", 0.1),
-        graphic_line(panel_width, 0, panel_width, panel_height, "Edge.Cuts", 0.1),
-        graphic_line(panel_width, panel_height, 0, panel_height, "Edge.Cuts", 0.1),
-        graphic_line(0, panel_height, 0, 0, "Edge.Cuts", 0.1),
-    ])
+    result.extend(
+        [
+            graphic_line(0, 0, panel_width, 0, "Edge.Cuts", 0.1),
+            graphic_line(panel_width, 0, panel_width, panel_height, "Edge.Cuts", 0.1),
+            graphic_line(panel_width, panel_height, 0, panel_height, "Edge.Cuts", 0.1),
+            graphic_line(0, panel_height, 0, 0, "Edge.Cuts", 0.1),
+        ]
+    )
     # Score both sides of every circuit row/column. With a nonzero gap, the
     # intervening strip becomes removable scrap and keeps edge copper (such as
     # the sample board's castellations) from touching the next PCB.
     vertical_scores = {
         rail + column * (bounds.width + gap) + side * bounds.width
-        for column in range(count_x) for side in (0, 1)
+        for column in range(count_x)
+        for side in (0, 1)
     }
     horizontal_scores = {
         rail + row * (bounds.height + gap) + side * bounds.height
-        for row in range(count_y) for side in (0, 1)
+        for row in range(count_y)
+        for side in (0, 1)
     }
     for x in sorted(vertical_scores):
         result.append(graphic_line(x, 0, x, panel_height, "Dwgs.User", 0.15))
@@ -398,23 +414,15 @@ def build_panel(
         result.append(graphic_line(0, y, panel_width, y, "Dwgs.User", 0.15))
 
     inset = rail / 2
-    result.extend([
-        fiducial(fiducial_template, "PFID1", inset, inset),
-        fiducial(fiducial_template, "PFID2", panel_width - inset, inset),
-        fiducial(fiducial_template, "PFID3", inset, panel_height - inset),
-    ])
+    result.extend(
+        [
+            fiducial(fiducial_template, "PFID1", inset, inset),
+            fiducial(fiducial_template, "PFID2", panel_width - inset, inset),
+            fiducial(fiducial_template, "PFID3", inset, panel_height - inset),
+        ]
+    )
     result.append(["embedded_fonts", "no"])
     return result, Bounds(0, 0, panel_width, panel_height)
-
-
-def find_kicad_cli(explicit: str | None) -> str | None:
-    if explicit:
-        return explicit
-    found = shutil.which("kicad-cli")
-    if found:
-        return found
-    windows = Path(r"C:\Program Files\KiCad\10.0\bin\kicad-cli.exe")
-    return str(windows) if windows.exists() else None
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -423,15 +431,27 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("-x", "--count-x", type=int, required=True, help="PCB columns")
     parser.add_argument("-y", "--count-y", type=int, required=True, help="PCB rows")
     parser.add_argument("-o", "--output", type=Path, help="output .kicad_pcb")
-    parser.add_argument("--rail", type=float, default=5.0, help="rail width in mm (default: 5)")
-    parser.add_argument("--gap", type=float, default=2.0, help="scrap gap between PCBs in mm (default: 2)")
+    parser.add_argument(
+        "--rail", type=float, default=5.0, help="rail width in mm (default: 5)"
+    )
+    parser.add_argument(
+        "--gap",
+        type=float,
+        default=2.0,
+        help="scrap gap between PCBs in mm (default: 2)",
+    )
     parser.add_argument("--kicad-cli", help="path to KiCad 10 kicad-cli")
     parser.add_argument(
-        "--fiducial-footprint", type=Path,
+        "--fiducial-footprint",
+        type=Path,
         help="installed Fiducial_1mm_Mask2mm.kicad_mod (normally auto-detected)",
     )
-    parser.add_argument("--no-kicad-check", action="store_true", help="skip KiCad parse/resave check")
-    parser.add_argument("--force", action="store_true", help="replace an existing output file")
+    parser.add_argument(
+        "--no-kicad-check", action="store_true", help="skip KiCad parse/resave check"
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="replace an existing output file"
+    )
     return parser.parse_args(argv)
 
 
@@ -440,13 +460,20 @@ def main(argv: list[str] | None = None) -> int:
     if args.count_x < 1 or args.count_y < 1:
         raise SystemExit("count-x and count-y must both be positive")
     source_path = args.input.resolve()
-    output_path = (args.output or source_path.with_name(
-        f"{source_path.stem}_panel_{args.count_x}x{args.count_y}.kicad_pcb"
-    )).resolve()
+    output_path = (
+        args.output
+        or source_path.with_name(
+            f"{source_path.stem}_panel_{args.count_x}x{args.count_y}.kicad_pcb"
+        )
+    ).resolve()
     if source_path == output_path:
-        raise SystemExit("output must differ from input; the source PCB is never modified")
+        raise SystemExit(
+            "output must differ from input; the source PCB is never modified"
+        )
     if output_path.exists() and not args.force:
-        raise SystemExit(f"output already exists: {output_path} (use --force to replace it)")
+        raise SystemExit(
+            f"output already exists: {output_path} (use --force to replace it)"
+        )
 
     source_bytes = source_path.read_bytes()
     source = parse_sexpr(source_bytes.decode("utf-8-sig"))
@@ -463,16 +490,32 @@ def main(argv: list[str] | None = None) -> int:
     if not args.no_kicad_check:
         if not cli:
             output_path.unlink(missing_ok=True)
-            raise SystemExit("KiCad 10 kicad-cli not found; pass --kicad-cli or --no-kicad-check")
+            raise SystemExit(
+                "KiCad 10 kicad-cli not found; pass --kicad-cli or --no-kicad-check"
+            )
         drc_report = output_path.with_name(f".{output_path.stem}.panelize-drc.json")
-        completed = subprocess.run([
-            cli, "pcb", "drc", "--refill-zones", "--save-board",
-            "--format", "json", "--output", str(drc_report), str(output_path),
-        ], text=True)
+        completed = subprocess.run(
+            cli
+            + [
+                "pcb",
+                "drc",
+                "--refill-zones",
+                "--save-board",
+                "--format",
+                "json",
+                "--output",
+                str(drc_report),
+                str(output_path),
+            ],
+            text=True,
+            check=False,
+        )
         drc_report.unlink(missing_ok=True)
         if completed.returncode:
             output_path.unlink(missing_ok=True)
-            raise SystemExit(f"KiCad rejected the generated panel (exit {completed.returncode})")
+            raise SystemExit(
+                f"KiCad rejected the generated panel (exit {completed.returncode})"
+            )
 
     if source_path.read_bytes() != source_bytes:
         raise RuntimeError("source PCB changed unexpectedly")
@@ -483,8 +526,12 @@ def main(argv: list[str] | None = None) -> int:
         f"rail: {args.rail:.3f} mm; gap: {args.gap:.3f} mm"
     )
     if non_rectangular:
-        print("WARNING: source outline is non-rectangular; V-scoring produces its rectangular envelope.")
-    print("V-score centre lines are on User.Drawings; confirm them with the fabricator.")
+        print(
+            "WARNING: source outline is non-rectangular; V-scoring produces its rectangular envelope."
+        )
+    print(
+        "V-score centre lines are on User.Drawings; confirm them with the fabricator."
+    )
     return 0
 
 

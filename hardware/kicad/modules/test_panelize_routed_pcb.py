@@ -1,9 +1,9 @@
 import unittest
 from pathlib import Path
 
-from panelize_pcb import find_fiducial_library_file, load_fiducial_template, parse_sexpr
+from kicad_discovery import find_fiducial_library_file
+from panelize_pcb import load_fiducial_template, parse_sexpr
 from panelize_routed_pcb import build_routed_panel
-
 
 ROOT = Path(__file__).resolve().parents[2]
 SAMPLE = ROOT / "power_rail_mosfet_switch" / "power_rail_mosfet_switch.kicad_pcb"
@@ -32,7 +32,9 @@ class RoutedPanelTests(unittest.TestCase):
 
     def test_rejects_undersized_route_gap(self):
         with self.assertRaises(ValueError):
-            build_routed_panel(self.source, 2, 2, 1.9, 5.0, 5.0, 0.6, 0.25, self.fiducial)
+            build_routed_panel(
+                self.source, 2, 2, 1.9, 5.0, 5.0, 0.6, 0.25, self.fiducial
+            )
 
 
 if __name__ == "__main__":
