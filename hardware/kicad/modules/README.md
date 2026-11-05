@@ -128,62 +128,48 @@ Removes every copper track (straight or curved), via, and zone on every layer
 from the board active in PCB Editor. The removal is one undoable transaction;
 the script leaves the board unsaved for inspection.
 
-### `panelize_pcb.py`
-
-Creates a separate V-scored KiCad 10 panel from a saved `.kicad_pcb`; it never
-opens the source for writing. Configure the grid on the command line:
-
-```sh
-python kicad/modules/panelize_pcb.py power_rail_mosfet_switch/power_rail_mosfet_switch.kicad_pcb -x 4 -y 3
-```
-
-The output defaults to `<board>_panel_<X>x<Y>.kicad_pcb`. It has one continuous
-rectangular `Edge.Cuts` outline, a 5 mm rail on all four sides, a 2 mm scrap gap
-between boards, three asymmetric global 1 mm copper / 2 mm mask fiducials on
-the rail loaded directly from KiCad 10's installed
-`Fiducial:Fiducial_1mm_Mask2mm` library footprint, and V-score lines on
-`User.Drawings` at both sides of every PCB row
-and column. The gap prevents edge copper such as castellations from touching
-the next PCB. Each PCB copy receives unique UUIDs and private net
-names to prevent cross-panel ratsnest connections. The script asks KiCad 10's
-`kicad-cli pcb drc --refill-zones --save-board` to parse and normalize the
-generated board and persist fresh zone fills; pass `--no-kicad-check` only when
-the CLI is unavailable.
-
-V-scoring makes each finished PCB the rectangular envelope of its original
-outline. In particular, rounded corners become square. Use routed tabs instead
-if the finished PCB must retain a non-rectangular outline. Always confirm the
-score lines, gap, rail width, fiducial construction, and panel limits with the
-PCB fabricator before ordering. Use `--gap 0` only for designs whose board-edge
-copper and fabrication process explicitly permit directly abutted PCBs.
-The standard footprint library is auto-detected; use `--fiducial-footprint`
-only for a nonstandard KiCad installation.
-
 ### `panelize_routed_pcb.py`
 
-Creates a routed mouse-bite panel for castellated or non-rectangular boards,
-preserving the source `Edge.Cuts` so the router crosses castellated drills:
+Creates a routed mouse-bite panel while preserving the source PCB outline,
+including non-rectangular geometry:
 
 ```sh
 python kicad/modules/panelize_routed_pcb.py power_rail_mosfet_switch/power_rail_mosfet_switch.kicad_pcb -x 4 -y 3 --gap 2
 ```
 
 The routing gap is configurable but must be at least 2 mm. Defaults follow
-JLCPCB's published mouse-bite guidance: 5 mm tabs on the non-castellated top
-and bottom edges, 0.6 mm NPTH holes with
-0.25 mm between hole edges, 5 mm rails, four 1 mm library fiducials whose
+JLCPCB's published mouse-bite guidance: 5 mm tabs on the top and bottom edges,
+five 0.6 mm NPTH holes per tab with
+0.4 mm between hole edges (1.0 mm pitch), 5 mm rails, four 1 mm library fiducials whose
 centres are 3.85 mm from the panel edges, and four 2 mm NPTH tooling holes in
 the rail corners. Use `--tab-width`,
 `--mouse-bite-diameter`, and `--mouse-bite-clearance` only within the limits
-printed by `--help`. Select **Castellated Holes** and customer-supplied
-panelization when ordering, and have JLCPCB review the routed tab layout before
-production.
+printed by `--help`. Order it as customer-supplied panelization and have JLCPCB
+review the routed tab layout before production. The NPTH mouse-bite holes do
+not require the **Castellated Holes** option. Select that option only if the
+finished source PCB itself has plated half-holes along an edge.
 
-KiCad internally identifies each deliberate opening in a routed outline as
-`invalid_outline`; these openings are the solid breakaway tabs, not accidental
-geometry errors. The script captures those expected markers and reports them
-as validated routing features rather than DRC violations. Any other DRC
-violation or any unconnected item rejects and removes the output.
+The script constructs the panel substrate from the preserved source outlines,
+solid breakaway bridges, and process rails. It then emits one closed exterior
+`Edge.Cuts` contour plus closed internal cutouts for every routed channel.
+The configurable routing gap is also placed between the PCB array and the
+rails, so a 5 mm rail remains a full 5 mm after routing. Any DRC violation,
+including `invalid_outline`, or any unconnected item rejects the output.
+
+After generation, the script prints a self-contained validation summary with
+the source and output paths, array and finished dimensions, routing and rail
+geometry, tab and mouse-bite counts, fiducial and tooling-hole construction,
+KiCad DRC result, source-integrity result, and ordering intent. Provide this
+summary together with the generated panel when requesting an independent
+fabrication review.
+
+The complete generated panel is centred on the drawing sheet inherited from
+the source board. This changes only its absolute editor coordinates; panel
+dimensions, clearances, Gerbers, and drill geometry remain unchanged.
+
+Closed-cutout construction uses the GEOS geometry library (`libgeos_c`). The
+script stops with an explicit error if GEOS is unavailable rather than emitting
+an invalid or ambiguous routed outline.
 
 ### `component_reference_text.py`
 
@@ -344,9 +330,7 @@ directory:
 - `<project>-positions.csv`
 
 `User.Drawings` is exported as `<project>-User_Drawings.gbr` and included in
-the Gerber ZIP. Panel files produced by `panelize_pcb.py` use this Gerber for
-their V-score centre lines. Explicitly identify it as the V-score drawing in
-the fabrication order notes; it is intentionally separate from `Edge.Cuts`.
+the Gerber ZIP when a project contains deliberate documentation geometry.
 
 The BOM includes populated components with a non-empty `LCSC Part #` field.
 
@@ -363,8 +347,8 @@ files. It intentionally requires a filename containing `panel`, needs only a
 
 Output goes to `<panel-name>-jlcpcb/` beside the panel and includes Gerbers,
 Excellon drills, a positions CSV, and `<panel-name>-gerbers.zip`. Routed-panel
-DRC permits only the intentional open-outline markers at mouse-bite tabs; any
-other violation or unconnected item stops export. The original
+DRC requires closed routing cutouts with no violations or unconnected items.
+The original
 `generate_jlcpcb.py` schematic/project workflow is unchanged.
 
 ## Support modules

@@ -48,8 +48,8 @@ def validate_panel_name(board: Path) -> None:
         )
 
 
-def check_panel_drc(board: Path, cli: list[str], report: Path) -> int:
-    """Refill/save and reject every finding except intentional routed tabs."""
+def check_panel_drc(board: Path, cli: list[str], report: Path) -> None:
+    """Refill/save and reject every DRC or connectivity finding."""
     completed = subprocess.run(
         [
             *cli,
@@ -71,11 +71,7 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> int:
         print(completed.stderr, end="", file=sys.stderr)
         raise RuntimeError("KiCad could not validate the panel PCB")
     data = json.loads(report.read_text(encoding="utf-8"))
-    unexpected = [
-        violation
-        for violation in data.get("violations", [])
-        if violation.get("type") != "invalid_outline"
-    ]
+    unexpected = data.get("violations", [])
     unconnected = data.get("unconnected_items", [])
     if unexpected or unconnected:
         types = sorted({str(item.get("type", "unknown")) for item in unexpected})
@@ -85,12 +81,7 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> int:
             f"({detail}); {len(unconnected)} unconnected item(s). "
             f"See {report}"
         )
-    tabs = sum(
-        violation.get("type") == "invalid_outline"
-        for violation in data.get("violations", [])
-    )
     report.unlink(missing_ok=True)
-    return tabs
 
 
 def archive_panel_files(output_dir: Path, archive: Path) -> None:
@@ -138,11 +129,8 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     )
     destination.mkdir(parents=True, exist_ok=True)
     report = destination / f"{board.stem}-panel-drc.json"
-    tabs = check_panel_drc(board, cli, report)
-    print(
-        f"Validated {tabs} intentional routed tab opening(s); "
-        "no non-tab DRC violations or unconnected items."
-    )
+    check_panel_drc(board, cli, report)
+    print("Panel DRC passed with no violations or unconnected items.")
 
     layers = copper_layers(board) + list(GERBER_LAYERS[2:])
     run(
