@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Generate JLCPCB files from a generated panelized PCB (no schematic needed).
 
+Run from the repository root with::
+
+    python3 hardware/kicad/modules/generate_jlcpcb_panel.py hardware/mek-sub-triac/mek-sub-triac_routed_panel_2x2.kicad_pcb
+    python3 hardware/kicad/modules/generate_jlcpcb_panel.py --help
+
 This script is specifically for ``*_panel_*.kicad_pcb`` files produced by the
 panelization scripts. It does not run schematic ERC/parity and does not create
 a BOM. The source PCB is validated, its zones are refilled, and fabrication
@@ -65,6 +70,7 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> None:
         ],
         text=True,
         capture_output=True,
+        check=False,
     )
     if completed.returncode or not report.is_file():
         print(completed.stdout, end="")
@@ -117,6 +123,36 @@ def archive_panel_files(output_dir: Path, archive: Path) -> None:
             bundle.write(path, path.name)
 
 
+def remove_stale_panel_drill_files(output_dir: Path, board_stem: str) -> None:
+    """Remove drill outputs from an earlier export before regenerating them."""
+    for path in output_dir.glob(f"{board_stem}*.drl"):
+        if path.is_file():
+            path.unlink()
+
+
+def export_panel_drills(board: Path, cli: list[str], output_dir: Path) -> None:
+    """Export separate plated and non-plated Excellon drill files."""
+    # A previous exporter version produced one mixed-plating drill file.  Do
+    # not leave it in the fabrication ZIP when regenerating separate files.
+    remove_stale_panel_drill_files(output_dir, board.stem)
+    run(
+        [
+            *cli,
+            "pcb",
+            "export",
+            "drill",
+            "--output",
+            str(output_dir),
+            "--format",
+            "excellon",
+            "--excellon-units",
+            "mm",
+            "--excellon-separate-th",
+            str(board),
+        ]
+    )
+
+
 def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) -> Path:
     board = board.resolve()
     if not board.is_file() or board.suffix.lower() != ".kicad_pcb":
@@ -147,21 +183,7 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
             str(board),
         ]
     )
-    run(
-        [
-            *cli,
-            "pcb",
-            "export",
-            "drill",
-            "--output",
-            str(destination),
-            "--format",
-            "excellon",
-            "--excellon-units",
-            "mm",
-            str(board),
-        ]
-    )
+    export_panel_drills(board, cli, destination)
 
     raw_positions = destination / f".{board.stem}-positions-kicad.csv"
     try:
