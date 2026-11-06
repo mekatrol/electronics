@@ -7,14 +7,21 @@ Run from the repository root with::
 Open the PCB to check in PCB Editor before running the script. By default this
 script checks every copper zone assigned to the GND or +5V net. Set
 ``SET_RELIEFS`` to ``True`` to write the configured settings to every matching
-zone in one undoable PCB Editor transaction and refill all zones. Changes are
-left unsaved for review. Pad-level and custom-rule overrides are outside the
-scope of this zone-level check, so run KiCad's Design Rules Checker afterwards.
+zone in one undoable PCB Editor transaction and refill all zones. Pad-level and
+custom-rule overrides are outside this zone-level check. After applying the
+settings, the script runs KiCad DRC on an isolated copy of the updated live
+board, reports every finding, and leaves the real board unsaved for review.
 """
 
 from dataclasses import dataclass
 
-from kicad_ipc import connect_board, editor_commit, from_mm, to_mm
+from kicad_ipc import (
+    connect_board,
+    editor_commit,
+    from_mm,
+    run_live_board_drc,
+    to_mm,
+)
 from kipy.proto.board.board_types_pb2 import (
     IslandRemovalMode,
     ZoneConnectionStyle,
@@ -27,6 +34,10 @@ from kipy.proto.board.board_types_pb2 import (
 # False checks and reports without changing the board. True writes the exact
 # configured values to every matching zone and leaves the result unsaved.
 SET_RELIEFS = True
+
+# Run the full KiCad DRC after settings are applied. DRC uses an isolated copy
+# of the live board, so the real board remains open and unsaved for review.
+RUN_DRC_AFTER_SET = True
 
 # Only copper zones on these nets are checked. Net matching is case-sensitive,
 # just as it is in KiCad.
@@ -180,6 +191,10 @@ def main():
         f"Updated all {len(zones)} matching zone(s) "
         "(undo: Set zone thermal reliefs)."
     )
+    if RUN_DRC_AFTER_SET:
+        drc_errors = run_live_board_drc(board)
+        if drc_errors:
+            raise SystemExit(f"Updated board has {drc_errors} DRC error(s).")
     print("Live board changes are left unsaved for review in KiCad.")
 
 

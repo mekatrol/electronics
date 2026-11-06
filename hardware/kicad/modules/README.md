@@ -119,6 +119,7 @@ The editor history labels are:
 | `remove_tracks_and_vias.py` | Remove all tracks, vias, and zones |
 | `resize_matching_text.py` | Resize matching board text |
 | `thermal_releifs.py` | Set zone thermal reliefs |
+| `vias.py` | Validate or set JLCPCB-oriented vias |
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
 
 `report_board_dimensions.py` is read-only and creates no history entry.
@@ -131,7 +132,19 @@ zone settings: 0.20 mm clearance, 0.25 mm minimum width, thermal pad connections
 island removal. Numeric values already above these minimums pass in check mode.
 Set the script's `SET_RELIEFS` flag to `True` to write the exact configured
 values to every matching zone in one undoable transaction and refill all zones.
-Changes remain unsaved for review.
+The setter then runs KiCad DRC on an isolated copy of the updated live board and
+reports every violation and unconnected item. Changes remain unsaved for review.
+
+### `vias.py`
+
+Validates every board via against conservative, standard-cost JLCPCB rigid-PCB
+settings: a 0.30 mm minimum drill, 0.50 mm minimum diameter, 0.10 mm minimum
+annular ring per side, and through-vias only. Validation is the default and
+does not modify the board. Set the script's `SET_VIAS` flag to `True` to enlarge
+only non-compliant vias and convert unsupported via types in one undoable
+transaction. Larger existing vias are preserved and changes remain unsaved for
+review. After setting, KiCad DRC runs on an isolated copy of the updated live
+board and reports every violation and unconnected item.
 
 ### `remove_tracks_and_vias.py`
 

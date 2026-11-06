@@ -8,9 +8,13 @@ changes from remaining in the editor.
 """
 
 from contextlib import contextmanager
+import json
 import math
 from pathlib import Path
 import re
+import shutil
+import subprocess
+import tempfile
 
 from kipy import KiCad
 from kipy.common_types import Commit
@@ -25,6 +29,8 @@ from kipy.proto.common.commands.editor_commands_pb2 import (
 )
 from kipy.proto.common.types import ItemHeader
 from kipy.util.units import from_mm, to_mm
+
+from kicad_discovery import find_kicad_cli
 
 
 def connect_board():
@@ -97,6 +103,97 @@ def board_has_unsaved_changes(board, saved_path=None):
     live_tokens = _normalized_board_tokens(board.get_as_string())
     saved_tokens = _normalized_board_tokens(path.read_text(encoding="utf-8"))
     return live_tokens != saved_tokens
+
+
+def _print_drc_entries(title, entries):
+    """Print all entries from one section of KiCad's JSON DRC report."""
+    if not entries:
+        return
+    print(f"{title} ({len(entries)}):")
+    for index, entry in enumerate(entries, start=1):
+        severity = entry.get("severity", "error").upper()
+        kind = entry.get("type", "unknown rule")
+        description = entry.get("description", "No description supplied")
+        print(f"  {index}. [{severity}] {kind}: {description}")
+
+        # Include involved objects and coordinates so the terminal output is
+        # useful without opening the temporary board in PCB Editor.
+        for item in entry.get("items", []):
+            item_description = item.get("description", "board item")
+            position = item.get("pos")
+            if isinstance(position, dict) and "x" in position and "y" in position:
+                item_description += f' at ({position["x"]}, {position["y"]})'
+            print(f"       - {item_description}")
+
+
+def run_live_board_drc(board):
+    """Run full KiCad DRC on a temporary copy of the live, unsaved board.
+
+    KiCad 10's IPC API does not expose the DRC engine. Serializing the live
+    board into an isolated temporary project lets ``kicad-cli`` inspect editor
+    changes without saving or otherwise touching the real board. Every finding
+    is printed, and the combined error count is returned.
+    """
+    cli = find_kicad_cli()
+    if not cli:
+        raise RuntimeError("KiCad 10 kicad-cli was not found; DRC could not run")
+
+    source_board = board_document_path(board.document)
+    with tempfile.TemporaryDirectory(prefix="kicad-live-drc-") as temporary:
+        temporary_dir = Path(temporary)
+        temporary_board = temporary_dir / source_board.name
+        report_path = temporary_dir / "drc.json"
+
+        # Preserve the basename so KiCad finds matching project and custom-rule
+        # files by its normal conventions inside the isolated directory.
+        temporary_board.write_text(board.get_as_string(), encoding="utf-8")
+        for suffix in (".kicad_pro", ".kicad_dru"):
+            source_settings = source_board.with_suffix(suffix)
+            if source_settings.is_file():
+                shutil.copy2(source_settings, temporary_dir / source_settings.name)
+
+        completed = subprocess.run(
+            cli
+            + [
+                "pcb",
+                "drc",
+                "--refill-zones",
+                "--format",
+                "json",
+                "--output",
+                str(report_path),
+                str(temporary_board),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode or not report_path.is_file():
+            details = "\n".join(
+                output.strip()
+                for output in (completed.stdout, completed.stderr)
+                if output.strip()
+            )
+            raise RuntimeError(
+                "KiCad could not run DRC on the live board copy"
+                + (f":\n{details}" if details else "")
+            )
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    violations = report.get("violations", [])
+    unconnected = report.get("unconnected_items", [])
+    print("KiCad DRC results for the updated live board:")
+    _print_drc_entries("Violations", violations)
+    _print_drc_entries("Unconnected items", unconnected)
+    total = len(violations) + len(unconnected)
+    if total:
+        print(
+            f"DRC FAILED: {len(violations)} violation(s), "
+            f"{len(unconnected)} unconnected item(s)."
+        )
+    else:
+        print("DRC PASSED: no violations or unconnected items.")
+    return total
 
 
 def _encode_varint(value):
