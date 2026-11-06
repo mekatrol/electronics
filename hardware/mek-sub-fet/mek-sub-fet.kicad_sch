@@ -3010,7 +3010,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C2933675"
+		(property "LCSC Part #" "C22962"
 			(at 120.65 64.77 90)
 			(hide yes)
 			(show_name no)
@@ -3177,7 +3177,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C4410"
+		(property "LCSC Part #" "C118845"
 			(at 132.08 99.06 90)
 			(hide yes)
 			(show_name no)
@@ -4190,6 +4190,17 @@
 				)
 			)
 		)
+		(property "LCSC Part #" "C20526"
+			(at 132.08 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "f676f829-097e-4016-b4e3-0788048a8da7")
 		)
@@ -4375,6 +4386,17 @@
 			)
 		)
 		(property "Description" "N-MOSFET transistor, gate/drain/source"
+			(at 149.86 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C5148642"
 			(at 149.86 99.06 0)
 			(hide yes)
 			(show_name no)
@@ -4766,7 +4788,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C4410"
+		(property "LCSC Part #" "C4190"
 			(at 120.65 76.2 90)
 			(hide yes)
 			(show_name no)

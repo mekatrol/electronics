@@ -202,7 +202,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C2933675"
+		(property "LCSC Part #" "C22962"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1218,7 +1218,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C4410"
+		(property "LCSC Part #" "C118845"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1562,7 +1562,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C4410"
+		(property "LCSC Part #" "C4190"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1744,6 +1744,19 @@
 			(effects
 				(font
 					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C5148642"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "3e3dcbbf-49fd-48b7-bd22-c809d90201e2")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -3060,6 +3073,19 @@
 				)
 			)
 		)
+		(property "LCSC Part #" "C20526"
+			(at 0 0 90)
+			(unlocked yes)
+			(layer "F.Fab")
+			(hide yes)
+			(uuid "e88d9b20-c2b8-425a-8bbd-897513278b88")
+			(effects
+				(font
+					(size 1 1)
+					(thickness 0.15)
+				)
+			)
+		)
 		(property ki_fp_filters "SOT?23*")
 		(path "/8a6ac692-5006-4258-8070-b85391721ff6")
 		(sheetname "/")
@@ -4354,7 +4380,7 @@
 			(justify left bottom mirror)
 		)
 	)
-	(gr_text "36 VDC MAX"
+	(gr_text "12 VDC MAX"
 		(at 153.062937 119.9 0)
 		(layer "B.SilkS")
 		(uuid "98271cd0-2cb6-42b1-9919-7e0b15cb2633")
