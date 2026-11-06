@@ -5413,7 +5413,7 @@
 			(justify left bottom mirror)
 		)
 	)
-	(gr_text "TRIAC"
+	(gr_text "SIGNAL"
 		(at 147.8 84.9 90)
 		(layer "B.SilkS")
 		(uuid "d9491882-8572-42c6-963f-e5a690bfc990")
@@ -5461,7 +5461,7 @@
 			(justify left bottom mirror)
 		)
 	)
-	(gr_text "TRIAC:\n  ON:   >= 3.0V\n  OFF:  <= 0.3V"
+	(gr_text "SIGNAL:\n  ON:   >= 3.0V\n  OFF:  <= 0.3V"
 		(at 160 85.9 90)
 		(layer "B.SilkS")
 		(uuid "53a99649-2911-4c98-9194-240919fc5aa3")

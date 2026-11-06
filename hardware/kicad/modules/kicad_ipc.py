@@ -24,7 +24,7 @@ from kipy.proto.common.commands.editor_commands_pb2 import (
     EndCommitResponse,
 )
 from kipy.proto.common.types import ItemHeader
-from kipy.util import from_mm, to_mm
+from kipy.util.units import from_mm, to_mm
 
 
 def connect_board():

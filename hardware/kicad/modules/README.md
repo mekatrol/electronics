@@ -118,9 +118,20 @@ The editor history labels are:
 | `pcb_edge.py` | Replace board outline and ground zones |
 | `remove_tracks_and_vias.py` | Remove all tracks, vias, and zones |
 | `resize_matching_text.py` | Resize matching board text |
+| `thermal_releifs.py` | Set zone thermal reliefs |
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
 
 `report_board_dimensions.py` is read-only and creates no history entry.
+
+### `thermal_releifs.py`
+
+Checks every GND and +5V copper zone against conservative JLCPCB 2-layer, 1 oz
+zone settings: 0.20 mm clearance, 0.25 mm minimum width, thermal pad connections,
+0.25 mm thermal gap, 0.30 mm spoke width, no corner smoothing, and unconditional
+island removal. Numeric values already above these minimums pass in check mode.
+Set the script's `SET_RELIEFS` flag to `True` to write the exact configured
+values to every matching zone in one undoable transaction and refill all zones.
+Changes remain unsaved for review.
 
 ### `remove_tracks_and_vias.py`
 

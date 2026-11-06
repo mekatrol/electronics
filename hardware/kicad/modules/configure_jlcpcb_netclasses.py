@@ -25,7 +25,7 @@ from kipy.errors import ApiError
 from kipy.errors import ConnectionError as KiCadConnectionError
 from kipy.project_types import NetClass
 from kipy.proto.common.types import DocumentType, MapMergeMode
-from kipy.util import from_mm
+from kipy.util.units import from_mm
 
 # These values stay comfortably inside JLCPCB's normal rigid-PCB process.
 # Fine Signal is intended only for genuinely constrained fan-out.
