@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Report board, mounting-hole and fiducial dimensions through IPC.
 
 Run from the repository root with::

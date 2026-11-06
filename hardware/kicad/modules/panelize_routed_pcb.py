@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Create a routed mouse-bite panel while preserving the source PCB outline.
 
 Run from the repository root with::

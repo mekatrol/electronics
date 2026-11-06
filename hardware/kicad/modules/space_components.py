@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Set the centre-to-centre spacing between two footprints.
 
 Run from the repository root with::

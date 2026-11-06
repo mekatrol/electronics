@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Resize exactly matching free board text through KiCad's IPC API.
 
 Run from the repository root with::

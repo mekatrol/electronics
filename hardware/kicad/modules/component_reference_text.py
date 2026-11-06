@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Resize and align visible footprint references using KiCad IPC.
 
 Run from the repository root with::

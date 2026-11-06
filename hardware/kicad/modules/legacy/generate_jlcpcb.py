@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate JLCPCB fabrication and assembly files from a KiCad project.
 
 The output is written to a ``gerber`` directory beside the board:

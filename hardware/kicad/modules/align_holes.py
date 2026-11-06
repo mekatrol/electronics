@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Place mounting holes at configured board-edge offsets using IPC.
 
 Run from the repository root with::

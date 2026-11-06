@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Arrange repeated footprint groups from one reference layout using IPC.
 
 Run from the repository root with::

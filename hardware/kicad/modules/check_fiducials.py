@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Validate and grid-align PCB fiducials using KiCad's IPC API.
 
 Run from the repository root with::

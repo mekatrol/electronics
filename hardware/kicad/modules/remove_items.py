@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Remove every track, via, and copper zone from the active PCB using KiCad IPC.
 
 Run from the repository root with::

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Centre Edge.Cuts around all footprints using KiCad's IPC API.
 
 Run from the repository root with::

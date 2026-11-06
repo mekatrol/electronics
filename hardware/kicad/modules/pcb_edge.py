@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Create a rectangular board outline and optional copper zones through IPC.
 
 Run from the repository root with::

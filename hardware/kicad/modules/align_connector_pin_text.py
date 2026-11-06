@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Align connector pin labels through KiCad's supported IPC API.
 
 Run from the repository root with::

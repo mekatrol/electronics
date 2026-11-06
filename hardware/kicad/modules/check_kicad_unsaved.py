@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Report whether an open PCB differs from its saved file through KiCad IPC.
 
 Run from the repository root with::

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Orthogonalize copper-zone outlines through KiCad's IPC API.
 
 Run from the repository root with::

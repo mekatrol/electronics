@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Configure conservative JLCPCB-oriented routing sizes using KiCad IPC.
 
 Run from the repository root with::

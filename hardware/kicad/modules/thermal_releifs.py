@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Check or set JLCPCB-oriented thermal relief settings using KiCad IPC.
 
 Run from the repository root with::

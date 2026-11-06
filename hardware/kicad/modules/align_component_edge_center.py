@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Centre one footprint between Edge.Cuts at its current cross-section.
 
 Run from the repository root with::

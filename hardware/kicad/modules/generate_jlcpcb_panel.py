@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Generate JLCPCB files from a generated panelized PCB (no schematic needed).
 
 Run from the repository root with::
