@@ -2,7 +2,7 @@
   "ESP32_board.pretty": "ESP32_board",
   "Extra.pretty": "Extra",
   "MCU_RaspberryPi_and_Boards.pretty": "MCU_RaspberryPi_and_Boards",
-  "Mekatrol_Footprints.pretty": "Mekatrol_Footprints",
+  "Mekatrol.pretty": "Mekatrol",
   "Segmentum.pretty": "Segmentum",
   "Toponelec_TY308.pretty": "Connectors"
 }

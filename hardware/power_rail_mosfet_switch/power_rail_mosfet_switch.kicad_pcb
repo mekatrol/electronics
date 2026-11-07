@@ -926,7 +926,7 @@
 			)
 		)
 	)
-	(footprint "Mekatrol_Footprints:PinHeader_1x02_P2.54mm_With_Right_Castellations"
+	(footprint "Mekatrol:PinHeader_1x02_P2.54mm_With_Right_Castellations"
 		(layer "F.Cu")
 		(uuid "6a0b0886-ceb1-4fc8-bf0e-eb9a3a235772")
 		(at 150 54.96)
@@ -1620,7 +1620,7 @@
 			)
 		)
 	)
-	(footprint "Mekatrol_Footprints:PinHeader_1x03_P2.54mm_With_Left_Castellations"
+	(footprint "Mekatrol:PinHeader_1x03_P2.54mm_With_Left_Castellations"
 		(layer "F.Cu")
 		(uuid "f5acba2c-42b9-4f21-a275-5f183a098e0b")
 		(at 133 53.96)

@@ -21,7 +21,7 @@ hardware/kicad/footprints/
 ├── ESP32_board.pretty/
 ├── Extra.pretty/
 ├── MCU_RaspberryPi_and_Boards.pretty/
-├── Mekatrol_Footprints.pretty/
+├── Mekatrol.pretty/
 ├── Segmentum.pretty/
 ├── Toponelec_TY308.pretty/
 └── Toponelec.3dshapes/
@@ -49,9 +49,9 @@ Each `.pretty` directory is a separate KiCad footprint library. The setup script
 - [RPi_Pico_SMD_TH](MCU_RaspberryPi_and_Boards.pretty/RPi_Pico_SMD_TH.kicad_mod)
 - [RPi_Pico_SMD_TH_no_swd](MCU_RaspberryPi_and_Boards.pretty/RPi_Pico_SMD_TH_no_swd.kicad_mod)
 
-### Mekatrol_Footprints
+### Mekatrol
 
-- [HXY2102EI_SOT-323_Drain2](Mekatrol_Footprints.pretty/HXY2102EI_SOT-323_Drain2.kicad_mod)
+- [HXY2102EI_SOT-323_Drain2](Mekatrol.pretty/HXY2102EI_SOT-323_Drain2.kicad_mod)
 
 ### Segmentum
 
@@ -105,7 +105,7 @@ Other footprints reference external models that are not bundled here:
 |---|---|---|
 | `ESP32_board` | `KICAD9_3DMODEL_DIR` | Waveshare ESP32-S3-Zero SMD, THT and pin-1-aligned STEP models under `Module.3dshapes` |
 | `Extra` | `KICAD10_3DMODEL_DIR` | `Capacitor_SMD.3dshapes/C_0603_1608Metric.step` |
-| `Mekatrol_Footprints` | `KICAD9_3DMODEL_DIR` | `Package_TO_SOT_SMD.3dshapes/SOT-323_SC-70.wrl` |
+| `Mekatrol` | `KICAD9_3DMODEL_DIR` | `Package_TO_SOT_SMD.3dshapes/SOT-323_SC-70.wrl` |
 | `Segmentum` | `KISYS3DMOD` | `Module.3dshapes/Raspberry_Pi_Zero_Socketed_THT_FaceDown_MountingHoles.wrl` |
 
 Configure these variables to model directories containing the referenced files if needed. The setup script only configures `MY_KICAD_LIBS`; it does not install external models or configure their variables. The LOLIN socket, S3/C6 THT and hybrid variants, and both Pico footprints have no model references.
@@ -217,7 +217,7 @@ Add each library below with type `KiCad`:
 | `ESP32_board` | `${MY_KICAD_LIBS}/ESP32_board.pretty` |
 | `Extra` | `${MY_KICAD_LIBS}/Extra.pretty` |
 | `MCU_RaspberryPi_and_Boards` | `${MY_KICAD_LIBS}/MCU_RaspberryPi_and_Boards.pretty` |
-| `Mekatrol_Footprints` | `${MY_KICAD_LIBS}/Mekatrol_Footprints.pretty` |
+| `Mekatrol` | `${MY_KICAD_LIBS}/Mekatrol.pretty` |
 | `Segmentum` | `${MY_KICAD_LIBS}/Segmentum.pretty` |
 | `Connectors` | `${MY_KICAD_LIBS}/Toponelec_TY308.pretty` |
 
