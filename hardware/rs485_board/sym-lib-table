@@ -1,4 +1,4 @@
 (sym_lib_table
-  (lib (name "74LVC1G00")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/74LVC1G00.kicad_sym")(options "")(descr "Shared repository symbols"))
-  (lib (name "ImpressionWorks")(type "KiCad")(uri "${KIPRJMOD}/../kicad/symbols/ImpressionWorks.kicad_sym")(options "")(descr "Shared repository symbols"))
+  (lib (name "74LVC1G00")(type "KiCad")(uri "${MEKATROL_KICAD_LIBS}/symbols/74LVC1G00.kicad_sym")(options "")(descr "Shared repository symbols"))
+  (lib (name "ImpressionWorks")(type "KiCad")(uri "${MEKATROL_KICAD_LIBS}/symbols/ImpressionWorks.kicad_sym")(options "")(descr "Shared repository symbols"))
 )
