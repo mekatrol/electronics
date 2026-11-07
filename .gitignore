@@ -57,3 +57,6 @@
 
 # Ignore office lock files
 .~lock.*#
+
+# Ignore downloaded datasheets
+/hardware/datasheets

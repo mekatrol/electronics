@@ -21,11 +21,13 @@ openpyxl, and it uses urllib for HTTPS downloads.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import sys
 import unicodedata
 import urllib.error
+import urllib.parse
 import urllib.request
 import zipfile
 from collections.abc import Iterable
@@ -46,6 +48,16 @@ PART_NAME_COLUMN = "Part Name"
 SUPPLIER_COLUMN = "Supplier"
 PART_NUMBER_COLUMN = "Part No"
 DEFAULT_URL_COLUMN = "LCSC Datasheet"
+
+# A browser-style user agent is needed because some supplier sites return an
+# HTML bot page to unidentified download clients.
+HTTP_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/131.0 Safari/537.36"
+    ),
+    "Accept": "application/pdf,application/json,text/html;q=0.9,*/*;q=0.8",
+}
 
 # XML namespaces used by the Office Open XML (.xlsx) file format.
 SHEET_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
@@ -293,14 +305,76 @@ def locate_existing(sheet: Datasheet, output: Path) -> Path | None:
     return matches[0] if len(matches) == 1 else None
 
 
-def download_pdf(url: str, destination: Path, timeout: float) -> None:
+def response_bytes(url: str, timeout: float) -> bytes:
+    """Fetch a small page or API response used to resolve a download URL."""
+
+    request = urllib.request.Request(url, headers=HTTP_HEADERS)
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return response.read()
+
+
+def find_json_string(value: object, key: str) -> str | None:
+    """Recursively find the first non-empty string under a JSON object key."""
+
+    if isinstance(value, dict):
+        candidate = value.get(key)
+        if isinstance(candidate, str) and candidate.strip():
+            return candidate.strip()
+        for child in value.values():
+            found = find_json_string(child, key)
+            if found:
+                return found
+    elif isinstance(value, list):
+        for child in value:
+            found = find_json_string(child, key)
+            if found:
+                return found
+    return None
+
+
+def resolve_lcsc_url(sheet: Datasheet, timeout: float) -> str:
+    """Resolve an LCSC HTML viewer URL to the underlying PDF file URL."""
+
+    # LCSC embeds the direct URL in the viewer page's JSON state.  Decode the
+    # captured JSON string so escaped slashes and Unicode are handled correctly.
+    viewer_page = response_bytes(sheet.url, timeout).decode("utf-8", errors="replace")
+    match = re.search(r'"previewPdfUrl"\s*:\s*("(?:\\.|[^"\\])*")', viewer_page)
+    if match:
+        direct_url = json.loads(match.group(1))
+        return urllib.parse.urljoin(sheet.url, direct_url)
+
+    # If the viewer layout changes or omits its state, LCSC's product-detail
+    # response provides the same direct PDF URL using the stable product code.
+    product_code = urllib.parse.quote(sheet.part_number, safe="")
+    detail_url = (
+        "https://wmsc.lcsc.com/ftps/wm/product/detail?productCode=" + product_code
+    )
+    detail = json.loads(response_bytes(detail_url, timeout).decode("utf-8"))
+    direct_url = find_json_string(detail, "pdfUrl") or find_json_string(
+        detail, "previewPdfUrl"
+    )
+    if not direct_url:
+        raise ValueError("LCSC did not provide a direct datasheet PDF URL")
+    return urllib.parse.urljoin(detail_url, direct_url)
+
+
+def resolve_download_url(sheet: Datasheet, timeout: float) -> str:
+    """Resolve known HTML viewer links while leaving direct supplier URLs alone."""
+
+    parsed = urllib.parse.urlparse(sheet.url)
+    is_lcsc_viewer = (
+        parsed.hostname in {"lcsc.com", "www.lcsc.com"}
+        and parsed.path.startswith("/datasheet/")
+    )
+    return resolve_lcsc_url(sheet, timeout) if is_lcsc_viewer else sheet.url
+
+
+def download_pdf(sheet: Datasheet, destination: Path, timeout: float) -> None:
     """Download one PDF to a temporary file and atomically move it into place."""
 
     temporary = destination.with_suffix(destination.suffix + ".part")
-    request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "components-datasheet-downloader/1.0"},
-    )
+    download_url = resolve_download_url(sheet, timeout)
+    request = urllib.request.Request(download_url, headers=HTTP_HEADERS)
     try:
         with (
             urllib.request.urlopen(request, timeout=timeout) as response,
@@ -352,7 +426,7 @@ def process(
                 print(f"WOULD DOWNLOAD {sheet.url} -> {expected.name}")
                 results.would_download += 1
             else:
-                download_pdf(sheet.url, expected, timeout)
+                download_pdf(sheet, expected, timeout)
                 print(f"DOWNLOADED    {expected.name}")
                 results.downloaded += 1
 
