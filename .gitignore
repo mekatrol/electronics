@@ -54,3 +54,6 @@
 /software/**/obj/
 /software/**/x64/
 /software/**/*.vcxproj.user
+
+# Ignore office lock files
+.~lock.*#
