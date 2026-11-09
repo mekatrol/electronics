@@ -2,7 +2,7 @@
 
 Run from the repository root with::
 
-    .venv-kicad-ipc/bin/python hardware/kicad/modules/thermal_releifs.py
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/thermal_reliefs.py
 
 Open the PCB to check in PCB Editor before running the script. By default this
 script checks every copper zone assigned to the GND or +5V net. Set
@@ -13,6 +13,7 @@ settings, the script runs KiCad DRC on an isolated copy of the updated live
 board, reports every finding, and leaves the real board unsaved for review.
 """
 
+import sys
 from dataclasses import dataclass
 
 from kicad_ipc import (
@@ -145,6 +146,12 @@ def matching_zones(board):
     ]
 
 
+def missing_zone_net_names(zones):
+    """Return configured net names that have no matching copper zone."""
+    present_names = {zone.net.name for zone in zones}
+    return [name for name in ZONE_NET_NAMES if name not in present_names]
+
+
 def print_problems(zones):
     """Print problems and return the number of non-compliant zones."""
     failed = 0
@@ -165,9 +172,14 @@ def main():
     """Check matching zones and optionally correct their settings."""
     _client, board = connect_board()
     zones = matching_zones(board)
+    missing_names = missing_zone_net_names(zones)
+    for name in missing_names:
+        print(
+            f'ERROR: No copper zone found on configured net "{name}"; ignoring it.',
+            file=sys.stderr,
+        )
     if not zones:
-        names = ", ".join(f'"{name}"' for name in ZONE_NET_NAMES)
-        raise SystemExit(f"No copper zones found on configured nets: {names}.")
+        raise SystemExit("No configured copper zones exist on the open board.")
 
     failed_before = print_problems(zones)
     if not SET_RELIEFS:
@@ -188,11 +200,13 @@ def main():
     if remaining:
         raise RuntimeError(f"{remaining} updated zone(s) failed verification")
     print(
-        f"Updated all {len(zones)} matching zone(s) "
-        "(undo: Set zone thermal reliefs)."
+        f"Updated all {len(zones)} matching zone(s) (undo: Set zone thermal reliefs)."
     )
     if RUN_DRC_AFTER_SET:
-        drc_errors = run_live_board_drc(board)
+        try:
+            drc_errors = run_live_board_drc(board)
+        except RuntimeError as error:
+            raise SystemExit(f"DRC could not be completed: {error}") from None
         if drc_errors:
             raise SystemExit(f"Updated board has {drc_errors} DRC error(s).")
     print("Live board changes are left unsaved for review in KiCad.")

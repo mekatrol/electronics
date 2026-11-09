@@ -113,18 +113,19 @@ The editor history labels are:
 | `align_groups.py` | Align repeated component groups |
 | `align_holes.py` | Align mounting holes |
 | `center_and_distribute_items.py` | Center and optionally distribute footprints |
+| `center_components_inside_edge.py` | Center all footprints inside board outline |
 | `center_edge_around_components.py` | Center Edge.Cuts around all components |
 | `check_fiducials.py` | Align and check fiducials |
 | `pcb_edge.py` | Replace board outline and ground zones |
 | `remove_tracks_and_vias.py` | Remove all tracks, vias, and zones |
 | `resize_matching_text.py` | Resize matching board text |
-| `thermal_releifs.py` | Set zone thermal reliefs |
+| `thermal_reliefs.py` | Set zone thermal reliefs |
 | `vias.py` | Validate or set JLCPCB-oriented vias |
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
 
 `report_board_dimensions.py` is read-only and creates no history entry.
 
-### `thermal_releifs.py`
+### `thermal_reliefs.py`
 
 Checks every GND and +5V copper zone against conservative JLCPCB 2-layer, 1 oz
 zone settings: 0.20 mm clearance, 0.25 mm minimum width, thermal pad connections,
@@ -256,6 +257,16 @@ aligns their horizontal (X) centres. Set `DISTRIBUTE_SPACING` to `True` with
 three or more references to create equal edge-to-edge gaps on the perpendicular
 axis; the two outer footprints remain fixed on that axis. Save manually after
 review.
+
+### `center_components_inside_edge.py`
+
+Centres the combined bounds of every footprint on the area centroid of the
+actual Edge.Cuts polygon. All footprints receive the same translation, so their
+relative layout remains unchanged. Concave and curved outlines and internal
+cut-outs are supported. Tracks and vias remain fixed, and the script warns when
+routing is present. Reference/value text is excluded from component bounds by
+default; set `INCLUDE_TEXT = True` to include it. The move is one undo entry;
+run DRC and save manually after review.
 
 ### `center_edge_around_components.py`
 
