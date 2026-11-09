@@ -7,8 +7,8 @@ Run from the repository root with::
 Open the PCB to configure in PCB Editor before running the script. Net-class
 changes are made in the live project and left unsaved for review.
 KiCad 10 does not expose predefined track and via lists through IPC, so the
-script waits for PCB Editor to close before writing those lists to the active
-project file. Reopen the project after the script finishes.
+script waits for the entire KiCad instance to exit before writing those lists
+to the active project file. Reopen KiCad after the script finishes.
 """
 
 import json
@@ -23,7 +23,7 @@ from kipy.board_rules import PresetTrackWidth, PresetViaDimension
 from kipy.errors import ApiError
 from kipy.errors import ConnectionError as KiCadConnectionError
 from kipy.project_types import NetClass
-from kipy.proto.common.types import DocumentType, MapMergeMode
+from kipy.proto.common.types import MapMergeMode
 from kipy.util.units import from_mm
 
 # These values stay comfortably inside JLCPCB's normal rigid-PCB process.
@@ -128,27 +128,20 @@ def patch_project_presets(path):
             temporary_path.unlink()
 
 
-def wait_for_board_to_close(client, board_path):
-    """Wait until PCB Editor releases this board before patching its project."""
+def wait_for_kicad_to_exit(client):
+    """Wait until no KiCad process can overwrite the patched project file."""
     print(
-        "KiCad 10 cannot reload preset lists through IPC. Close this PCB Editor "
-        "window now; waiting for the board to close...",
+        "KiCad 10 cannot reload preset lists through IPC. Quit the entire KiCad "
+        "application now (including the project manager); waiting for KiCad to "
+        "exit...",
         flush=True,
     )
     while True:
         try:
-            open_boards = client.get_open_documents(DocumentType.DOCTYPE_PCB)
-        except ApiError as error:
-            # After PCB Editor closes, KiCad 10 may leave the project manager's
-            # IPC server running. That server has no GetOpenDocuments handler.
-            if "no handler available" not in str(error):
-                raise
-            open_boards = ()
+            client.ping()
         except (KiCadConnectionError, OSError):
-            open_boards = ()
-        if all(board_document_path(document) != board_path for document in open_boards):
-            # Let PCB Editor finish its final project-file write after removing
-            # the document, then make our update the last write.
+            # Let the process complete any final project-file write, then make
+            # our atomic update the last write.
             time.sleep(1)
             return
         time.sleep(0.25)
@@ -195,7 +188,7 @@ def main():
             raise
         presets_updated_via_ipc = False
         path = project_file_path(project, board)
-        wait_for_board_to_close(client, board_document_path(board.document))
+        wait_for_kicad_to_exit(client)
         patch_project_presets(path)
 
     print(f"Configured {len(configured)} net classes in {project.name}:")
@@ -216,8 +209,8 @@ def main():
     )
     if not presets_updated_via_ipc:
         print(
-            "The active project file was patched after PCB Editor closed. "
-            "Reopen the project to load the preset sizes."
+            "The active project file was patched after KiCad exited. Reopen "
+            "KiCad and the project to load the preset sizes."
         )
     else:
         print("Live net-class changes are left unsaved for review in KiCad.")
