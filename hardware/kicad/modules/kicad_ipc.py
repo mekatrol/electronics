@@ -18,6 +18,7 @@ import tempfile
 
 from kipy import KiCad
 from kipy.common_types import Commit
+from kipy.errors import ConnectionError as KiCadConnectionError
 from kipy.geometry import Box2, Vector2
 from kipy.proto.board.board_types_pb2 import BoardLayer
 from kipy.proto.common.commands.editor_commands_pb2 import (
@@ -41,9 +42,19 @@ def connect_board():
     We intentionally do not call ``check_version`` because the latest released
     binding targets KiCad 10.0.1 and rejects compatible newer 10.0.x patches.
     """
-    client = KiCad(timeout_ms=5000)
-    client.ping()
-    return client, client.get_board()
+    try:
+        client = KiCad(timeout_ms=5000)
+        client.ping()
+        return client, client.get_board()
+    except (KiCadConnectionError, OSError) as error:
+        raise SystemExit(
+            "Could not communicate with PCB Editor through KiCad IPC. Ensure "
+            "the board is open in PCB Editor (not only the project manager), "
+            "close any modal dialogs, and try again. If it still times out, "
+            "quit every KiCad window and start one KiCad instance, then reopen "
+            "the board.\n"
+            f"KiCad IPC error: {error}"
+        ) from None
 
 
 def board_document_path(document):
