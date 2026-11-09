@@ -262,11 +262,12 @@ review.
 
 Centres the combined bounds of every footprint on the area centroid of the
 actual Edge.Cuts polygon. All footprints receive the same translation, so their
-relative layout remains unchanged. Concave and curved outlines and internal
-cut-outs are supported. Tracks and vias remain fixed, and the script warns when
-routing is present. Reference/value text is excluded from component bounds by
-default; set `INCLUDE_TEXT = True` to include it. The move is one undo entry;
-run DRC and save manually after review.
+relative layout remains unchanged. All tracks and vias receive the same
+translation, preserving the routed connections, including curved tracks.
+Concave and curved outlines and internal cut-outs are supported.
+Reference/value text is excluded from component bounds by default; set
+`INCLUDE_TEXT = True` to include it. The move is one undo entry; run DRC and
+save manually after review.
 
 ### `center_edge_around_components.py`
 

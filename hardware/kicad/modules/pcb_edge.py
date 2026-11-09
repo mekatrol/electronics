@@ -37,8 +37,8 @@ from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
 # Fabrication dimensions are measured along the Edge.Cuts centreline. The
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
-BOARD_WIDTH_MM = 10.0
-BOARD_HEIGHT_MM = 10.0
+BOARD_WIDTH_MM = 4.0
+BOARD_HEIGHT_MM = 8.0
 ORIGIN_X_MM = 136.0
 ORIGIN_Y_MM = 80.0
 
@@ -53,7 +53,7 @@ CENTRE_ON_PAGE = True
 
 # Use 0 for square corners. A positive value creates four tangent quarter-circle
 # arcs and must not exceed half of the board's smaller dimension.
-CORNER_RADIUS_MM = 1.0
+CORNER_RADIUS_MM = 0.5
 
 # This affects the visible Edge.Cuts stroke, not the finished board dimensions.
 EDGE_LINE_WIDTH_MM = 0.10
@@ -76,7 +76,7 @@ DELETE_EXISTING_EDGE_CUTS = True
 # setting.
 # The zone polygon remains square even when Edge.Cuts has rounded corners;
 # KiCad clips its copper fill to the actual board boundary.
-REPLACE_GROUND_ZONES = True
+REPLACE_GROUND_ZONES = False
 GROUND_NET_NAME = "GND"
 FILL_ZONE_NAMES = ["GND", "GND", "GND", "GND"]
 

@@ -258,13 +258,20 @@ def _point(node: Node) -> tuple[float, float]:
     return float(str(node[1])), float(str(node[2]))
 
 
+def _required_point(item: Node, name: str) -> tuple[float, float]:
+    node = first_child(item, name)
+    if node is None or len(node) < 3:
+        raise SExprError(f"{head(item)} is missing a valid {name} point")
+    return _point(node)
+
+
 def _arc_points(
     item: Node, maximum_step_degrees: float = 5.0
 ) -> list[tuple[float, float]]:
     """Approximate one KiCad start/mid/end arc without changing its endpoints."""
-    start = _point(first_child(item, "start"))
-    middle = _point(first_child(item, "mid"))
-    end = _point(first_child(item, "end"))
+    start = _required_point(item, "start")
+    middle = _required_point(item, "mid")
+    end = _required_point(item, "end")
     x1, y1 = start
     x2, y2 = middle
     x3, y3 = end
@@ -312,7 +319,7 @@ def edge_contour_points(root: Node) -> list[tuple[float, float]]:
             continue
         if head(item) == "gr_line":
             pieces.append(
-                [_point(first_child(item, "start")), _point(first_child(item, "end"))]
+                [_required_point(item, "start"), _required_point(item, "end")]
             )
         elif head(item) == "gr_arc":
             pieces.append(_arc_points(item))
@@ -654,7 +661,7 @@ def build_routed_panel(
     page = page_dimensions(source) if center_on_page else None
     origin_x = (page[0] - width) / 2 if page else 0.0
     origin_y = (page[1] - height) / 2 if page else 0.0
-    result = ["kicad_pcb"]
+    result: Node = ["kicad_pcb"]
     result.extend(
         copy.deepcopy(item)
         for item in source[1:]
