@@ -72,6 +72,11 @@ DEFAULT_MOUSE_BITE_CLEARANCE_MM = 0.4
 MIN_MOUSE_BITE_CLEARANCE_MM = 0.3
 MAX_MOUSE_BITE_CLEARANCE_MM = 0.4
 
+# Move the drill centre slightly out of the finished PCB and into its tab. This
+# preserves a pronounced breakaway scallop while avoiding marginal hole-to-pad
+# clearance failures on densely populated board edges.
+MOUSE_BITE_OUTWARD_OFFSET_MM = 0.05
+
 # Global SMT fiducials use the installed KiCad 1 mm copper / 2 mm mask
 # footprint. JLCPCB specifies their centres 3.85 mm from the panel edge.
 FIDUCIAL_EDGE_OFFSET_MM = 3.85
@@ -221,6 +226,20 @@ def remap_nets(item: Node, suffix: str) -> None:
             node[2] = quoted(str(node[2]).strip('"') + suffix)
 
 
+def make_reference_unique(item: Node, suffix: str) -> None:
+    """Append a panel-position suffix to a footprint's reference."""
+    if head(item) != "footprint":
+        return
+    for value in item[1:]:
+        if (
+            isinstance(value, list)
+            and head(value) == "property"
+            and len(value) >= 3
+            and str(value[1]).strip('"') == "Reference"
+        ):
+            value[2] = quoted(str(value[2]).strip('"') + suffix)
+
+
 @dataclass(frozen=True)
 class Bounds:
     left: float
@@ -235,6 +254,18 @@ class Bounds:
     @property
     def height(self) -> float:
         return self.bottom - self.top
+
+
+def tab_edge_orientation(bounds: Bounds, tab_width: float) -> str:
+    """Choose edges long enough to contain a centred breakaway tab."""
+    if bounds.width >= tab_width:
+        return "horizontal"
+    if bounds.height >= tab_width:
+        return "vertical"
+    raise ValueError(
+        f"{tab_width:g} mm tabs do not fit the source PCB's "
+        f"{bounds.width:g} x {bounds.height:g} mm Edge.Cuts envelope"
+    )
 
 
 def edge_bounds(root: Node) -> Bounds:
@@ -656,6 +687,7 @@ def build_routed_panel(
             "0.35 to 0.4 mm"
         )
     bounds = edge_bounds(source)
+    tab_orientation = tab_edge_orientation(bounds, tab_width)
     width = count_x * bounds.width + (count_x - 1) * gap + 2 * (rail + gap)
     height = count_y * bounds.height + (count_y - 1) * gap + 2 * (rail + gap)
     page = page_dimensions(source) if center_on_page else None
@@ -695,6 +727,7 @@ def build_routed_panel(
                 item = copy.deepcopy(original)
                 renew_uuids(item)
                 remap_nets(item, suffix)
+                make_reference_unique(item, f"_X{column + 1}Y{row + 1}")
                 translate_item(item, dx, dy)
                 remove_zone_fills(item)
                 result.append(item)
@@ -707,20 +740,57 @@ def build_routed_panel(
                 origin_y + rail + gap + row * (bounds.height + gap) + bounds.height,
             )
             solid_polygons.append([(x + dx, y + dy) for x, y in source_contour])
-            tab_left = (x0 + x1 - tab_width) / 2
-            tab_right = tab_left + tab_width
-            solid_polygons.extend(
-                [
-                    _rectangle(tab_left, y0 - gap, tab_right, y0),
-                    _rectangle(tab_left, y1, tab_right, y1 + gap),
-                ]
-            )
-            for x in bite_positions(
-                (x0 + x1) / 2, tab_width, bite_diameter, bite_clearance
-            ):
-                for y in (y0, y1):
-                    result.append(mouse_bite(f"MB{bite_number}", x, y, bite_diameter))
-                    bite_number += 1
+            if tab_orientation == "horizontal":
+                tab_left = (x0 + x1 - tab_width) / 2
+                tab_right = tab_left + tab_width
+                solid_polygons.extend(
+                    [
+                        _rectangle(tab_left, y0 - gap, tab_right, y0),
+                        _rectangle(tab_left, y1, tab_right, y1 + gap),
+                    ]
+                )
+                bite_coordinates = (
+                    (
+                        x,
+                        y - MOUSE_BITE_OUTWARD_OFFSET_MM
+                        if y == y0
+                        else y + MOUSE_BITE_OUTWARD_OFFSET_MM,
+                    )
+                    for x in bite_positions(
+                        (x0 + x1) / 2,
+                        tab_width,
+                        bite_diameter,
+                        bite_clearance,
+                    )
+                    for y in (y0, y1)
+                )
+            else:
+                tab_top = (y0 + y1 - tab_width) / 2
+                tab_bottom = tab_top + tab_width
+                solid_polygons.extend(
+                    [
+                        _rectangle(x0 - gap, tab_top, x0, tab_bottom),
+                        _rectangle(x1, tab_top, x1 + gap, tab_bottom),
+                    ]
+                )
+                bite_coordinates = (
+                    (
+                        x - MOUSE_BITE_OUTWARD_OFFSET_MM
+                        if x == x0
+                        else x + MOUSE_BITE_OUTWARD_OFFSET_MM,
+                        y,
+                    )
+                    for y in bite_positions(
+                        (y0 + y1) / 2,
+                        tab_width,
+                        bite_diameter,
+                        bite_clearance,
+                    )
+                    for x in (x0, x1)
+                )
+            for x, y in bite_coordinates:
+                result.append(mouse_bite(f"MB{bite_number}", x, y, bite_diameter))
+                bite_number += 1
     result.extend(graphic_polygon(ring) for ring in union_polygon_rings(solid_polygons))
     fiducial_x_left = origin_x + rail + FIDUCIAL_HORIZONTAL_CLEARANCE_MM
     fiducial_x_right = origin_x + width - rail - FIDUCIAL_HORIZONTAL_CLEARANCE_MM
@@ -809,6 +879,10 @@ def validation_summary(
     """Return a self-contained report suitable for independent review."""
     boards = count_x * count_y
     tabs = boards * 2
+    tab_orientation = tab_edge_orientation(source_bounds, tab_width)
+    tab_edges = (
+        "top and bottom" if tab_orientation == "horizontal" else "left and right"
+    )
     holes_per_tab = len(bite_positions(0.0, tab_width, bite_diameter, bite_clearance))
     drc_result = (
         "PASS: 0 violations; 0 unconnected items; all routing cutouts closed"
@@ -829,7 +903,7 @@ def validation_summary(
             f"Routing gap between PCB array and process rails: {gap:.3f} mm",
             f"Perimeter process rail: {rail:.3f} mm on all four sides",
             "Source outline handling: copied for every PCB; non-rectangular geometry is preserved",
-            "Breakaway placement: one centred tab on each PCB top edge and bottom edge; none on vertical edges",
+            f"Breakaway placement: one centred tab on each PCB {tab_edges} edge",
             f"Breakaway tabs: {tabs} total; {tab_width:.3f} mm nominal width",
             f"Mouse bites: {holes_per_tab} holes/tab, {tabs * holes_per_tab} holes total; {bite_diameter:.3f} mm NPTH diameter; {bite_clearance:.3f} mm edge-to-edge spacing",
             "Global fiducials: 4; 1 mm copper / 2 mm mask; centres 3.850 mm from top/bottom panel edges",
@@ -906,7 +980,8 @@ def main() -> int:
     source_path = args.input.resolve()
     output_path = (
         args.output
-        or source_path.with_name(
+        or source_path.parent / "manufacture" /
+        (
             f"{source_path.stem}_routed_panel_{args.count_x}x{args.count_y}.kicad_pcb"
         )
     ).resolve()
@@ -914,6 +989,7 @@ def main() -> int:
         raise SystemExit("output must differ from input")
     if output_path.exists() and not args.force:
         raise SystemExit(f"output already exists: {output_path} (use --force)")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     source_bytes = source_path.read_bytes()
     source = parse_sexpr(source_bytes.decode("utf-8-sig"))
     source_bounds = edge_bounds(source)

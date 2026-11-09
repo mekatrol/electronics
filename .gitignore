@@ -31,6 +31,7 @@
 # Generated KiCad fabrication and BOM directories
 /hardware/**/*-gerber/
 /hardware/**/*-gerbers/
+/hardware/**/manufacture/
 
 # Generated board reports
 /hardware/**/*.rpt

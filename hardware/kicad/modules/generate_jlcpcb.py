@@ -1,11 +1,11 @@
 """Generate JLCPCB fabrication and assembly files from a KiCad project.
 
-The output is written to a ``gerber`` directory beside the board:
+The output is written to a ``manufacture`` directory beside the board:
 
 * one Gerber per manufacturing layer and Excellon drill file(s)
 * ``<project>-gerbers.zip`` for upload as the PCB fabrication file
 * ``<project>-bom.csv``
-* ``<project>-positions.csv`` (CPL / centroid / pick-and-place)
+* ``<project>-cpl.csv`` (component placement list / centroid)
 
 KiCad 10 or newer and its ``kicad-cli`` executable are required.  This script
 does not use the deprecated SWIG ``pcbnew`` module.
@@ -29,6 +29,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import kicad_netlist_reader
+from panelize_routed_pcb import Node, head, parse_sexpr
 
 GERBER_LAYERS = (
     "F.Cu",
@@ -195,32 +196,89 @@ def copper_layers(board: Path) -> list[str]:
     return layers or ["F.Cu", "B.Cu"]
 
 
-def write_bom(netlist_file: Path, output_file: Path) -> None:
+def write_bom(netlist_file: Path, output_file: Path) -> set[str]:
     """Convert KiCad's XML BOM netlist to JLCPCB's assembly columns."""
     net = kicad_netlist_reader.netlist(str(netlist_file))
+    references: set[str] = set()
     with output_file.open("w", newline="", encoding="utf-8") as stream:
         writer = csv.writer(stream)
         writer.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
         for group in net.groupComponents():
             populated = [
-                part for part in group if (part.getField("LCSC Part #") or "").strip()
+                part
+                for part in group
+                if (part.getField("LCSC Part #") or "").strip().upper()
+                not in {"", "N/A"}
             ]
             if not populated:
                 continue
             part = populated[0]
+            designators = [item.getRef() for item in populated]
+            references.update(designators)
             footprints = part.getFootprint().split(":", 1)
             writer.writerow(
                 [
                     part.getValue(),
-                    ",".join(item.getRef() for item in populated),
+                    ",".join(designators),
                     footprints[-1],
                     part.getField("LCSC Part #"),
                 ]
             )
+    return references
 
 
-def convert_positions(source: Path, destination: Path) -> None:
+def _property(footprint: Node, name: str) -> str:
+    for item in footprint[1:]:
+        if (
+            isinstance(item, list)
+            and head(item) == "property"
+            and len(item) >= 3
+            and str(item[1]).strip('"') == name
+        ):
+            return str(item[2]).strip('"')
+    return ""
+
+
+def write_board_bom(board_file: Path, output_file: Path) -> set[str]:
+    """Create a JLCPCB BOM from properties embedded in panel footprints."""
+    board = parse_sexpr(board_file.read_text(encoding="utf-8-sig"))
+    groups: dict[tuple[str, str, str], list[str]] = {}
+    for item in board[1:]:
+        if not isinstance(item, list) or head(item) != "footprint":
+            continue
+        attributes = next(
+            (
+                value
+                for value in item[1:]
+                if isinstance(value, list) and head(value) == "attr"
+            ),
+            [],
+        )
+        if "exclude_from_bom" in attributes or "board_only" in attributes:
+            continue
+        lcsc = _property(item, "LCSC Part #").strip()
+        if not lcsc or lcsc.upper() == "N/A":
+            continue
+        reference = _property(item, "Reference").strip()
+        if not reference:
+            raise ValueError("panel footprint with an LCSC part has no Reference")
+        value = _property(item, "Value")
+        footprint = str(item[1]).strip('"').split(":", 1)[-1]
+        groups.setdefault((value, footprint, lcsc), []).append(reference)
+
+    if not groups:
+        raise ValueError("panel contains no footprints with an LCSC Part #")
+    with output_file.open("w", newline="", encoding="utf-8") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(["Comment", "Designator", "Footprint", "LCSC Part #"])
+        for (value, footprint, lcsc), references in groups.items():
+            writer.writerow([value, ",".join(references), footprint, lcsc])
+    return {reference for references in groups.values() for reference in references}
+
+
+def convert_positions(source: Path, destination: Path) -> set[str]:
     """Convert KiCad position CSV columns and side names to JLCPCB format."""
+    references: set[str] = set()
     with source.open(newline="", encoding="utf-8-sig") as input_stream:
         reader = csv.DictReader(input_stream)
         required = {"Ref", "PosX", "PosY", "Rot", "Side"}
@@ -233,6 +291,7 @@ def convert_positions(source: Path, destination: Path) -> None:
             writer.writerow(["Designator", "Mid X", "Mid Y", "Rotation", "Layer"])
             for row in reader:
                 side = row["Side"].strip().lower()
+                references.add(row["Ref"])
                 writer.writerow(
                     [
                         row["Ref"],
@@ -242,9 +301,23 @@ def convert_positions(source: Path, destination: Path) -> None:
                         "Bottom" if side in {"back", "bottom"} else "Top",
                     ]
                 )
+    return references
 
 
-def archive_fabrication_files(output_dir: Path, archive: Path) -> None:
+def validate_assembly_references(
+    bom_references: set[str], position_references: set[str]
+) -> None:
+    """Require every BOM designator to have a pick-and-place row."""
+    missing = sorted(bom_references - position_references)
+    if missing:
+        raise ValueError(
+            "BOM components missing from the CPL file: " + ", ".join(missing)
+        )
+
+
+def archive_fabrication_files(
+    output_dir: Path, archive: Path, board_stem: str | None = None
+) -> None:
     """Bundle only Gerber and drill outputs into the fabrication archive."""
     extensions = {
         ".gbr",
@@ -264,8 +337,11 @@ def archive_fabrication_files(output_dir: Path, archive: Path) -> None:
     files = sorted(
         path
         for path in output_dir.iterdir()
-        if path.suffix.lower() in extensions
-        or (path.suffix.lower().startswith(".g") and path.suffix[2:].isdigit())
+        if (board_stem is None or path.name.startswith(board_stem))
+        and (
+            path.suffix.lower() in extensions
+            or (path.suffix.lower().startswith(".g") and path.suffix[2:].isdigit())
+        )
     )
     if not files:
         raise RuntimeError("KiCad produced no Gerber or drill files")
@@ -284,7 +360,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     reject_unsaved_open_board(board)
     reject_newer_autosaves([schematic, board])
 
-    output_dir = board.parent / "gerber"
+    output_dir = board.parent / "manufacture"
     output_dir.mkdir(exist_ok=True)
     project_name = board.stem
     erc_report = board.parent / f"{project_name}-erc.rpt"
@@ -355,6 +431,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     )
 
     raw_positions = output_dir / f".{project_name}-positions-kicad.csv"
+    position_references: set[str] = set()
     try:
         run(
             [
@@ -373,11 +450,15 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
                 str(board),
             ]
         )
-        convert_positions(raw_positions, output_dir / f"{project_name}-positions.csv")
+        position_references = convert_positions(
+            raw_positions, output_dir / f"{project_name}-cpl.csv"
+        )
+        (output_dir / f"{project_name}-positions.csv").unlink(missing_ok=True)
     finally:
         raw_positions.unlink(missing_ok=True)
 
     netlist = output_dir / f".{project_name}-bom-kicad.xml"
+    bom_references: set[str] = set()
     try:
         run(
             [
@@ -390,11 +471,15 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
                 str(schematic),
             ]
         )
-        write_bom(netlist, output_dir / f"{project_name}-bom.csv")
+        bom_references = write_bom(netlist, output_dir / f"{project_name}-bom.csv")
     finally:
         netlist.unlink(missing_ok=True)
 
-    archive_fabrication_files(output_dir, output_dir / f"{project_name}-gerbers.zip")
+    validate_assembly_references(bom_references, position_references)
+
+    archive_fabrication_files(
+        output_dir, output_dir / f"{project_name}-gerbers.zip", project_name
+    )
     return output_dir
 
 

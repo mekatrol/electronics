@@ -163,7 +163,9 @@ python kicad/modules/panelize_routed_pcb.py power_rail_mosfet_switch/power_rail_
 ```
 
 The routing gap is configurable but must be at least 2 mm. Defaults follow
-JLCPCB's published mouse-bite guidance: 5 mm tabs on the top and bottom edges,
+JLCPCB's published mouse-bite guidance: 5 mm tabs on a pair of opposite edges
+that are long enough to contain them (top/bottom when the PCB width permits,
+otherwise left/right),
 five 0.6 mm NPTH holes per tab with
 0.4 mm between hole edges (1.0 mm pitch), 5 mm rails, four 1 mm library fiducials whose
 centres are 3.85 mm from the panel edges, and four 2 mm NPTH tooling holes in
@@ -180,6 +182,10 @@ solid breakaway bridges, and process rails. It then emits one closed exterior
 The configurable routing gap is also placed between the PCB array and the
 rails, so a 5 mm rail remains a full 5 mm after routing. Any DRC violation,
 including `invalid_outline`, or any unconnected item rejects the output.
+
+Each copied footprint reference receives a panel-position suffix (for example,
+`D1_X2Y1`) so BOM and pick-and-place rows identify a unique component across
+the complete panel. Net names receive their own matching position suffix.
 
 After generation, the script prints a self-contained validation summary with
 the source and output paths, array and finished dimensions, routing and rail
@@ -357,13 +363,13 @@ bindings. When the IPC environment and PCB Editor are available, it compares
 the live board with the saved file and immediately rejects unsaved changes. It
 also refuses to continue when a newer KiCad autosave exists, which remains the
 fallback when IPC is unavailable and covers schematic autosaves. Successful
-output is written to the project's `gerber/`
+output is written to the project's ignored `manufacture/`
 directory:
 
 - Gerber and Excellon drill files
 - `<project>-gerbers.zip`
 - `<project>-bom.csv`
-- `<project>-positions.csv`
+- `<project>-cpl.csv`
 
 `User.Drawings` is exported as `<project>-User_Drawings.gbr` and included in
 the Gerber ZIP when a project contains deliberate documentation geometry.
@@ -374,18 +380,38 @@ The BOM includes populated components with a non-empty `LCSC Part #` field.
 
 `generate_jlcpcb_panel.py` is the separate exporter for generated panelized PCB
 files. It intentionally requires a filename containing `panel`, needs only a
-`.kicad_pcb`, performs no schematic ERC/parity check, and produces no BOM:
+`.kicad_pcb`, and performs no schematic ERC/parity check:
 
 ```powershell
 .\.venv-kicad-ipc\Scripts\python.exe kicad\modules\generate_jlcpcb_panel.py `
   power_rail_mosfet_switch\power_rail_mosfet_switch_routed_panel_4x3.kicad_pcb
 ```
 
-Output goes to `<panel-name>-jlcpcb/` beside the panel and includes Gerbers,
-Excellon drills, a positions CSV, and `<panel-name>-gerbers.zip`. Routed-panel
-DRC requires closed routing cutouts with no violations or unconnected items.
-The original
-`generate_jlcpcb.py` schematic/project workflow is unchanged.
+Output goes to the project's `manufacture/` directory and includes Gerbers,
+Excellon drills, a JLCPCB BOM, a JLCPCB CPL CSV, and
+`<panel-name>-gerbers.zip`. The BOM is reconstructed from the `Value`,
+`Reference`, and `LCSC Part #` properties embedded in each copied footprint;
+components marked `board_only` or `exclude_from_bom` and parts whose LCSC field
+is blank or `N/A` are omitted. Every BOM designator must appear in the CPL
+file. Routed-panel DRC requires closed routing cutouts with no violations or
+unconnected items. The original `generate_jlcpcb.py` schematic/project workflow
+is unchanged.
+
+### One-command panel manufacturing
+
+`manufacture_jlcpcb.py` runs routed panelization followed by the panel JLCPCB
+exporter. Pass only the project directory name and array dimensions; the board
+must have the same basename as its directory:
+
+```sh
+python3 hardware/kicad/modules/manufacture_jlcpcb.py mek-smd-mag-led -x 4 -y 3
+```
+
+The command writes the generated panel PCB, Gerbers, separate plated and NPTH
+drill files, fabrication ZIP, BOM, and CPL CSV together under
+`hardware/<project>/manufacture/`. Re-running it replaces the matching panel
+and release files. ZIP creation is scoped to the selected panel filename, so
+outputs for another array size cannot be included accidentally.
 
 ## Support modules
 

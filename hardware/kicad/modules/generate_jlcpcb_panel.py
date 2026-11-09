@@ -6,9 +6,10 @@ Run from the repository root with::
     python3 hardware/kicad/modules/generate_jlcpcb_panel.py --help
 
 This script is specifically for ``*_panel_*.kicad_pcb`` files produced by the
-panelization scripts. It does not run schematic ERC/parity and does not create
-a BOM. The source PCB is validated, its zones are refilled, and fabrication
-outputs are written to a dedicated directory beside the panel board.
+panelization scripts. It does not run schematic ERC/parity. The BOM is built
+from the LCSC properties retained in the panel footprints. The source PCB is
+validated, its zones are refilled, and fabrication and assembly outputs are
+written to a dedicated directory beside the panel board.
 """
 
 from __future__ import annotations
@@ -27,6 +28,8 @@ from generate_jlcpcb import (
     reject_newer_autosaves,
     reject_unsaved_open_board,
     run,
+    validate_assembly_references,
+    write_board_bom,
 )
 from generate_jlcpcb import (
     find_kicad_cli as find_common_kicad_cli,
@@ -89,7 +92,9 @@ def check_panel_drc(board: Path, cli: list[str], report: Path) -> None:
     report.unlink(missing_ok=True)
 
 
-def archive_panel_files(output_dir: Path, archive: Path) -> None:
+def archive_panel_files(
+    output_dir: Path, archive: Path, board_stem: str | None = None
+) -> None:
     """Create a ZIP containing only this isolated output directory's fab files."""
     extensions = {
         ".gbr",
@@ -110,6 +115,7 @@ def archive_panel_files(output_dir: Path, archive: Path) -> None:
         path
         for path in output_dir.iterdir()
         if path.is_file()
+        and (board_stem is None or path.name.startswith(board_stem))
         and (
             path.suffix.lower() in extensions
             or (path.suffix.lower().startswith(".g") and path.suffix[2:].isdigit())
@@ -152,6 +158,13 @@ def export_panel_drills(board: Path, cli: list[str], output_dir: Path) -> None:
     )
 
 
+def default_output_directory(board: Path) -> Path:
+    """Keep panels already in manufacture there; otherwise create it beside them."""
+    if board.parent.name == "manufacture":
+        return board.parent
+    return board.parent / "manufacture"
+
+
 def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) -> Path:
     board = board.resolve()
     if not board.is_file() or board.suffix.lower() != ".kicad_pcb":
@@ -159,9 +172,7 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     validate_panel_name(board)
     reject_unsaved_open_board(board)
     reject_newer_autosaves([board])
-    destination = (
-        output_dir.resolve() if output_dir else board.parent / f"{board.stem}-jlcpcb"
-    )
+    destination = output_dir.resolve() if output_dir else default_output_directory(board)
     destination.mkdir(parents=True, exist_ok=True)
     report = destination / f"{board.stem}-panel-drc.json"
     check_panel_drc(board, cli, report)
@@ -185,6 +196,7 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     export_panel_drills(board, cli, destination)
 
     raw_positions = destination / f".{board.stem}-positions-kicad.csv"
+    position_references: set[str] = set()
     try:
         run(
             [
@@ -203,14 +215,23 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
                 str(board),
             ]
         )
-        convert_positions(raw_positions, destination / f"{board.stem}-positions.csv")
+        position_references = convert_positions(
+            raw_positions, destination / f"{board.stem}-cpl.csv"
+        )
+        (destination / f"{board.stem}-positions.csv").unlink(missing_ok=True)
     finally:
         raw_positions.unlink(missing_ok=True)
 
+    bom_references = write_board_bom(
+        board, destination / f"{board.stem}-bom.csv"
+    )
+    validate_assembly_references(bom_references, position_references)
+
     archive = destination / f"{board.stem}-gerbers.zip"
-    archive_panel_files(destination, archive)
+    archive_panel_files(destination, archive, board.stem)
     print(f"Panel fabrication package: {archive}")
-    print("No BOM was generated because this PCB-only workflow has no schematic.")
+    print(f"Panel BOM: {destination / f'{board.stem}-bom.csv'}")
+    print(f"Panel CPL: {destination / f'{board.stem}-cpl.csv'}")
     return destination
 
 

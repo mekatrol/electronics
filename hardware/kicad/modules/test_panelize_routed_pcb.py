@@ -7,6 +7,7 @@ from panelize_routed_pcb import (
     build_routed_panel,
     load_fiducial_template,
     parse_sexpr,
+    tab_edge_orientation,
     validation_summary,
 )
 
@@ -36,6 +37,15 @@ class RoutedPanelTests(unittest.TestCase):
         self.assertIn("PanelToolingHole_2mm", text)
         self.assertIn("MouseBite", text)
         self.assertIn("/VOUT@X2Y2", text)
+        self.assertIn("R2_X1Y1", text)
+        self.assertIn("R2_X2Y2", text)
+
+    def test_uses_long_edges_when_board_is_narrower_than_tab(self):
+        self.assertEqual(tab_edge_orientation(Bounds(0, 0, 3, 8), 5), "vertical")
+
+    def test_rejects_board_with_no_edge_long_enough_for_tab(self):
+        with self.assertRaisesRegex(ValueError, "do not fit"):
+            tab_edge_orientation(Bounds(0, 0, 3, 4), 5)
 
     def test_rejects_undersized_route_gap(self):
         with self.assertRaises(ValueError):
@@ -68,6 +78,7 @@ class RoutedPanelTests(unittest.TestCase):
         self.assertIn("2 columns x 2 rows = 4 identical PCBs", summary)
         self.assertIn("Breakaway tabs: 8 total", summary)
         self.assertIn("Mouse bites: 5 holes/tab, 40 holes total", summary)
+        self.assertIn("top and bottom", summary)
         self.assertIn("NPTH mouse bites do not require it", summary)
         self.assertIn("KiCad panel DRC: PASS", summary)
         self.assertIn("Source-file integrity: PASS", summary)
