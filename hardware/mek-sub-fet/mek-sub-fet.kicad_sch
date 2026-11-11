@@ -2651,7 +2651,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 60.96) (xy 219.71 60.96)
+			(xy 217.17 62.23) (xy 224.79 62.23)
 		)
 		(stroke
 			(width 0)
@@ -2941,7 +2941,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 63.5) (xy 219.71 63.5)
+			(xy 217.17 64.77) (xy 224.79 64.77)
 		)
 		(stroke
 			(width 0)
@@ -2961,7 +2961,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 63.5) (xy 217.17 83.82)
+			(xy 217.17 64.77) (xy 217.17 83.82)
 		)
 		(stroke
 			(width 0)
@@ -2981,7 +2981,7 @@
 	)
 	(wire
 		(pts
-			(xy 217.17 43.18) (xy 217.17 60.96)
+			(xy 217.17 43.18) (xy 217.17 62.23)
 		)
 		(stroke
 			(width 0)
@@ -3282,6 +3282,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 38.1 129.54 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "b326e77f-81f6-4696-af1c-cf0eebf31354")
 		)
@@ -3538,7 +3549,18 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C22962"
+		(property "LCSC Part #" "C4410"
+			(at 151.13 67.31 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 151.13 67.31 90)
 			(hide yes)
 			(show_name no)
@@ -3675,7 +3697,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
 			(at 256.54 135.89 0)
 			(hide yes)
 			(show_name no)
@@ -3698,6 +3720,28 @@
 			)
 		)
 		(property "Description" "Dual Buffer, Schmitt Triggered, Low-Voltage CMOS"
+			(at 256.54 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 256.54 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C10429"
 			(at 256.54 135.89 0)
 			(hide yes)
 			(show_name no)
@@ -3832,6 +3876,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 161.29 57.15 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
 			(uuid "08d13ec0-5190-44b3-b58a-7f8a4c41bd77")
 		)
@@ -3914,6 +3969,17 @@
 			)
 		)
 		(property "LCSC Part #" "C110255"
+			(at 243.84 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 243.84 135.89 0)
 			(hide yes)
 			(show_name no)
@@ -4036,6 +4102,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 208.28 62.23 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "307d2fe9-50f0-4062-9876-bebeb2b2e5bf")
 		)
@@ -4115,6 +4192,28 @@
 				)
 			)
 		)
+		(property "LCSC Part #" "C23654"
+			(at 130.81 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 130.81 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "4"
 			(uuid "e9b98e57-2fdd-4814-885a-fa7cd9681ee2")
 		)
@@ -4141,7 +4240,7 @@
 	)
 	(symbol
 		(lib_id "Connector:Screw_Terminal_01x02")
-		(at 224.79 63.5 0)
+		(at 229.87 64.77 0)
 		(mirror x)
 		(unit 1)
 		(body_style 1)
@@ -4152,7 +4251,7 @@
 		(dnp no)
 		(uuid "4ceb7526-72eb-4307-8b49-14b5a60c1a0f")
 		(property "Reference" "J2"
-			(at 224.79 66.294 0)
+			(at 229.87 67.564 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4162,7 +4261,7 @@
 			)
 		)
 		(property "Value" "Screw_Terminal_01x02"
-			(at 227.33 60.9601 0)
+			(at 232.41 62.2301 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4174,7 +4273,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal"
-			(at 224.79 63.5 0)
+			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4185,7 +4284,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 224.79 63.5 0)
+			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4196,7 +4295,7 @@
 			)
 		)
 		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 224.79 63.5 0)
+			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4207,7 +4306,7 @@
 			)
 		)
 		(property "KLC_S3.3" ""
-			(at 224.79 63.5 0)
+			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4218,7 +4317,7 @@
 			)
 		)
 		(property "KLC_S4.1" ""
-			(at 224.79 63.5 0)
+			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4229,7 +4328,18 @@
 			)
 		)
 		(property "LCSC Part #" "N/A"
-			(at 224.79 63.5 0)
+			(at 229.87 64.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4410,6 +4520,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 114.3 38.1 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "1"
 			(uuid "0aca8b35-d1bf-4467-be85-910e3700c4db")
 		)
@@ -4493,6 +4614,17 @@
 			)
 		)
 		(property "LCSC Part #" "N/A"
+			(at 165.1 179.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 165.1 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -4609,6 +4741,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 72.39 69.85 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
 			(uuid "d3d291bd-7403-4b3d-86bd-98aeb9d0d41b")
 		)
@@ -4692,6 +4835,17 @@
 			)
 		)
 		(property "LCSC Part #" "N/A"
+			(at 135.89 179.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 135.89 179.07 0)
 			(hide yes)
 			(show_name no)
@@ -4812,6 +4966,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 153.67 191.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
@@ -4922,6 +5087,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 144.78 191.77 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
@@ -4999,6 +5175,17 @@
 			)
 		)
 		(property "LCSC Part #" "C42449152"
+			(at 179.07 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 179.07 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -5125,6 +5312,17 @@
 			)
 		)
 		(property "KLC_S4.1" ""
+			(at 151.13 77.47 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 151.13 77.47 0)
 			(hide yes)
 			(show_name no)
@@ -5404,6 +5602,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 38.1 144.78 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "2"
 			(uuid "1a055243-5927-4fb6-acdb-8be234c1e220")
 		)
@@ -5495,6 +5704,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 201.93 142.24 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(pin "3"
 			(uuid "9acce990-768d-48df-a730-dbe2b2a4a639")
 		)
@@ -5548,7 +5768,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
 			(at 62.23 137.16 0)
 			(hide yes)
 			(show_name no)
@@ -5571,6 +5791,28 @@
 			)
 		)
 		(property "Description" "Dual Buffer, Schmitt Triggered, Low-Voltage CMOS"
+			(at 62.23 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 62.23 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C10429"
 			(at 62.23 137.16 0)
 			(hide yes)
 			(show_name no)
@@ -5718,7 +5960,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
 			(at 99.06 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -5741,6 +5983,28 @@
 			)
 		)
 		(property "Description" "Dual Buffer, Schmitt Triggered, Low-Voltage CMOS"
+			(at 99.06 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 99.06 57.15 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C10429"
 			(at 99.06 57.15 0)
 			(hide yes)
 			(show_name no)
@@ -5933,6 +6197,17 @@
 				)
 			)
 		)
+		(property "Sim.Device" ""
+			(at 151.13 179.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
@@ -6084,7 +6359,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C4190"
+		(property "LCSC Part #" "C17902"
 			(at 171.45 72.39 90)
 			(hide yes)
 			(show_name no)
@@ -6107,6 +6382,17 @@
 			)
 		)
 		(property "KLC_S4.1" ""
+			(at 171.45 72.39 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Sim.Device" ""
 			(at 171.45 72.39 90)
 			(hide yes)
 			(show_name no)
