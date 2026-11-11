@@ -5,6 +5,7 @@ from kicad_discovery import find_fiducial_library_file
 from panelize_routed_pcb import (
     Bounds,
     build_routed_panel,
+    fiducial as make_fiducial,
     load_fiducial_template,
     parse_sexpr,
     tab_edge_orientation,
@@ -39,6 +40,16 @@ class RoutedPanelTests(unittest.TestCase):
         self.assertIn("/VOUT@X2Y2", text)
         self.assertIn("R2_X1Y1", text)
         self.assertIn("R2_X2Y2", text)
+
+    def test_generated_fiducials_are_not_assembly_components(self):
+        generated = make_fiducial(self.fiducial, "PFID1", 10, 20)
+        attributes = next(
+            item
+            for item in generated
+            if isinstance(item, list) and item and item[0] == "attr"
+        )
+        self.assertIn("exclude_from_pos_files", attributes)
+        self.assertIn("exclude_from_bom", attributes)
 
     def test_uses_long_edges_when_board_is_narrower_than_tab(self):
         self.assertEqual(tab_edge_orientation(Bounds(0, 0, 3, 8), 5), "vertical")

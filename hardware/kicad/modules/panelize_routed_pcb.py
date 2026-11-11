@@ -546,6 +546,20 @@ def fiducial(template: Node, reference: str, x: float, y: float) -> Node:
             if isinstance(value, list) and head(value) == "layer"
         )
         reference_property.insert(layer_position + 1, ["hide", "yes"])
+    attributes = next(
+        (
+            value
+            for value in result
+            if isinstance(value, list) and head(value) == "attr"
+        ),
+        None,
+    )
+    if attributes is None:
+        attributes = ["attr"]
+        result.append(attributes)
+    for exclusion in ("exclude_from_pos_files", "exclude_from_bom"):
+        if exclusion not in attributes:
+            attributes.append(exclusion)
     for node in walk(result):
         if (
             node is not result
