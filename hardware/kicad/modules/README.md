@@ -116,6 +116,7 @@ The editor history labels are:
 | `center_components_inside_edge.py` | Center all footprints inside board outline |
 | `center_edge_around_components.py` | Center Edge.Cuts around all components |
 | `check_fiducials.py` | Align and check fiducials |
+| `check_motherboard_interface.py` | Fix motherboard mechanical interface |
 | `pcb_edge.py` | Replace board outline and ground zones |
 | `remove_tracks_and_vias.py` | Remove all tracks, vias, and zones |
 | `resize_matching_text.py` | Resize matching board text |
@@ -124,6 +125,20 @@ The editor history labels are:
 | `zone_outline_perp.py` | Orthogonalize zone outlines |
 
 `report_board_dimensions.py` is read-only and creates no history entry.
+
+### `check_motherboard_interface.py`
+
+Validates the daughter board currently open in PCB Editor against the shared
+motherboard mechanical interface. It checks the 25 x 42 mm outline and the J1,
+J2, H1, and H2 offsets from the top, left, and right edges using pin/hole
+centers. J1 and optional J2 are measured from the center of their top-left pin;
+H1 and H2 are measured from their hole centers. A missing J2 is reported but
+does not fail validation. J1 and J2 are also explicitly checked for horizontal
+centering using the center of their complete pin group. The default
+`FIX_MOTHERBOARD_INTERFACE = False` only reports mismatches. Set it to
+`True` to replace a wrongly sized outline and move the three footprints in one
+undoable transaction. The active board remains unsaved for review, and future
+daughter boards need only be opened in PCB Editor before running the script.
 
 ### `thermal_reliefs.py`
 

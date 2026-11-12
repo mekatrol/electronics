@@ -499,7 +499,7 @@
 	(footprint "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal"
 		(layer "F.Cu")
 		(uuid "19369125-61d6-4d72-b75f-12e300fe818f")
-		(at 145.930895 115.953951)
+		(at 145.96 116)
 		(descr "Terminal Block Phoenix MKDS-1,5-2-5.08, 2 pins, pitch 5.08mm, size 10.2x9.8mm, drill diameter 1.3mm, pad diameter 2.6mm, http://www.farnell.com/datasheets/100425.pdf")
 		(tags "THT Terminal Block Phoenix MKDS-1,5-2-5.08 pitch 5.08mm size 10.2x9.8mm drill 1.3mm pad 2.6mm")
 		(property "Reference" "J2"
@@ -5389,8 +5389,8 @@
 		(layer "Edge.Cuts")
 		(uuid "b482c770-147c-4d4e-b964-6d48e05f2f12")
 	)
-	(gr_text "24 VAC MAX"
-		(at 153.062937 119.9 0)
+	(gr_text "24 VAC"
+		(at 151.245477 119.9 0)
 		(layer "B.SilkS")
 		(uuid "98271cd0-2cb6-42b1-9919-7e0b15cb2633")
 		(effects
@@ -5650,28 +5650,20 @@
 		(uuid "f1b1ac52-a635-4307-9bf8-a85652a4d80e")
 	)
 	(segment
+		(start 145.930895 115.953951)
+		(end 144.753395 115.953951)
+		(width 1)
+		(layer "F.Cu")
+		(net "/MT1")
+		(uuid "1e89a147-ccb7-49bb-a5da-8dfc0f8b1f5c")
+	)
+	(segment
 		(start 144.753395 115.953951)
 		(end 141.573395 112.773951)
 		(width 1)
 		(layer "F.Cu")
 		(net "/MT1")
-		(uuid "0bc2b607-a6a0-4d12-9209-ad90fb69ed13")
-	)
-	(segment
-		(start 146.4 109.284846)
-		(end 147.510895 108.173951)
-		(width 1)
-		(layer "F.Cu")
-		(net "/MT1")
-		(uuid "0d225847-3527-44a6-9c1d-37fef348685c")
-	)
-	(segment
-		(start 145.930895 115.953951)
-		(end 146.4 115.484846)
-		(width 1)
-		(layer "F.Cu")
-		(net "/MT1")
-		(uuid "33d5826e-9fc6-45ef-9bce-e694aa0d7ee3")
+		(uuid "2c97ac5f-6477-4f44-a38c-bac4528222bd")
 	)
 	(segment
 		(start 147.410895 102.473951)
@@ -5680,6 +5672,14 @@
 		(layer "F.Cu")
 		(net "/MT1")
 		(uuid "3a89994e-d748-4f4b-abfb-5d9e5c17b23f")
+	)
+	(segment
+		(start 146.4 115.484846)
+		(end 145.930895 115.953951)
+		(width 1)
+		(layer "F.Cu")
+		(net "/MT1")
+		(uuid "562b3cc4-3d5c-4857-b7a7-4933b3b25f88")
 	)
 	(segment
 		(start 145.822176 102.473951)
@@ -5698,20 +5698,20 @@
 		(uuid "b03bd14e-bbcf-4254-b82e-b8d3056c0ce1")
 	)
 	(segment
-		(start 146.4 115.484846)
+		(start 146.4 109.284846)
+		(end 146.4 115.484846)
+		(width 1)
+		(layer "F.Cu")
+		(net "/MT1")
+		(uuid "d3743a46-55a0-40c7-bf80-a83e638df4cc")
+	)
+	(segment
+		(start 147.510895 108.173951)
 		(end 146.4 109.284846)
 		(width 1)
 		(layer "F.Cu")
 		(net "/MT1")
-		(uuid "cf3091f3-935f-40f0-ae00-abeb00437970")
-	)
-	(segment
-		(start 145.930895 115.953951)
-		(end 144.753395 115.953951)
-		(width 1)
-		(layer "F.Cu")
-		(net "/MT1")
-		(uuid "d7e0dadb-a807-4a41-ab9b-5284a1c72957")
+		(uuid "d4b3a0fc-8687-48ef-8730-58c9e6d58aba")
 	)
 	(segment
 		(start 147.510895 102.573951)
