@@ -1,0 +1,8 @@
+data/settings.json
+data/runs/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+__pycache__/

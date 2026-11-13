@@ -207,6 +207,12 @@ Add automated tests that verify:
 
 ## Phase 2: Create the Python backend
 
+**Status: Complete (2026-11-13).** The localhost FastAPI backend, strict
+parameter and path validation, safe subprocess lifecycle, atomic persistence,
+readiness reporting, REST endpoints, quality tooling, tests, and development
+documentation are implemented. Continue with Phase 3 when the preferred Vue
+template is available.
+
 Use FastAPI for the backend. It provides typed request validation, JSON APIs,
 generated OpenAPI documentation, and straightforward integration with the
 existing Python scripts.
