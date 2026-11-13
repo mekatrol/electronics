@@ -448,6 +448,14 @@ running GUI and API server.
 
 ## Phase 3: Integrate the Vue.js frontend
 
+**Status: Complete (2026-11-13).** The supplied Vue template is integrated
+with the backend through a typed API client. It provides metadata-driven
+parameter forms, risk confirmations, submission and polling, persistent run
+history and logs, cancellation, readiness, settings, clear API errors, a
+development proxy, responsive styling, and unit and browser tests. Frontend
+and backend quality checks pass. Continue with Phase 4 by refactoring and
+approving additional module candidates.
+
 The user will supply the preferred Vue.js template. This phase defines a stable
 backend contract and integrates that template rather than generating a separate
 frontend design.
@@ -519,6 +527,38 @@ proxy.
 - Run state and logs remain usable after a page refresh.
 - Backend error messages are presented clearly.
 - Both frontend and backend lint and test commands pass.
+
+## Phase 4: Expand the approved module catalogue
+
+**Status: In progress (started 2026-11-13).** The representative read-only and
+file-generation workflows are available. The next work is to expose suitable
+board-editing candidates incrementally without weakening the execution or path
+safety boundaries established in Phases 1–3.
+
+### 4.1 Refactor candidate interfaces
+
+- Select one related group of board-editing scripts at a time from
+  `INVENTORY.md`.
+- Replace browser-configurable module constants with typed option dataclasses
+  and explicit command-line arguments while preserving direct CLI use.
+- Keep each operation's KiCad IPC changes within an undoable commit where the
+  KiCad API supports it.
+
+### 4.2 Approve and index modules
+
+- Review each refactored script's risk, preflight requirements, timeout, and
+  parameter constraints before adding it to `module_index.json`.
+- Add exact command-construction and parameter-validation tests for every new
+  interface.
+- Exercise the schema-driven form and confirmation flow without adding
+  module-specific frontend code.
+
+### Phase 4 acceptance criteria
+
+- Each newly enabled module has an explicit, tested CLI contract.
+- Board-editing operations require confirmation and remain serialized.
+- No module requires source rewriting or accepts raw command fragments.
+- Backend and frontend quality checks continue to pass.
 
 ## Recommended implementation order
 

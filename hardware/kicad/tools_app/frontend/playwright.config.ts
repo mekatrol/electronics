@@ -1,0 +1,12 @@
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  webServer: {
+    command: 'npx vite --host 127.0.0.1 --port 5188 --strictPort',
+    url: 'http://127.0.0.1:5188',
+    reuseExistingServer: true,
+  },
+  use: { baseURL: 'http://127.0.0.1:5188' },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+});

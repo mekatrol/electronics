@@ -1,4 +1,8 @@
-# frontend
+# KiCad Tools frontend
+
+Vue 3 interface for the local KiCad Tools FastAPI service. It loads the module
+catalogue from the backend and generates parameter controls from that metadata;
+there are no executable paths or hard-coded module definitions in the client.
 
 This template should help get you started developing with Vue 3 in Vite.
 
@@ -35,6 +39,10 @@ npm install
 npm run dev
 ```
 
+Start the backend on `127.0.0.1:8000` first. Vite proxies `/api` requests to
+that address. Run history and active logs can be reopened from the Runs tab,
+while active runs are polled once per second.
+
 ### Type-Check, Compile and Minify for Production
 
 ```sh
@@ -45,6 +53,15 @@ npm run build
 
 ```sh
 npm run test:unit
+```
+
+### Run the Browser Test
+
+Install the local Chromium binary once, then run Playwright:
+
+```sh
+PLAYWRIGHT_BROWSERS_PATH=.playwright-browsers npx playwright install chromium
+npm run test:e2e
 ```
 
 ### Lint with [ESLint](https://eslint.org/)

@@ -43,6 +43,12 @@ The initial API includes health/readiness, module catalogue, run submission,
 polling, output, cancellation, history, and settings endpoints. Mutating runs
 require explicit confirmation; KiCad-board mutations are serialized.
 
+The Vue frontend is in `frontend/`. After starting the backend, run
+`npm install` and `npm run dev` there, then open `http://127.0.0.1:5173`.
+The development server proxies `/api` to the backend. Frontend quality checks
+are `npm run lint`, `npm run type-check`, `npm run test:unit`,
+`npm run test:e2e`, and `npm run build`.
+
 ## Adding a module
 
 1. Classify the file in `INVENTORY.md`. Do not expose tests, legacy files,
