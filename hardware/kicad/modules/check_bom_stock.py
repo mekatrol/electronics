@@ -33,7 +33,7 @@ IPC_PYTHON = REPOSITORY_DIR / ".venv-kicad-ipc" / "bin" / "python"
 IPC_SCHEMATIC_FINDER = Path(__file__).with_name("find_open_schematic.py")
 DEFAULT_WORKBOOK = HARDWARE_DIR / "components.xlsx"
 DEFAULT_SHEET = "Stock"
-DEFAULT_MINIMUM_STOCK = 20
+DEFAULT_MINIMUM_STOCK = 10
 NOT_APPLICABLE = "N/A"
 
 # References matching any of these regular expressions are excluded from

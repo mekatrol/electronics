@@ -4165,7 +4165,7 @@
 				)
 			)
 		)
-		(property "Value" "SMAJ18CA"
+		(property "Value" "SMAJ48CA"
 			(at 178.816 90.424 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4186,7 +4186,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C908822.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C173501.pdf"
 			(at 181.61 90.17 0)
 			(hide yes)
 			(show_name no)
@@ -4208,7 +4208,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C908822"
+		(property "LCSC Part #" "C173501"
 			(at 181.61 90.17 0)
 			(hide yes)
 			(show_name no)
