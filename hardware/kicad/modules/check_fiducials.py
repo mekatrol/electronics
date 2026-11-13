@@ -7,10 +7,11 @@ Run from the repository root with::
 Review the values in the ``User settings`` section below before running the
 script.
 
-The script regards a side as populated when it contains at least one footprint
-that is not a fiducial and is not marked Do Not Populate. Each populated side
-must have the configured minimum number of fiducials. An unpopulated side does
-not need fiducials.
+By default, the script regards a side as populated when it contains at least
+one SMD footprint that is not a fiducial and is not marked Do Not Populate.
+The ``CHECK_SMD_ONLY`` setting can include through-hole and unspecified
+footprints when required. Each populated side must have the configured minimum
+number of fiducials. An unpopulated side does not need fiducials.
 
 Fiducials are recognized by a reference beginning with ``FID``, a footprint
 library identifier containing ``fiducial``, or a value exactly equal to
@@ -41,6 +42,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from kipy.board_types import PSS_CIRCLE
+from kipy.proto.board.board_types_pb2 import FMS_SMD
 
 from kicad_ipc import (
     BoardLayer,
@@ -62,6 +64,12 @@ from kicad_ipc import (
 # components. Three per populated assembly side is the normal global-fiducial
 # arrangement. A board populated on both sides therefore needs three on each.
 MIN_FIDUCIALS_PER_POPULATED_SIDE = 3
+
+# True requires fiducials only on sides populated with SMD footprints. This is
+# appropriate when through-hole components are manually inserted and do not
+# need optical placement alignment. Set to False to treat through-hole and
+# unspecified footprints as populated components too.
+CHECK_SMD_ONLY = True
 
 # Round both the X and Y coordinate to the nearest multiple of this value in
 # KiCad's absolute board coordinate system. For example, 136.3 becomes 136.5
@@ -160,7 +168,12 @@ def populated_sides(footprints) -> set:
     return {
         footprint.layer
         for footprint in footprints
-        if not is_fiducial(footprint) and not footprint.attributes.do_not_populate
+        if not is_fiducial(footprint)
+        and not footprint.attributes.do_not_populate
+        and (
+            not CHECK_SMD_ONLY
+            or footprint.attributes.mounting_style == FMS_SMD
+        )
     }
 
 
