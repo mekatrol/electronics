@@ -12,6 +12,7 @@ from uuid import uuid4
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from .command_builder import build_command
 from .configuration import AppPaths, default_paths, default_settings
@@ -56,6 +57,13 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
         allow_methods=["GET", "POST", "PUT"],
         allow_headers=["Content-Type"],
     )
+
+    @app.get("/", include_in_schema=False)
+    async def root() -> RedirectResponse:
+        """Redirect the landing URL to the interactive API documentation."""
+        return RedirectResponse(
+            url="/docs", status_code=status.HTTP_307_TEMPORARY_REDIRECT
+        )
 
     @app.get("/api/health")
     async def health(request: Request) -> dict[str, Any]:

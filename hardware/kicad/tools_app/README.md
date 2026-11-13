@@ -7,20 +7,31 @@ shell-free argument array. A client cannot submit a script, flag, or command.
 
 ## Development
 
-From `tools_app/`, create and activate a virtual environment, then run:
+Open `tools_app/` as the VS Code workspace. On first use, run these tasks from
+**Terminal > Run Task**:
+
+1. `Backend: Setup environment`
+2. `Backend: Install dependencies`
+
+Then use `Backend: Run (reload)` to start the development server. Open
+`http://127.0.0.1:8000/docs` to use the generated interactive API.
+
+To debug, open **Run and Debug**, select `Debug KiCad Tools backend`, and press
+F5. Breakpoints in `src/kicad_tools_app/` will be active. The debug launch does
+not use auto-reload because reload starts a child process that makes breakpoint
+behaviour less predictable. Stop any running reload task before debugging so
+port 8000 is free.
+
+The `Backend: Test` task is the default test task, and `Backend: Quality checks`
+runs formatting checks, linting, strict type checking, and the complete test
+suite.
+
+For equivalent command-line setup from `tools_app/`, run:
 
 ```console
-python3 -m pip install -r requirements-dev.txt
-ruff format --check .
-ruff check .
-mypy
-pytest
-```
-
-Start the localhost-only API with:
-
-```console
-kicad-tools-app
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python -m uvicorn kicad_tools_app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 Interactive API documentation is available at `http://127.0.0.1:8000/docs`.

@@ -175,6 +175,9 @@ async def test_api_contract_and_disabled_module_hiding(tmp_path: Path) -> None:
         app.router.lifespan_context(app),
         AsyncClient(transport=transport, base_url="http://test") as client,
     ):
+        landing = await client.get("/", follow_redirects=False)
+        assert landing.status_code == 307
+        assert landing.headers["location"] == "/docs"
         health = await client.get("/api/health")
         assert health.status_code == 200
         modules = (await client.get("/api/modules")).json()
