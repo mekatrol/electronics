@@ -391,6 +391,25 @@ the Gerber ZIP when a project contains deliberate documentation geometry.
 
 The BOM includes populated components with a non-empty `LCSC Part #` field.
 
+### BOM stock checker
+
+`check_bom_stock.py` compares a schematic BOM with the `Stock` sheet in
+`hardware/components.xlsx`. With one schematic project open in KiCad, run it
+without a positional argument; the script selects the project through KiCad's
+IPC API:
+
+```sh
+.venv-kicad-ipc/bin/python hardware/kicad/modules/check_bom_stock.py
+.venv-kicad-ipc/bin/python hardware/kicad/modules/check_bom_stock.py --minimum-stock 50
+```
+
+The default minimum stock is 20. The checker requires every BOM value to exist
+in the workbook and validates its LCSC number, value, KiCad symbol, footprint,
+datasheet, and stock quantity. A schematic `LCSC Part #` of `N/A` skips only
+the LCSC-number requirement; the value and other metadata must still identify
+one workbook row. Blank LCSC fields are errors. The command is read-only and
+returns a non-zero status if any check fails.
+
 ### Generated-panel PCB-only exporter
 
 `generate_jlcpcb_panel.py` is the separate exporter for generated panelized PCB
