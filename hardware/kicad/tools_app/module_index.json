@@ -1,0 +1,134 @@
+{
+  "$schema": "./schemas/module_index.schema.json",
+  "schema_version": "1.0.0",
+  "application_compatibility": ">=0.1.0 <1.0.0",
+  "categories": [
+    {"id": "analysis", "name": "Analysis"},
+    {"id": "manufacturing", "name": "Manufacturing"},
+    {"id": "board-editing", "name": "Board editing"},
+    {"id": "system", "name": "System"}
+  ],
+  "modules": [
+    {
+      "id": "report-board-dimensions",
+      "name": "Report Board Dimensions",
+      "description": "Report dimensions, mounting-hole offsets, and fiducial offsets for the board open in PCB Editor.",
+      "script": "../modules/report_board_dimensions.py",
+      "enabled": true,
+      "category": "analysis",
+      "execution_type": "read_only",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 60,
+      "parameters": [],
+      "risk": {"level": "low", "summary": "Reads the open board through KiCad IPC without changing it.", "confirmation_required": false}
+    },
+    {
+      "id": "check-bom-stock",
+      "name": "Check BOM Stock",
+      "description": "Compare a schematic BOM with the component stock workbook and report shortages or metadata errors.",
+      "script": "../modules/check_bom_stock.py",
+      "enabled": true,
+      "category": "analysis",
+      "execution_type": "read_only",
+      "requires_kicad": false,
+      "requires_pcb_editor": false,
+      "requires_kicad_api": false,
+      "working_directory": "repository_root",
+      "timeout_seconds": 180,
+      "parameters": [
+        {"name": "schematic", "label": "Schematic", "description": "Schematic to check; omit to discover the schematic open in KiCad.", "kind": "positional", "type": "file", "required": false, "default": null, "extensions": [".kicad_sch"]},
+        {"name": "workbook", "label": "Stock workbook", "description": "Workbook containing the stock table.", "kind": "option", "flag": "--workbook", "type": "file", "required": false, "default": "hardware/components.xlsx", "extensions": [".xlsx"]},
+        {"name": "sheet", "label": "Sheet", "description": "Workbook sheet containing stock data.", "kind": "option", "flag": "--sheet", "type": "string", "required": false, "default": "Stock"},
+        {"name": "minimum_stock", "label": "Minimum stock", "description": "Minimum acceptable quantity for each BOM item.", "kind": "option", "flag": "--minimum-stock", "type": "number", "required": false, "default": 10, "minimum": 0},
+        {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
+      ],
+      "risk": {"level": "low", "summary": "Reads project and workbook files and creates only a temporary netlist.", "confirmation_required": false}
+    },
+    {
+      "id": "generate-jlcpcb",
+      "name": "Generate JLCPCB Files",
+      "description": "Generate fabrication Gerbers, drill data, BOM, and placement files for one KiCad project.",
+      "script": "../modules/generate_jlcpcb.py",
+      "enabled": true,
+      "category": "manufacturing",
+      "execution_type": "file_generate",
+      "requires_kicad": false,
+      "requires_pcb_editor": false,
+      "requires_kicad_api": false,
+      "working_directory": "repository_root",
+      "timeout_seconds": 600,
+      "parameters": [
+        {"name": "project", "label": "Project", "description": "Project directory, .kicad_pro file, or .kicad_pcb file.", "kind": "positional", "type": "file", "required": true, "default": null, "extensions": [".kicad_pro", ".kicad_pcb"]},
+        {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
+      ],
+      "risk": {"level": "medium", "summary": "Creates or replaces manufacturing artifacts beneath the selected project.", "confirmation_required": true}
+    },
+    {
+      "id": "panelize-routed-pcb",
+      "name": "Panelize Routed PCB",
+      "description": "Create a routed mouse-bite production panel from a KiCad PCB.",
+      "script": "../modules/panelize_routed_pcb.py",
+      "enabled": true,
+      "category": "manufacturing",
+      "execution_type": "file_generate",
+      "requires_kicad": false,
+      "requires_pcb_editor": false,
+      "requires_kicad_api": false,
+      "working_directory": "repository_root",
+      "timeout_seconds": 600,
+      "parameters": [
+        {"name": "input", "label": "Input PCB", "description": "Source board file.", "kind": "positional", "type": "file", "required": true, "default": null, "extensions": [".kicad_pcb"]},
+        {"name": "count_x", "label": "Horizontal count", "description": "Number of boards across the panel.", "kind": "option", "flag": "--count-x", "type": "integer", "required": true, "default": 1, "minimum": 1},
+        {"name": "count_y", "label": "Vertical count", "description": "Number of boards down the panel.", "kind": "option", "flag": "--count-y", "type": "integer", "required": true, "default": 1, "minimum": 1},
+        {"name": "output", "label": "Output PCB", "description": "Destination panel file; parent directories may be created.", "kind": "option", "flag": "--output", "type": "file", "required": false, "default": null, "extensions": [".kicad_pcb"], "may_create": true},
+        {"name": "gap", "label": "Board gap", "description": "Routed gap between boards in millimetres.", "kind": "option", "flag": "--gap", "type": "number", "required": false, "default": 2.0, "minimum": 2.0},
+        {"name": "rail", "label": "Rail width", "description": "Perimeter process rail in millimetres.", "kind": "option", "flag": "--rail", "type": "number", "required": false, "default": 5.0, "minimum": 5.0},
+        {"name": "tab_width", "label": "Tab width", "description": "Breakaway-tab width in millimetres.", "kind": "option", "flag": "--tab-width", "type": "number", "required": false, "default": 5.0, "minimum": 5.0},
+        {"name": "mouse_bite_diameter", "label": "Mouse-bite diameter", "description": "Mouse-bite drill diameter in millimetres.", "kind": "option", "flag": "--mouse-bite-diameter", "type": "number", "required": false, "default": 0.6, "minimum": 0.5, "maximum": 0.8},
+        {"name": "mouse_bite_clearance", "label": "Mouse-bite clearance", "description": "Edge-to-edge drill clearance in millimetres.", "kind": "option", "flag": "--mouse-bite-clearance", "type": "number", "required": false, "default": 0.4, "minimum": 0.3, "maximum": 0.4},
+        {"name": "force", "label": "Replace output", "description": "Allow replacement of an existing output file.", "kind": "option", "flag": "--force", "type": "boolean", "required": false, "default": false}
+      ],
+      "risk": {"level": "medium", "summary": "Creates a panel file and can replace it when explicitly requested.", "confirmation_required": true}
+    },
+    {
+      "id": "manufacture-jlcpcb",
+      "name": "Manufacture JLCPCB Panel",
+      "description": "Panelize a project and generate its complete JLCPCB fabrication and assembly package.",
+      "script": "../modules/manufacture_jlcpcb.py",
+      "enabled": true,
+      "category": "manufacturing",
+      "execution_type": "file_generate",
+      "requires_kicad": false,
+      "requires_pcb_editor": false,
+      "requires_kicad_api": false,
+      "working_directory": "repository_root",
+      "timeout_seconds": 900,
+      "parameters": [
+        {"name": "project", "label": "Project directory", "description": "Directory containing its same-named board file.", "kind": "positional", "type": "directory", "required": true, "default": null},
+        {"name": "count_x", "label": "Horizontal count", "description": "Number of boards across the panel.", "kind": "option", "flag": "--count-x", "type": "integer", "required": true, "default": 1, "minimum": 1},
+        {"name": "count_y", "label": "Vertical count", "description": "Number of boards down the panel.", "kind": "option", "flag": "--count-y", "type": "integer", "required": true, "default": 1, "minimum": 1},
+        {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
+      ],
+      "risk": {"level": "high", "summary": "Replaces the generated panel and manufacturing package in the project output directory.", "confirmation_required": true}
+    },
+    {
+      "id": "kill-kicad",
+      "name": "Stop KiCad",
+      "description": "Terminate KiCad processes owned by the current user and remove stale IPC sockets.",
+      "script": "../modules/kill_kicad.py",
+      "enabled": false,
+      "category": "system",
+      "execution_type": "system_control",
+      "requires_kicad": false,
+      "requires_pcb_editor": false,
+      "requires_kicad_api": false,
+      "working_directory": "repository_root",
+      "timeout_seconds": 30,
+      "parameters": [],
+      "risk": {"level": "critical", "summary": "Terminates external application processes and may discard unsaved work.", "confirmation_required": true}
+    }
+  ]
+}

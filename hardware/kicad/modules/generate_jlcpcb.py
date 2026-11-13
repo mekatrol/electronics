@@ -26,6 +26,7 @@ import sys
 import textwrap
 import zipfile
 from collections.abc import Sequence
+from dataclasses import dataclass
 from pathlib import Path
 
 import kicad_netlist_reader
@@ -44,6 +45,21 @@ GERBER_LAYERS = (
     # Preserve deliberate documentation drawings from ordinary projects.
     "Dwgs.User",
 )
+
+
+@dataclass(frozen=True)
+class ModuleOptions:
+    """Validated inputs for :func:`run`.
+
+    ``project`` selects a project directory or KiCad project/board file.
+    ``kicad_cli`` optionally selects a trusted executable path. The function
+    reports expected generation errors with a non-zero process-style status.
+    """
+
+    project: Path
+    kicad_cli: str | None = None
+
+
 HARDWARE_DIR = Path(__file__).resolve().parents[2]
 REPOSITORY_DIR = HARDWARE_DIR.parent
 IPC_PYTHON = REPOSITORY_DIR / ".venv-kicad-ipc" / "bin" / "python"
@@ -54,7 +70,7 @@ UNSAVED_PROJECT_MESSAGE = (
 )
 
 
-def run(command: Sequence[str]) -> None:
+def run_command(command: Sequence[str]) -> None:
     """Print and execute one external command, failing on a non-zero status."""
     print("+", " ".join(command))
     subprocess.run(command, check=True)
@@ -368,7 +384,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
 
     # KiCad calls its schematic design-rule check ERC.  Asking the CLI to use
     # a non-zero exit code for violations makes both checks hard release gates.
-    run(
+    run_command(
         [
             *kicad_cli,
             "sch",
@@ -379,7 +395,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
             str(schematic),
         ]
     )
-    run(
+    run_command(
         [
             *kicad_cli,
             "pcb",
@@ -400,7 +416,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     )
 
     layers = copper_layers(board) + list(GERBER_LAYERS[2:])
-    run(
+    run_command(
         [
             *kicad_cli,
             "pcb",
@@ -414,7 +430,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
             str(board),
         ]
     )
-    run(
+    run_command(
         [
             *kicad_cli,
             "pcb",
@@ -433,7 +449,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     raw_positions = output_dir / f".{project_name}-positions-kicad.csv"
     position_references: set[str] = set()
     try:
-        run(
+        run_command(
             [
                 *kicad_cli,
                 "pcb",
@@ -460,7 +476,7 @@ def generate(source: Path, kicad_cli: Sequence[str]) -> Path:
     netlist = output_dir / f".{project_name}-bom-kicad.xml"
     bom_references: set[str] = set()
     try:
-        run(
+        run_command(
             [
                 *kicad_cli,
                 "sch",
@@ -502,11 +518,16 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main() -> int:
-    """Run generation and translate expected failures to a shell exit code."""
-    args = parse_args()
+def run(options: ModuleOptions) -> int:
+    """Generate files from validated ``options`` and return a process status.
+
+    Manufacturing files are written beneath the selected project. Expected
+    file, command, and validation failures are printed and return status 1.
+    """
     try:
-        output_dir = generate(args.project, find_kicad_cli(args.kicad_cli))
+        output_dir = generate(
+            options.project, find_kicad_cli(options.kicad_cli)
+        )
     except subprocess.CalledProcessError as error:
         print_failure(error)
         return 1
@@ -515,6 +536,12 @@ def main() -> int:
         return 1
     print(f"JLCPCB files written to {output_dir}")
     return 0
+
+
+def main() -> int:
+    """Parse CLI arguments, run generation, and return its process status."""
+    args = parse_args()
+    return run(ModuleOptions(project=args.project, kicad_cli=args.kicad_cli))
 
 
 if __name__ == "__main__":

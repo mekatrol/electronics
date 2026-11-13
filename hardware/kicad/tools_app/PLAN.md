@@ -34,6 +34,10 @@ KiCad directory, this is the `tools_app/` directory.
 
 ## Phase 1: Create the module index
 
+**Status: Complete (2026-11-13).** All Phase 1 deliverables and acceptance
+criteria are implemented. The module-index validation suite passes, along with
+the relevant existing module tests. Continue with Phase 2 when work resumes.
+
 Create `tools_app/module_index.json` as the authoritative description of the
 scripts that the web application may execute.
 

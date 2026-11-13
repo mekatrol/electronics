@@ -27,7 +27,7 @@ from generate_jlcpcb import (
     copper_layers,
     reject_newer_autosaves,
     reject_unsaved_open_board,
-    run,
+    run_command as run,
     validate_assembly_references,
     write_board_bom,
 )

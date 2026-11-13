@@ -21,7 +21,7 @@ class ManufactureJlcpcbTests(unittest.TestCase):
             board = project / "tiny-board.kicad_pcb"
             board.write_text("(kicad_pcb)")
 
-            with patch("manufacture_jlcpcb.run") as mocked_run:
+            with patch("manufacture_jlcpcb.run_command") as mocked_run:
                 output = manufacture(project, 3, 2, "/opt/kicad-cli")
 
             self.assertEqual(output, project / "manufacture")
