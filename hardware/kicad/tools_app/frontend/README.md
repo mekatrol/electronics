@@ -49,6 +49,10 @@ while active runs are polled once per second.
 npm run build
 ```
 
+The production build is minified into `../src/kicad_tools_app/static/`. Start
+the Python backend and open `http://127.0.0.1:8000`; `npm run dev` is not needed
+for the built application.
+
 ### Run Unit Tests with [Vitest](https://vitest.dev/)
 
 ```sh

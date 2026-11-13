@@ -30,6 +30,9 @@ kicad-tools-app = "kicad_tools_app.main:run"
 [tool.hatch.build.targets.wheel]
 packages = ["src/kicad_tools_app"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/kicad_tools_app/static" = "kicad_tools_app/static"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"

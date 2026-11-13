@@ -61,3 +61,6 @@
 
 # Ignore downloaded datasheets
 /hardware/datasheets
+
+# Ignore minified SPA
+hardware/kicad/tools_app/src/kicad_tools_app/static/

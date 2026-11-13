@@ -22,7 +22,7 @@
       },
       "serverReadyAction": {
         "pattern": "Uvicorn running on (http://[^ ]+)",
-        "uriFormat": "%s/docs",
+        "uriFormat": "%s",
         "action": "openExternally"
       }
     },
@@ -31,7 +31,10 @@
       "type": "debugpy",
       "request": "launch",
       "module": "pytest",
-      "args": ["-vv", "${file}"],
+      "args": [
+        "-vv",
+        "${file}"
+      ],
       "cwd": "${workspaceFolder}",
       "python": "${workspaceFolder}/.venv/bin/python",
       "justMyCode": false,

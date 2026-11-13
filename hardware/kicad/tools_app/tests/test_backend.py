@@ -395,8 +395,15 @@ async def test_api_contract_and_disabled_module_hiding(tmp_path: Path) -> None:
         AsyncClient(transport=transport, base_url="http://test") as client,
     ):
         landing = await client.get("/", follow_redirects=False)
-        assert landing.status_code == 307
-        assert landing.headers["location"] == "/docs"
+        assert landing.status_code == 200
+        assert "text/html" in landing.headers["content-type"]
+        assert '<div id="app"></div>' in landing.text
+        asset_path = landing.text.split('src="', 1)[1].split('"', 1)[0]
+        asset = await client.get(asset_path)
+        assert asset.status_code == 200
+        assert "javascript" in asset.headers["content-type"]
+        assert (await client.get("/runs/example")).status_code == 200
+        assert (await client.get("/api/not-a-route")).status_code == 404
         health = await client.get("/api/health")
         assert health.status_code == 200
         modules = (await client.get("/api/modules")).json()

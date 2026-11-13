@@ -18,4 +18,10 @@ export default defineConfig({
   server: {
     proxy: { '/api': 'http://127.0.0.1:8000' },
   },
+  build: {
+    // Keep the production UI inside the Python package so the FastAPI process
+    // can serve it without a separate Vite server.
+    outDir: '../src/kicad_tools_app/static',
+    emptyOutDir: true,
+  },
 })

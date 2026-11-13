@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import mimetypes
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -12,7 +13,7 @@ from uuid import uuid4
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 
 from .command_builder import build_command
 from .configuration import AppPaths, default_paths, default_settings
@@ -32,6 +33,8 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
     )
     settings_store = SettingsStore(locations.settings_path, default_settings(locations))
     settings = settings_store.load()
+    static_dir = Path(__file__).parent / "static"
+    static_index = static_dir / "index.html"
     runs = RunStore(locations.runs_dir)
     runs.recover_interrupted()
 
@@ -58,9 +61,11 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
         allow_headers=["Content-Type"],
     )
 
-    @app.get("/", include_in_schema=False)
-    async def root() -> RedirectResponse:
-        """Redirect the landing URL to the interactive API documentation."""
+    @app.get("/", include_in_schema=False, response_model=None)
+    async def root() -> Response:
+        """Serve the production frontend, or API docs in a source-only install."""
+        if static_index.is_file():
+            return _static_response(static_index)
         return RedirectResponse(
             url="/docs", status_code=status.HTTP_307_TEMPORARY_REDIRECT
         )
@@ -185,6 +190,19 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
         request.app.state.settings = request.app.state.settings_store.save(body)
         return body
 
+    @app.get("/{frontend_path:path}", include_in_schema=False, response_model=None)
+    async def frontend(frontend_path: str) -> Response:
+        """Serve built assets and let the Vue router handle client-side paths."""
+        if frontend_path == "api" or frontend_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Not found")
+        if not static_index.is_file():
+            raise HTTPException(status_code=404, detail="Not found")
+
+        requested = (static_dir / frontend_path).resolve()
+        if requested.is_relative_to(static_dir.resolve()) and requested.is_file():
+            return _static_response(requested)
+        return _static_response(static_index)
+
     return app
 
 
@@ -201,6 +219,12 @@ def _read_log(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="replace")
     except FileNotFoundError:
         return ""
+
+
+def _static_response(path: Path) -> Response:
+    """Return one trusted build artifact with an appropriate content type."""
+    media_type, _ = mimetypes.guess_type(path.name)
+    return Response(path.read_bytes(), media_type=media_type)
 
 
 def _working_directory(

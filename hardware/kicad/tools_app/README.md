@@ -51,11 +51,15 @@ configured interpreter itself. Existing installations can select it on the
 Settings screen; in this repository it is
 `/home/dad/repos/electronics/.venv-kicad-ipc/bin/python`.
 
-The Vue frontend is in `frontend/`. After starting the backend, run
+The Vue frontend is in `frontend/`. For development, start the backend, run
 `npm install` and `npm run dev` there, then open `http://127.0.0.1:5173`.
-The development server proxies `/api` to the backend. Frontend quality checks
-are `npm run lint`, `npm run type-check`, `npm run test:unit`,
-`npm run test:e2e`, and `npm run build`.
+The development server proxies `/api` to the backend.
+
+For normal use, run `npm run build` in `frontend/`. Vite minifies the frontend
+and writes it to `src/kicad_tools_app/static/`; the backend then serves the UI
+at `http://127.0.0.1:8000` with no Node process or Vite development server.
+Frontend quality checks are `npm run lint`, `npm run type-check`,
+`npm run test:unit`, `npm run test:e2e`, and `npm run build`.
 
 ## Adding a module
 
