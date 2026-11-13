@@ -6,7 +6,9 @@ from panelize_routed_pcb import (
     Bounds,
     build_routed_panel,
     fiducial as make_fiducial,
+    first_child,
     load_fiducial_template,
+    make_reference_unique,
     parse_sexpr,
     tab_edge_orientation,
     validation_summary,
@@ -51,8 +53,42 @@ class RoutedPanelTests(unittest.TestCase):
         self.assertIn("exclude_from_pos_files", attributes)
         self.assertIn("exclude_from_bom", attributes)
 
+    def test_unique_reference_preserves_short_visible_silkscreen_text(self):
+        footprint = [
+            "footprint",
+            '"Test"',
+            [
+                "property",
+                '"Reference"',
+                '"J2"',
+                ["at", "1", "2"],
+                ["layer", '"F.SilkS"'],
+                ["uuid", '"old-property-uuid"'],
+                ["effects", ["font", ["size", "1", "1"]]],
+            ],
+        ]
+
+        make_reference_unique(footprint, "_X4Y3")
+
+        reference = footprint[2]
+        self.assertEqual(reference[2], '"J2_X4Y3"')
+        self.assertEqual(first_child(reference, "hide")[1:], ["yes"])
+        rendered = footprint[3]
+        self.assertEqual(rendered[:3], ["fp_text", "user", '"J2"'])
+        self.assertNotIn('"old-property-uuid"', str(rendered))
+
     def test_uses_long_edges_when_board_is_narrower_than_tab(self):
         self.assertEqual(tab_edge_orientation(Bounds(0, 0, 3, 8), 5), "vertical")
+
+    def test_explicitly_selects_vertical_edges(self):
+        self.assertEqual(
+            tab_edge_orientation(Bounds(0, 0, 20, 10), 5, "vertical"),
+            "vertical",
+        )
+
+    def test_rejects_selected_edges_that_are_too_short(self):
+        with self.assertRaisesRegex(ValueError, "horizontal edges"):
+            tab_edge_orientation(Bounds(0, 0, 3, 8), 5, "horizontal")
 
     def test_rejects_board_with_no_edge_long_enough_for_tab(self):
         with self.assertRaisesRegex(ValueError, "do not fit"):

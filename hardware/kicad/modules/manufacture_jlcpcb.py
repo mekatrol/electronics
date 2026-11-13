@@ -2,7 +2,7 @@
 
 Run from the repository root with::
 
-    python3 hardware/kicad/modules/manufacture_jlcpcb.py mek-smd-mag-led -x 4 -y 3
+    python3 hardware/kicad/modules/manufacture_jlcpcb.py mek-smd-mag-led -x 4 -y 3 --tab-edges vertical
 
 The project directory must contain ``<directory-name>.kicad_pcb``. All output
 is written to its ignored ``manufacture`` subdirectory.
@@ -34,6 +34,7 @@ class ModuleOptions:
     count_x: int
     count_y: int
     kicad_cli: str | None = None
+    tab_edges: str = "auto"
 
 
 def project_board(project: Path) -> Path:
@@ -57,10 +58,13 @@ def manufacture(
     count_x: int,
     count_y: int,
     kicad_cli: str | None = None,
+    tab_edges: str = "auto",
 ) -> Path:
     """Generate the panel and every JLCPCB fabrication/assembly artifact."""
     if count_x < 1 or count_y < 1:
         raise ValueError("count-x and count-y must be positive")
+    if tab_edges not in {"auto", "horizontal", "vertical"}:
+        raise ValueError(f"invalid tab-edge orientation: {tab_edges}")
     board = project_board(project)
     output_dir = board.parent / "manufacture"
     panel = output_dir / f"{board.stem}_routed_panel_{count_x}x{count_y}.kicad_pcb"
@@ -76,6 +80,8 @@ def manufacture(
         "--output",
         str(panel),
         "--force",
+        "--tab-edges",
+        tab_edges,
     ]
     export_command = [
         sys.executable,
@@ -105,6 +111,7 @@ def run(options: ModuleOptions) -> int:
             options.count_x,
             options.count_y,
             options.kicad_cli,
+            options.tab_edges,
         )
     except (
         FileNotFoundError,
@@ -125,6 +132,15 @@ def main() -> int:
     parser.add_argument("-x", "--count-x", type=int, required=True)
     parser.add_argument("-y", "--count-y", type=int, required=True)
     parser.add_argument("--kicad-cli", help="path to KiCad 10 kicad-cli")
+    parser.add_argument(
+        "--tab-edges",
+        choices=("auto", "horizontal", "vertical"),
+        default="auto",
+        help=(
+            "edges receiving mouse-bite tabs: horizontal means top/bottom, "
+            "vertical means left/right (default: auto)"
+        ),
+    )
     args = parser.parse_args()
     return run(
         ModuleOptions(
@@ -132,6 +148,7 @@ def main() -> int:
             count_x=args.count_x,
             count_y=args.count_y,
             kicad_cli=args.kicad_cli,
+            tab_edges=args.tab_edges,
         )
     )
 

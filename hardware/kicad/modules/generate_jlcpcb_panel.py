@@ -27,12 +27,14 @@ from generate_jlcpcb import (
     copper_layers,
     reject_newer_autosaves,
     reject_unsaved_open_board,
-    run_command as run,
     validate_assembly_references,
     write_board_bom,
 )
 from generate_jlcpcb import (
     find_kicad_cli as find_common_kicad_cli,
+)
+from generate_jlcpcb import (
+    run_command as run,
 )
 
 
@@ -172,7 +174,9 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     validate_panel_name(board)
     reject_unsaved_open_board(board)
     reject_newer_autosaves([board])
-    destination = output_dir.resolve() if output_dir else default_output_directory(board)
+    destination = (
+        output_dir.resolve() if output_dir else default_output_directory(board)
+    )
     destination.mkdir(parents=True, exist_ok=True)
     report = destination / f"{board.stem}-panel-drc.json"
     check_panel_drc(board, cli, report)
@@ -222,9 +226,7 @@ def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) 
     finally:
         raw_positions.unlink(missing_ok=True)
 
-    bom_references = write_board_bom(
-        board, destination / f"{board.stem}-bom.csv"
-    )
+    bom_references = write_board_bom(board, destination / f"{board.stem}-bom.csv")
     validate_assembly_references(bom_references, position_references)
 
     archive = destination / f"{board.stem}-gerbers.zip"

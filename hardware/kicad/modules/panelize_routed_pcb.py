@@ -7,8 +7,8 @@ Run from the repository root with::
 
 
 Each source Edge.Cuts outline is copied. Straight sections at the middle of
-each top and bottom edge are opened for breakaway tabs and 0.6 mm NPTH
-mouse-bite holes. The source PCB is read only.
+the selected horizontal or vertical edges are opened for breakaway tabs and
+0.6 mm NPTH mouse-bite holes. The source PCB is read only.
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ MIN_RAIL_MM = 5.0
 
 # Width of each solid breakaway bridge before drilling the mouse bites.
 # JLCPCB specifies 5 mm minimum for a breakaway tab containing mouse bites.
-DEFAULT_TAB_WIDTH_MM = 5.0
+DEFAULT_TAB_WIDTH_MM = 10.0
 MIN_TAB_WIDTH_MM = 5.0
 
 # NPTH mouse-bite drill diameter. JLCPCB permits 0.5-0.8 mm and recommends
@@ -227,7 +227,15 @@ def remap_nets(item: Node, suffix: str) -> None:
 
 
 def make_reference_unique(item: Node, suffix: str) -> None:
-    """Append a panel-position suffix to a footprint's reference."""
+    """Give a footprint a unique reference without lengthening its silk text.
+
+    KiCad uses the Reference property both as the component identifier and as
+    its rendered text.  Panel references must be unique for position/BOM
+    exports, but rendering suffixes such as ``_X1Y1`` makes otherwise valid
+    source silkscreen overlap nearby graphics and copper.  Replace a visible
+    silkscreen Reference property with equivalent literal user text before
+    changing the hidden property value.
+    """
     if head(item) != "footprint":
         return
     for value in item[1:]:
@@ -237,7 +245,29 @@ def make_reference_unique(item: Node, suffix: str) -> None:
             and len(value) >= 3
             and str(value[1]).strip('"') == "Reference"
         ):
-            value[2] = quoted(str(value[2]).strip('"') + suffix)
+            original = str(value[2]).strip('"')
+            layer = first_child(value, "layer")
+            hidden = first_child(value, "hide")
+            is_visible_silkscreen = (
+                layer is not None
+                and len(layer) >= 2
+                and str(layer[1]).strip('"') in {"F.SilkS", "B.SilkS"}
+                and not (
+                    hidden is not None
+                    and len(hidden) >= 2
+                    and str(hidden[1]).strip('"').lower() == "yes"
+                )
+            )
+            if is_visible_silkscreen:
+                rendered = ["fp_text", "user", quoted(original)]
+                for child in value[3:]:
+                    if not isinstance(child, list) or head(child) != "uuid":
+                        rendered.append(copy.deepcopy(child))
+                rendered.append(["uuid", quoted(str(uuid.uuid4()))])
+                item.append(rendered)
+                value.append(["hide", "yes"])
+            value[2] = quoted(original + suffix)
+            return
 
 
 @dataclass(frozen=True)
@@ -256,8 +286,26 @@ class Bounds:
         return self.bottom - self.top
 
 
-def tab_edge_orientation(bounds: Bounds, tab_width: float) -> str:
-    """Choose edges long enough to contain a centred breakaway tab."""
+def tab_edge_orientation(
+    bounds: Bounds, tab_width: float, requested: str = "auto"
+) -> str:
+    """Select horizontal or vertical edges that can contain a centred tab."""
+    if requested not in {"auto", "horizontal", "vertical"}:
+        raise ValueError(f"invalid tab-edge orientation: {requested}")
+    if requested == "horizontal":
+        if bounds.width >= tab_width:
+            return requested
+        raise ValueError(
+            f"{tab_width:g} mm tabs do not fit the source PCB's "
+            f"{bounds.width:g} mm horizontal edges"
+        )
+    if requested == "vertical":
+        if bounds.height >= tab_width:
+            return requested
+        raise ValueError(
+            f"{tab_width:g} mm tabs do not fit the source PCB's "
+            f"{bounds.height:g} mm vertical edges"
+        )
     if bounds.width >= tab_width:
         return "horizontal"
     if bounds.height >= tab_width:
@@ -680,6 +728,7 @@ def build_routed_panel(
     bite_clearance: float,
     fiducial_template: list,
     center_on_page: bool = True,
+    tab_edges: str = "auto",
 ) -> tuple[list, Bounds]:
     if gap < MIN_GAP_MM:
         raise ValueError(f"gap must be at least {MIN_GAP_MM:.1f} mm for JLCPCB routing")
@@ -701,7 +750,7 @@ def build_routed_panel(
             "0.35 to 0.4 mm"
         )
     bounds = edge_bounds(source)
-    tab_orientation = tab_edge_orientation(bounds, tab_width)
+    tab_orientation = tab_edge_orientation(bounds, tab_width, tab_edges)
     width = count_x * bounds.width + (count_x - 1) * gap + 2 * (rail + gap)
     height = count_y * bounds.height + (count_y - 1) * gap + 2 * (rail + gap)
     page = page_dimensions(source) if center_on_page else None
@@ -889,12 +938,13 @@ def validation_summary(
     bite_clearance: float,
     fiducial_path: Path,
     drc_checked: bool,
+    tab_edges: str = "auto",
 ) -> str:
     """Return a self-contained report suitable for independent review."""
     boards = count_x * count_y
     tabs = boards * 2
-    tab_orientation = tab_edge_orientation(source_bounds, tab_width)
-    tab_edges = (
+    tab_orientation = tab_edge_orientation(source_bounds, tab_width, tab_edges)
+    tab_edge_names = (
         "top and bottom" if tab_orientation == "horizontal" else "left and right"
     )
     holes_per_tab = len(bite_positions(0.0, tab_width, bite_diameter, bite_clearance))
@@ -917,7 +967,7 @@ def validation_summary(
             f"Routing gap between PCB array and process rails: {gap:.3f} mm",
             f"Perimeter process rail: {rail:.3f} mm on all four sides",
             "Source outline handling: copied for every PCB; non-rectangular geometry is preserved",
-            f"Breakaway placement: one centred tab on each PCB {tab_edges} edge",
+            f"Breakaway placement: one centred tab on each PCB {tab_edge_names} edge",
             f"Breakaway tabs: {tabs} total; {tab_width:.3f} mm nominal width",
             f"Mouse bites: {holes_per_tab} holes/tab, {tabs * holes_per_tab} holes total; {bite_diameter:.3f} mm NPTH diameter; {bite_clearance:.3f} mm edge-to-edge spacing",
             "Global fiducials: 4; 1 mm copper / 2 mm mask; centres 3.850 mm from top/bottom panel edges",
@@ -964,6 +1014,15 @@ def main() -> int:
         ),
     )
     parser.add_argument(
+        "--tab-edges",
+        choices=("auto", "horizontal", "vertical"),
+        default="auto",
+        help=(
+            "edges receiving breakaway tabs: horizontal means top/bottom, "
+            "vertical means left/right (default: auto)"
+        ),
+    )
+    parser.add_argument(
         "--mouse-bite-diameter",
         type=float,
         default=DEFAULT_MOUSE_BITE_DIAMETER_MM,
@@ -994,10 +1053,9 @@ def main() -> int:
     source_path = args.input.resolve()
     output_path = (
         args.output
-        or source_path.parent / "manufacture" /
-        (
-            f"{source_path.stem}_routed_panel_{args.count_x}x{args.count_y}.kicad_pcb"
-        )
+        or source_path.parent
+        / "manufacture"
+        / (f"{source_path.stem}_routed_panel_{args.count_x}x{args.count_y}.kicad_pcb")
     ).resolve()
     if source_path == output_path:
         raise SystemExit("output must differ from input")
@@ -1018,6 +1076,7 @@ def main() -> int:
         args.mouse_bite_diameter,
         args.mouse_bite_clearance,
         load_fiducial_template(fid_path),
+        tab_edges=args.tab_edges,
     )
     output_path.write_text(dump_sexpr(panel) + "\n", encoding="utf-8", newline="\n")
     if not args.no_kicad_check:
@@ -1078,6 +1137,7 @@ def main() -> int:
             bite_clearance=args.mouse_bite_clearance,
             fiducial_path=fid_path,
             drc_checked=not args.no_kicad_check,
+            tab_edges=args.tab_edges,
         )
     )
     return 0

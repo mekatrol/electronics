@@ -22,7 +22,9 @@ class ManufactureJlcpcbTests(unittest.TestCase):
             board.write_text("(kicad_pcb)")
 
             with patch("manufacture_jlcpcb.run_command") as mocked_run:
-                output = manufacture(project, 3, 2, "/opt/kicad-cli")
+                output = manufacture(
+                    project, 3, 2, "/opt/kicad-cli", tab_edges="vertical"
+                )
 
             self.assertEqual(output, project / "manufacture")
             self.assertEqual(mocked_run.call_count, 2)
@@ -31,6 +33,8 @@ class ManufactureJlcpcbTests(unittest.TestCase):
             panel = project / "manufacture/tiny-board_routed_panel_3x2.kicad_pcb"
             self.assertIn(str(panel), panel_command)
             self.assertIn("--force", panel_command)
+            tab_edges_index = panel_command.index("--tab-edges")
+            self.assertEqual(panel_command[tab_edges_index + 1], "vertical")
             self.assertEqual(export_command[-4:-2], ["--output-dir", str(output)])
             self.assertEqual(export_command[-2:], ["--kicad-cli", "/opt/kicad-cli"])
 
