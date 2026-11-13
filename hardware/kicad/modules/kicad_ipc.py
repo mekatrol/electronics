@@ -150,7 +150,13 @@ def run_live_board_drc(board):
         raise RuntimeError("KiCad 10 kicad-cli was not found; DRC could not run")
 
     source_board = board_document_path(board.document)
-    with tempfile.TemporaryDirectory(prefix="kicad-live-drc-") as temporary:
+    # Flatpak applications have a private /tmp, so a host-created file there
+    # is invisible to a Flatpak kicad-cli even though it receives the same
+    # pathname.  Keep the transient project in this repository-visible
+    # directory so native and Flatpak CLIs can both open it.
+    with tempfile.TemporaryDirectory(
+        prefix=".kicad-live-drc-", dir=Path(__file__).resolve().parent
+    ) as temporary:
         temporary_dir = Path(temporary)
         temporary_board = temporary_dir / source_board.name
         report_path = temporary_dir / "drc.json"
