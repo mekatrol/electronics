@@ -117,7 +117,7 @@
 		(uuid "7c1fea5f-c0b5-401f-b0aa-81e2deee11f5")
 	)
 	(embedded_fonts no)
-	(model "${MY_KICAD_LIBS}/Littelfuse_0452.pretty/C142852_Littelfuse_0452002_MRL.step"
+	(model "${MY_KICAD_LIBS}/Littelfuse.pretty/Littelfuse_Fuse_0452002_MRL.step"
 		(offset
 			(xyz 0 0 0)
 		)

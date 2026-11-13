@@ -8950,7 +8950,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "333b6aff-5144-4fce-8435-244ddc5838dc")
-		(property "Reference" "#PWR026"
+		(property "Reference" "#PWR024"
 			(at 105.41 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -9010,7 +9010,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR026")
+					(reference "#PWR024")
 					(unit 1)
 				)
 			)
@@ -9268,7 +9268,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "3a8f4b15-f862-4fd8-9cae-d5bbc5914231")
-		(property "Reference" "#PWR024"
+		(property "Reference" "#PWR022"
 			(at 105.41 66.04 0)
 			(hide yes)
 			(show_name no)
@@ -9328,7 +9328,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR024")
+					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -10495,7 +10495,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6c6d338f-ae81-4b16-b3a5-d09308519050")
-		(property "Reference" "#PWR022"
+		(property "Reference" "#PWR020"
 			(at 53.34 58.42 0)
 			(hide yes)
 			(show_name no)
@@ -10556,7 +10556,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR022")
+					(reference "#PWR020")
 					(unit 1)
 				)
 			)
@@ -10959,7 +10959,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "73e5768e-c62e-42da-a08d-441a8a32ec27")
-		(property "Reference" "#PWR030"
+		(property "Reference" "#PWR028"
 			(at 186.69 138.43 0)
 			(hide yes)
 			(show_name no)
@@ -11019,7 +11019,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR030")
+					(reference "#PWR028")
 					(unit 1)
 				)
 			)
@@ -11159,7 +11159,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7aab3403-c0a6-4c37-999f-c827fcb79c90")
-		(property "Reference" "#PWR028"
+		(property "Reference" "#PWR026"
 			(at 186.69 66.04 0)
 			(hide yes)
 			(show_name no)
@@ -11219,7 +11219,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR028")
+					(reference "#PWR026")
 					(unit 1)
 				)
 			)
@@ -12295,7 +12295,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "9676faaf-0e9e-49f1-8737-ceb9db1b883e")
-		(property "Reference" "#PWR023"
+		(property "Reference" "#PWR021"
 			(at 105.41 29.21 0)
 			(hide yes)
 			(show_name no)
@@ -12355,7 +12355,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR023")
+					(reference "#PWR021")
 					(unit 1)
 				)
 			)
@@ -12601,7 +12601,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a10ae757-84ba-443a-a53c-9ca7eac40f1d")
-		(property "Reference" "#PWR029"
+		(property "Reference" "#PWR027"
 			(at 186.69 102.87 0)
 			(hide yes)
 			(show_name no)
@@ -12661,7 +12661,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR029")
+					(reference "#PWR027")
 					(unit 1)
 				)
 			)
@@ -12921,7 +12921,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "a6a4b291-df38-4982-9f42-96eee9353fba")
-		(property "Reference" "#PWR025"
+		(property "Reference" "#PWR023"
 			(at 105.41 101.6 0)
 			(hide yes)
 			(show_name no)
@@ -12981,7 +12981,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR025")
+					(reference "#PWR023")
 					(unit 1)
 				)
 			)
@@ -15978,7 +15978,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "de5f2a21-8e7c-47a0-b71f-70d754a3f92f")
-		(property "Reference" "#PWR027"
+		(property "Reference" "#PWR025"
 			(at 186.69 29.21 0)
 			(hide yes)
 			(show_name no)
@@ -16038,7 +16038,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/a15e6b6f-a593-4ea0-96c4-158304854d2a"
-					(reference "#PWR027")
+					(reference "#PWR025")
 					(unit 1)
 				)
 			)
