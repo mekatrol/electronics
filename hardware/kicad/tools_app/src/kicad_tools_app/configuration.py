@@ -37,8 +37,25 @@ def default_paths(app_dir: Path | None = None) -> AppPaths:
 
 
 def default_settings(paths: AppPaths) -> AppSettings:
-    """Create localhost-safe settings limited to the current repository."""
+    """Create localhost-safe settings and prefer a dedicated KiCad IPC Python."""
     return AppSettings(
         allowed_roots=[str(paths.repository_root)],
-        python_executable=sys.executable,
+        python_executable=_ipc_python(paths.app_dir),
     )
+
+
+def _ipc_python(app_dir: Path) -> str:
+    """Return the nearest repository IPC interpreter, or this Python as fallback."""
+    executable_parts = (
+        ("bin", "python"),
+        ("Scripts", "python.exe"),
+    )
+    # The electronics repository keeps this environment above hardware/kicad.
+    # Searching ancestors also supports a standalone checkout without a fixed
+    # assumption about how many directory levels surround tools_app.
+    for parent in (app_dir, *app_dir.parents):
+        for parts in executable_parts:
+            candidate = parent / ".venv-kicad-ipc" / Path(*parts)
+            if candidate.is_file():
+                return str(candidate.absolute())
+    return sys.executable

@@ -13,12 +13,14 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from kicad_tools_app.command_builder import build_command
-from kicad_tools_app.configuration import AppPaths
+from kicad_tools_app.configuration import AppPaths, default_settings
+from kicad_tools_app.index_loader import ModuleIndex
 from kicad_tools_app.main import create_app
-from kicad_tools_app.models import RunRecord, RunStatus
+from kicad_tools_app.models import AppSettings, RunRecord, RunStatus
 from kicad_tools_app.parameter_validator import ParameterError, ParameterValidator
 from kicad_tools_app.persistence import RunStore
 from kicad_tools_app.process_runner import ProcessRunner
+from kicad_tools_app.readiness import module_preflight, readiness
 
 
 def parameter(name: str, kind: str, value_type: str, **extra: Any) -> dict[str, Any]:
@@ -57,7 +59,7 @@ def test_parameter_types_constraints_and_exact_command(tmp_path: Path) -> None:
     )
     command = build_command(module, values, sys.executable)
     assert command == [
-        str(Path(sys.executable).resolve()),
+        str(Path(sys.executable).absolute()),
         str(tmp_path / "tool.py"),
         str(board),
         "--count",
@@ -66,6 +68,161 @@ def test_parameter_types_constraints_and_exact_command(tmp_path: Path) -> None:
         "--names",
         "a",
         "b",
+    ]
+
+
+def test_align_component_edge_center_contract() -> None:
+    """Validate and serialize the first approved board-editing CLI exactly."""
+    app_dir = Path(__file__).resolve().parents[1]
+    repository_root = app_dir.parent
+    index = ModuleIndex(
+        app_dir / "module_index.json",
+        app_dir / "schemas" / "module_index.schema.json",
+        repository_root,
+    )
+    module = index.get("align-component-edge-center")
+    assert module["execution_type"] == "kicad_modify"
+    assert module["risk"]["confirmation_required"] is True
+    assert module["requires_pcb_editor"] is True
+    assert module["requires_kicad_api"] is True
+    values = ParameterValidator([repository_root], repository_root).validate(
+        module,
+        {
+            "reference": "J12",
+            "alignment": "vertical",
+            "include_text": True,
+        },
+    )
+
+    assert build_command(module, values, sys.executable) == [
+        str(Path(sys.executable).absolute()),
+        str((repository_root / "modules/align_component_edge_center.py").resolve()),
+        "J12",
+        "--alignment",
+        "vertical",
+        "--include-text",
+    ]
+
+
+def test_align_component_edge_center_rejects_unknown_axis(tmp_path: Path) -> None:
+    """Reject an alignment value that the script CLI cannot accept."""
+    definition = {
+        "parameters": [
+            parameter(
+                "alignment",
+                "option",
+                "enum",
+                flag="--alignment",
+                default="horizontal",
+                choices=["horizontal", "vertical"],
+            )
+        ]
+    }
+    with pytest.raises(ParameterError, match="not an allowed choice"):
+        ParameterValidator([tmp_path], tmp_path).validate(
+            definition, {"alignment": "diagonal"}
+        )
+
+
+@pytest.mark.parametrize(
+    ("definition", "value", "message"),
+    [
+        (parameter("reference", "positional", "string"), "  ", "non-empty string"),
+        (
+            parameter("references", "option", "string_list", flag="--references"),
+            [],
+            "contain non-empty strings",
+        ),
+        (
+            parameter("references", "option", "string_list", flag="--references"),
+            ["J1", ""],
+            "contain non-empty strings",
+        ),
+    ],
+)
+def test_empty_reference_values_are_rejected(
+    tmp_path: Path, definition: dict[str, Any], value: Any, message: str
+) -> None:
+    """Stop empty footprint selectors before they reach a module process."""
+    with pytest.raises(ParameterError, match=message):
+        ParameterValidator([tmp_path], tmp_path).validate(
+            {"parameters": [definition]}, {definition["name"]: value}
+        )
+
+
+@pytest.mark.parametrize(
+    ("module_id", "submitted", "expected_tail"),
+    [
+        (
+            "align-mounting-holes",
+            {"direction": "both", "left_offset": 4.0},
+            [
+                "--top-left",
+                "H1",
+                "--top-right",
+                "H2",
+                "--bottom-left",
+                "H3",
+                "--bottom-right",
+                "H4",
+                "--direction",
+                "both",
+                "--left-offset",
+                "4.0",
+                "--right-offset",
+                "3.0",
+                "--top-offset",
+                "35.5",
+                "--bottom-offset",
+                "5.5",
+            ],
+        ),
+        (
+            "center-and-distribute-items",
+            {"references": ["J1", "J2", "J3"], "distribute_spacing": True},
+            [
+                "--references",
+                "J1",
+                "J2",
+                "J3",
+                "--alignment",
+                "horizontal",
+                "--distribute-spacing",
+            ],
+        ),
+        ("center-routed-design", {}, []),
+        ("center-board-outline", {}, ["--zone-edge-tolerance", "0.2"]),
+        (
+            "space-components",
+            {"anchor": "J1", "moving": "H2", "spacing": 12.5},
+            ["J1", "H2", "--alignment", "vertical", "--spacing", "12.5"],
+        ),
+    ],
+)
+def test_phase_four_board_editing_contracts(
+    module_id: str, submitted: dict[str, Any], expected_tail: list[str]
+) -> None:
+    """Enforce exact safe commands and mutation metadata for Phase 4 tools."""
+    app_dir = Path(__file__).resolve().parents[1]
+    repository_root = app_dir.parent
+    index = ModuleIndex(
+        app_dir / "module_index.json",
+        app_dir / "schemas" / "module_index.schema.json",
+        repository_root,
+    )
+    module = index.get(module_id)
+    assert module["execution_type"] == "kicad_modify"
+    assert module["risk"]["confirmation_required"] is True
+    assert module["requires_pcb_editor"] is True
+    assert module["requires_kicad_api"] is True
+    values = ParameterValidator([repository_root], repository_root).validate(
+        module, submitted
+    )
+    command = build_command(module, values, sys.executable)
+    assert command == [
+        str(Path(sys.executable).absolute()),
+        module["resolved_script"],
+        *expected_tail,
     ]
 
 
@@ -108,6 +265,68 @@ def test_symlink_escape_is_rejected(tmp_path: Path) -> None:
         ParameterValidator([allowed], allowed).validate(
             {"parameters": [definition]}, {"input": "jump/secret.kicad_pcb"}
         )
+
+
+def test_default_settings_discover_repository_ipc_python(tmp_path: Path) -> None:
+    """Prefer the dedicated kipy environment above a nested app checkout."""
+    app_dir = tmp_path / "hardware" / "kicad" / "tools_app"
+    ipc_python = tmp_path / ".venv-kicad-ipc" / "bin" / "python"
+    app_dir.mkdir(parents=True)
+    ipc_python.parent.mkdir(parents=True)
+    ipc_python.write_text("", encoding="utf-8")
+    paths = AppPaths(
+        app_dir=app_dir,
+        repository_root=app_dir.parent,
+        index_path=app_dir / "module_index.json",
+        schema_path=app_dir / "schemas/module_index.schema.json",
+        data_dir=app_dir / "data",
+        runs_dir=app_dir / "data/runs",
+        settings_path=app_dir / "data/settings.json",
+    )
+
+    assert default_settings(paths).python_executable == str(ipc_python.absolute())
+
+
+def test_command_preserves_virtual_environment_python_symlink(tmp_path: Path) -> None:
+    """Do not collapse a venv launcher to its base interpreter."""
+    base_python = tmp_path / "base-python"
+    venv_python = tmp_path / "venv" / "bin" / "python"
+    base_python.write_text("", encoding="utf-8")
+    venv_python.parent.mkdir(parents=True)
+    venv_python.symlink_to(base_python)
+    module = {"resolved_script": "/module.py", "parameters": []}
+
+    assert build_command(module, {}, str(venv_python))[0] == str(venv_python)
+
+
+def test_readiness_probes_configured_python_for_kipy(tmp_path: Path) -> None:
+    """Report kipy from the execution interpreter, not the backend process."""
+    fake_python = tmp_path / "python"
+    fake_python.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    fake_python.chmod(0o755)
+    settings = AppSettings(
+        allowed_roots=[str(tmp_path)], python_executable=str(fake_python)
+    )
+
+    report = readiness(settings)
+    assert report["kipy_importable"] is True
+    assert report["pcb_editor_reachable"] is True
+
+
+def test_reachable_editor_satisfies_gui_availability() -> None:
+    """Allow IPC modules when a Flatpak editor responds without a host binary."""
+    module = {
+        "requires_kicad": True,
+        "requires_pcb_editor": True,
+        "requires_kicad_api": True,
+    }
+    report = {
+        "kipy_importable": True,
+        "pcb_editor_reachable": True,
+        "kicad": {"available": False},
+    }
+
+    assert module_preflight(module, report) is None
 
 
 @pytest.mark.asyncio

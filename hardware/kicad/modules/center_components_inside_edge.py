@@ -9,6 +9,10 @@ routed layout. The move is one PCB Editor undo/redo transaction; save manually
 after reviewing the result.
 """
 
+import argparse
+from collections.abc import Sequence
+from dataclasses import dataclass
+
 from kicad_ipc import (
     BoardLayer,
     box_center,
@@ -22,18 +26,23 @@ from kicad_ipc import (
 from kicad_utils import centering_delta, edge_cuts_centroid
 from kipy.board_types import ArcTrack
 
+
 # Reference and value text can make a footprint's bounds much larger than its
 # physical body. Keep it excluded by default when centring the component group.
-INCLUDE_TEXT = False
+@dataclass(frozen=True)
+class ModuleOptions:
+    """Bounds choices for centring the routed design."""
+
+    include_text: bool = False
 
 
-def main():
-    """Translate the routed design so its footprint bounds centre on Edge.Cuts."""
+def run(options: ModuleOptions) -> int:
+    """Translate the routed design into Edge.Cuts and return zero on success."""
     _client, board = connect_board()
     footprints = list(board.get_footprints())
     if not footprints:
         print("No footprints to center.")
-        return
+        return 0
 
     edge_items = [
         shape for shape in board.get_shapes() if shape.layer == BoardLayer.BL_Edge_Cuts
@@ -43,7 +52,7 @@ def main():
 
     footprint_boxes = []
     for footprint in footprints:
-        box = board.get_item_bounding_box(footprint, include_text=INCLUDE_TEXT)
+        box = board.get_item_bounding_box(footprint, include_text=options.include_text)
         if box is None:
             raise RuntimeError(
                 f"KiCad returned no bounding box for {footprint_reference(footprint)}"
@@ -56,7 +65,7 @@ def main():
     delta_x, delta_y = delta.x, delta.y
     if delta_x == 0 and delta_y == 0:
         print("All footprints are already centered inside Edge.Cuts.")
-        return
+        return 0
 
     action = "Center routed design inside board outline"
     tracks = list(board.get_tracks())
@@ -83,7 +92,20 @@ def main():
         f"moved X by {to_mm(delta_x):.6f} mm and "
         f"Y by {to_mm(delta_y):.6f} mm (undo: {action})."
     )
+    return 0
+
+
+def parse_args(argv: Sequence[str] | None = None) -> ModuleOptions:
+    """Parse whether footprint text contributes to the layout bounds."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--include-text", action="store_true")
+    return ModuleOptions(parser.parse_args(argv).include_text)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Parse arguments and centre the routed design."""
+    return run(parse_args(argv))
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

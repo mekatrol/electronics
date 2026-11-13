@@ -51,7 +51,7 @@ def scanline_crossings(contours, fixed_coordinate, alignment):
     crossings = []
     horizontal = alignment == "horizontal"
     for contour in contours:
-        for first, second in zip(contour, contour[1:]):
+        for first, second in zip(contour, contour[1:], strict=False):
             first_fixed = first.y if horizontal else first.x
             second_fixed = second.y if horizontal else second.x
             if first_fixed == second_fixed:

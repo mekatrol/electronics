@@ -530,10 +530,11 @@ proxy.
 
 ## Phase 4: Expand the approved module catalogue
 
-**Status: In progress (started 2026-11-13).** The representative read-only and
-file-generation workflows are available. The next work is to expose suitable
-board-editing candidates incrementally without weakening the execution or path
-safety boundaries established in Phases 1–3.
+**Status: Complete (2026-11-13).** Six focused alignment and placement tools
+have explicit typed options and CLI contracts and are enabled with confirmation,
+KiCad preflight, serialization, and exact command tests. Every other candidate
+has an explicit safety prerequisite recorded in `INVENTORY.md`; none remains
+implicitly pending or configurable through source rewriting.
 
 ### 4.1 Refactor candidate interfaces
 

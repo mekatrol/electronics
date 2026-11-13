@@ -50,11 +50,15 @@ class ParameterValidator:
         elif kind in ("string", "enum"):
             if not isinstance(value, str):
                 raise ParameterError(f"{name} must be a string")
+            if not value.strip():
+                raise ParameterError(f"{name} must be a non-empty string")
         elif kind == "string_list":
             if not isinstance(value, list) or not all(
                 isinstance(v, str) for v in value
             ):
                 raise ParameterError(f"{name} must be a list of strings")
+            if not value or any(not item.strip() for item in value):
+                raise ParameterError(f"{name} must contain non-empty strings")
         elif kind in ("file", "directory"):
             return self._validate_path(definition, value)
         if "minimum" in definition and value < definition["minimum"]:

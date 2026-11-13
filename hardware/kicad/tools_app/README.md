@@ -43,6 +43,14 @@ The initial API includes health/readiness, module catalogue, run submission,
 polling, output, cancellation, history, and settings endpoints. Mutating runs
 require explicit confirmation; KiCad-board mutations are serialized.
 
+The backend and KiCad tools intentionally use separate Python environments.
+VS Code launches FastAPI with `tools_app/.venv`, while indexed IPC modules run
+with the nearest repository `.venv-kicad-ipc` interpreter. The application
+discovers that interpreter for new settings and checks `kipy` by invoking the
+configured interpreter itself. Existing installations can select it on the
+Settings screen; in this repository it is
+`/home/dad/repos/electronics/.venv-kicad-ipc/bin/python`.
+
 The Vue frontend is in `frontend/`. After starting the backend, run
 `npm install` and `npm run dev` there, then open `http://127.0.0.1:5173`.
 The development server proxies `/api` to the backend. Frontend quality checks

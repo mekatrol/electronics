@@ -11,6 +11,10 @@ move is grouped into one PCB Editor undo/redo transaction.  Save manually
 after review.
 """
 
+import argparse
+from collections.abc import Sequence
+from dataclasses import dataclass
+
 from kicad_ipc import (
     box_center,
     connect_board,
@@ -21,70 +25,79 @@ from kicad_ipc import (
     vector,
 )
 
-# User settings
-ANCHOR_REFERENCE = "J1"
-MOVING_REFERENCE = "H2"
-ALIGNMENT = "vertical"  # "horizontal" spaces X centres; "vertical" spaces Y centres.
-SPACING_MM = 35.0
-INCLUDE_TEXT = False
+
+@dataclass(frozen=True)
+class ModuleOptions:
+    """Explicit footprint pair, axis, spacing, and bounds choice."""
+
+    anchor: str
+    moving: str
+    alignment: str = "vertical"
+    spacing_mm: float = 35.0
+    include_text: bool = False
 
 
-def main():
-    """Move one footprint to the configured spacing from the fixed footprint."""
-    if ALIGNMENT not in {"horizontal", "vertical"}:
-        raise ValueError('ALIGNMENT must be "horizontal" or "vertical"')
-    if SPACING_MM < 0:
-        raise ValueError("SPACING_MM must not be negative")
-    if ANCHOR_REFERENCE == MOVING_REFERENCE:
-        raise ValueError("ANCHOR_REFERENCE and MOVING_REFERENCE must differ")
+def run(options: ModuleOptions) -> int:
+    """Move one footprint to the requested spacing and return zero."""
+    if options.alignment not in {"horizontal", "vertical"}:
+        raise ValueError('alignment must be "horizontal" or "vertical"')
+    if options.spacing_mm < 0:
+        raise ValueError("spacing must not be negative")
+    if not options.anchor.strip() or not options.moving.strip():
+        raise ValueError("footprint references must not be blank")
+    if options.anchor == options.moving:
+        raise ValueError("anchor and moving references must differ")
 
     _client, board = connect_board()
     footprints = footprints_by_reference(board)
     missing = [
         reference
-        for reference in (ANCHOR_REFERENCE, MOVING_REFERENCE)
+        for reference in (options.anchor, options.moving)
         if reference not in footprints
     ]
     if missing:
         raise RuntimeError(f"missing footprint(s): {', '.join(missing)}")
 
     centers = {}
-    for reference in (ANCHOR_REFERENCE, MOVING_REFERENCE):
+    for reference in (options.anchor, options.moving):
         bounding_box = board.get_item_bounding_box(
             footprints[reference],
-            include_text=INCLUDE_TEXT,
+            include_text=options.include_text,
         )
         if bounding_box is None:
             raise RuntimeError(f"KiCad returned no bounding box for {reference}")
         centers[reference] = box_center(bounding_box)
 
-    anchor_center = centers[ANCHOR_REFERENCE]
-    moving_center = centers[MOVING_REFERENCE]
-    if ALIGNMENT == "horizontal":
+    anchor_center = centers[options.anchor]
+    moving_center = centers[options.moving]
+    if options.alignment == "horizontal":
         current_difference = moving_center.x - anchor_center.x
     else:
         current_difference = moving_center.y - anchor_center.y
 
-    if current_difference == 0 and SPACING_MM != 0:
+    if current_difference == 0 and options.spacing_mm != 0:
         raise RuntimeError(
-            f"{ANCHOR_REFERENCE} and {MOVING_REFERENCE} have the same "
-            f"{ALIGNMENT} centre; move {MOVING_REFERENCE} to the desired side first"
+            f"{options.anchor} and {options.moving} have the same "
+            f"{options.alignment} centre; move {options.moving} to the desired "
+            "side first"
         )
 
-    spacing = from_mm(SPACING_MM)
+    spacing = from_mm(options.spacing_mm)
     direction = -1 if current_difference < 0 else 1
     target_difference = direction * spacing
     offset = target_difference - current_difference
     if offset == 0:
         print(
-            f"{ANCHOR_REFERENCE} and {MOVING_REFERENCE} already have "
-            f"{SPACING_MM:.6f} mm {ALIGNMENT} centre spacing."
+            f"{options.anchor} and {options.moving} already have "
+            f"{options.spacing_mm:.6f} mm {options.alignment} centre spacing."
         )
-        return
+        return 0
 
-    delta = vector(offset, 0) if ALIGNMENT == "horizontal" else vector(0, offset)
-    moving = footprints[MOVING_REFERENCE]
-    action = f"Space {MOVING_REFERENCE} from {ANCHOR_REFERENCE} {ALIGNMENT}ly"
+    delta = (
+        vector(offset, 0) if options.alignment == "horizontal" else vector(0, offset)
+    )
+    moving = footprints[options.moving]
+    action = f"Space {options.moving} from {options.anchor} {options.alignment}ly"
     with editor_commit(board, action, refill_zones=True):
         moving.position = vector(
             moving.position.x + delta.x,
@@ -92,13 +105,37 @@ def main():
         )
         board.update_items([moving])
 
-    axis = "X" if ALIGNMENT == "horizontal" else "Y"
+    axis = "X" if options.alignment == "horizontal" else "Y"
     print(
-        f"Set {MOVING_REFERENCE} {axis}-centre {SPACING_MM:.6f} mm from "
-        f"{ANCHOR_REFERENCE}: moved {axis} by {to_mm(offset):.6f} mm "
+        f"Set {options.moving} {axis}-centre {options.spacing_mm:.6f} mm from "
+        f"{options.anchor}: moved {axis} by {to_mm(offset):.6f} mm "
         f"(undo: {action})."
+    )
+    return 0
+
+
+def parse_args(argv: Sequence[str] | None = None) -> ModuleOptions:
+    """Parse the footprint pair and constrained spacing settings."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("anchor")
+    parser.add_argument("moving")
+    parser.add_argument(
+        "--alignment", choices=("horizontal", "vertical"), default="vertical"
+    )
+    parser.add_argument("--spacing", type=float, default=35.0)
+    parser.add_argument("--include-text", action="store_true")
+    args = parser.parse_args(argv)
+    if args.spacing < 0:
+        parser.error("--spacing must not be negative")
+    return ModuleOptions(
+        args.anchor, args.moving, args.alignment, args.spacing, args.include_text
     )
 
 
+def main(argv: Sequence[str] | None = None) -> int:
+    """Parse arguments and execute the spacing operation."""
+    return run(parse_args(argv))
+
+
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

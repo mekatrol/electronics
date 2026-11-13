@@ -13,20 +13,39 @@ being runnable does not make it web-accessible.
 | `generate_jlcpcb.py` | User-facing file generator | Enabled |
 | `panelize_routed_pcb.py` | User-facing file generator | Enabled |
 | `manufacture_jlcpcb.py` | User-facing file generator | Enabled |
+| `align_component_edge_center.py` | User-facing, undoable IPC board editor | Enabled |
+| `align_holes.py` | User-facing, undoable IPC board editor | Enabled |
+| `center_and_distribute_items.py` | User-facing, undoable IPC board editor | Enabled |
+| `center_components_inside_edge.py` | User-facing, undoable IPC board editor | Enabled |
+| `center_edge_around_components.py` | User-facing, undoable IPC board editor | Enabled |
+| `space_components.py` | User-facing, undoable IPC board editor | Enabled |
 | `kill_kicad.py` | User-facing system control | Disabled |
 
-## Runnable candidates not yet approved
+## Reviewed but not approved
 
-The following scripts edit the open PCB through KiCad IPC, but their options
-are module-level constants. They remain excluded until they expose a validated
-CLI or configuration object: `align_component_edge_center.py`,
-`align_connector_pin_text.py`, `align_groups.py`, `align_holes.py`,
-`center_and_distribute_items.py`, `center_components_inside_edge.py`,
-`center_edge_around_components.py`, `check_fiducials.py`,
-`check_motherboard_interface.py`, `component_reference_text.py`,
-`configure_jlcpcb_netclasses.py`, `pcb_edge.py`, `remove_items.py`,
-`resize_matching_text.py`, `space_components.py`, `thermal_reliefs.py`,
-`vias.py`, and `zone_outline_perp.py`.
+These scripts remain outside the allow-list after Phase 4 review:
+
+- `align_connector_pin_text.py`, `component_reference_text.py`,
+  `resize_matching_text.py`, and `zone_outline_perp.py` depend on broad
+  heuristic matching. They need dry-run previews and stable selection reports
+  before browser execution is safe.
+- `align_groups.py` reconstructs routed tracks and vias from a project-specific
+  group map. It needs a portable group schema and artifact-level integration
+  tests before approval.
+- `check_fiducials.py` and `check_motherboard_interface.py` mix analysis with
+  optional repair. They need separate read-only and mutating actions so the
+  displayed risk accurately describes the selected operation.
+- `configure_jlcpcb_netclasses.py` changes project configuration outside the
+  board-edit transaction model and needs explicit file persistence and backup
+  semantics.
+- `pcb_edge.py` replaces Edge.Cuts and can replace zones; `remove_items.py`
+  deletes broad item classes. Both need a preview of exact deletion targets.
+- `thermal_reliefs.py` and `vias.py` combine board mutation with optional
+  external DRC execution. They need separate mutation and validation actions.
+
+This list is intentionally resolved rather than a queue of implicitly approved
+candidates. A future catalogue phase must address the stated safety prerequisite
+before moving any item into the executable index.
 
 `find_open_schematic.py` and `check_kicad_unsaved.py` are internal read-only
 subprocess helpers. `generate_jlcpcb_panel.py` is an internal stage of the

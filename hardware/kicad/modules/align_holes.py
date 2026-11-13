@@ -7,6 +7,10 @@ Run from the repository root with::
 The complete operation is one entry in PCB Editor's Undo/Redo history.
 """
 
+import argparse
+from collections.abc import Sequence
+from dataclasses import dataclass
+
 from kicad_ipc import (
     board_edge_bounds,
     connect_board,
@@ -17,43 +21,63 @@ from kicad_ipc import (
     vector,
 )
 
-# Footprint references for the four physical corners.
-TOP_LEFT_HOLE_REF = "H1"
-TOP_RIGHT_HOLE_REF = "H2"
-BOTTOM_LEFT_HOLE_REF = "H3"
-BOTTOM_RIGHT_HOLE_REF = "H4"
 
-# Axes to align: "horizontal" changes X, "vertical" changes Y, and "both" changes both.
-DIRECTION = "horizontal"
+@dataclass(frozen=True)
+class ModuleOptions:
+    """Explicit mounting-hole references, direction, and edge offsets."""
 
-# Hole-centre distances from the corresponding fabrication edges.
-LEFT_OFFSET_MM = 3.0
-RIGHT_OFFSET_MM = 3.0
-TOP_OFFSET_MM = 35.50
-BOTTOM_OFFSET_MM = 5.50
-DEBUG = True
+    top_left: str = "H1"
+    top_right: str = "H2"
+    bottom_left: str = "H3"
+    bottom_right: str = "H4"
+    direction: str = "horizontal"
+    left_offset_mm: float = 3.0
+    right_offset_mm: float = 3.0
+    top_offset_mm: float = 35.5
+    bottom_offset_mm: float = 5.5
 
 
-def main():
-    """Move configured holes and publish one undoable editor transaction."""
-    if DIRECTION not in {"horizontal", "vertical", "both"}:
-        raise ValueError('DIRECTION must be "horizontal", "vertical", or "both"')
+def run(options: ModuleOptions) -> int:
+    """Move configured holes in one undoable transaction and return zero."""
+    if options.direction not in {"horizontal", "vertical", "both"}:
+        raise ValueError('direction must be "horizontal", "vertical", or "both"')
+    references = (
+        options.top_left,
+        options.top_right,
+        options.bottom_left,
+        options.bottom_right,
+    )
+    if any(not reference.strip() for reference in references):
+        raise ValueError("hole references must not be blank")
+    if len(set(references)) != len(references):
+        raise ValueError("hole references must be unique")
+    offsets = (
+        options.left_offset_mm,
+        options.right_offset_mm,
+        options.top_offset_mm,
+        options.bottom_offset_mm,
+    )
+    if any(offset < 0 for offset in offsets):
+        raise ValueError("edge offsets must not be negative")
 
     _client, board = connect_board()
     footprints = footprints_by_reference(board)
     left, right, top, bottom = board_edge_bounds(board)
     targets = {
-        TOP_LEFT_HOLE_REF: vector(
-            left + from_mm(LEFT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)
+        options.top_left: vector(
+            left + from_mm(options.left_offset_mm), top + from_mm(options.top_offset_mm)
         ),
-        TOP_RIGHT_HOLE_REF: vector(
-            right - from_mm(RIGHT_OFFSET_MM), top + from_mm(TOP_OFFSET_MM)
+        options.top_right: vector(
+            right - from_mm(options.right_offset_mm),
+            top + from_mm(options.top_offset_mm),
         ),
-        BOTTOM_LEFT_HOLE_REF: vector(
-            left + from_mm(LEFT_OFFSET_MM), bottom - from_mm(BOTTOM_OFFSET_MM)
+        options.bottom_left: vector(
+            left + from_mm(options.left_offset_mm),
+            bottom - from_mm(options.bottom_offset_mm),
         ),
-        BOTTOM_RIGHT_HOLE_REF: vector(
-            right - from_mm(RIGHT_OFFSET_MM), bottom - from_mm(BOTTOM_OFFSET_MM)
+        options.bottom_right: vector(
+            right - from_mm(options.right_offset_mm),
+            bottom - from_mm(options.bottom_offset_mm),
         ),
     }
 
@@ -65,21 +89,65 @@ def main():
             footprint = footprints[reference]
             old = footprint.position
             footprint.position = vector(
-                target.x if DIRECTION in {"horizontal", "both"} else old.x,
-                target.y if DIRECTION in {"vertical", "both"} else old.y,
+                target.x if options.direction in {"horizontal", "both"} else old.x,
+                target.y if options.direction in {"vertical", "both"} else old.y,
             )
             changed.append(footprint)
-            if DEBUG:
-                new = footprint.position
-                print(
-                    f"{reference}: ({to_mm(old.x):.3f}, {to_mm(old.y):.3f}) -> "
-                    f"({to_mm(new.x):.3f}, {to_mm(new.y):.3f}) mm"
-                )
+            new = footprint.position
+            print(
+                f"{reference}: ({to_mm(old.x):.3f}, {to_mm(old.y):.3f}) -> "
+                f"({to_mm(new.x):.3f}, {to_mm(new.y):.3f}) mm"
+            )
         if changed:
             board.update_items(changed)
 
     print(f"Aligned {len(changed)} mounting holes (undo: Align mounting holes).")
+    return 0
+
+
+def parse_args(argv: Sequence[str] | None = None) -> ModuleOptions:
+    """Parse explicit CLI values; invalid values terminate through argparse."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name, default in (
+        ("top-left", "H1"),
+        ("top-right", "H2"),
+        ("bottom-left", "H3"),
+        ("bottom-right", "H4"),
+    ):
+        parser.add_argument(f"--{name}", default=default)
+    parser.add_argument(
+        "--direction", choices=("horizontal", "vertical", "both"), default="horizontal"
+    )
+    parser.add_argument("--left-offset", type=float, default=3.0)
+    parser.add_argument("--right-offset", type=float, default=3.0)
+    parser.add_argument("--top-offset", type=float, default=35.5)
+    parser.add_argument("--bottom-offset", type=float, default=5.5)
+    args = parser.parse_args(argv)
+    offsets = (
+        args.left_offset,
+        args.right_offset,
+        args.top_offset,
+        args.bottom_offset,
+    )
+    if any(offset < 0 for offset in offsets):
+        parser.error("edge offsets must not be negative")
+    return ModuleOptions(
+        args.top_left,
+        args.top_right,
+        args.bottom_left,
+        args.bottom_right,
+        args.direction,
+        args.left_offset,
+        args.right_offset,
+        args.top_offset,
+        args.bottom_offset,
+    )
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Parse arguments and execute the mounting-hole alignment."""
+    return run(parse_args(argv))
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

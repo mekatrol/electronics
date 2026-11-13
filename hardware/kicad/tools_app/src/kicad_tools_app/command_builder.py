@@ -10,7 +10,11 @@ def build_command(
     module: dict[str, Any], values: dict[str, Any], python_executable: str
 ) -> list[str]:
     """Return a shell-free argument array containing no client-defined flags."""
-    command = [str(Path(python_executable).resolve()), module["resolved_script"]]
+    # Invoking a virtual environment through its own launcher path is essential:
+    # resolving that symlink to the system binary loses the environment's
+    # site-packages, including kipy.
+    executable = Path(python_executable).expanduser().absolute()
+    command = [str(executable), module["resolved_script"]]
     for parameter in module["parameters"]:
         name = parameter["name"]
         if name not in values:

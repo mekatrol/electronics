@@ -115,6 +115,131 @@
       "risk": {"level": "high", "summary": "Replaces the generated panel and manufacturing package in the project output directory.", "confirmation_required": true}
     },
     {
+      "id": "align-component-edge-center",
+      "name": "Center Component Between Board Edges",
+      "description": "Move one footprint to the midpoint of the local board-edge crossings on a selected axis.",
+      "script": "../modules/align_component_edge_center.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 60,
+      "parameters": [
+        {"name": "reference", "label": "Footprint reference", "description": "Exact reference of the footprint to move, for example J1.", "kind": "positional", "type": "string", "required": true, "default": null},
+        {"name": "alignment", "label": "Alignment axis", "description": "Coordinate axis along which to center the footprint.", "kind": "option", "flag": "--alignment", "type": "enum", "required": false, "default": "horizontal", "choices": ["horizontal", "vertical"]},
+        {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text when calculating the footprint center.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false}
+      ],
+      "risk": {"level": "medium", "summary": "Moves one footprint on the open board in a single undoable PCB Editor transaction.", "confirmation_required": true}
+    },
+    {
+      "id": "align-mounting-holes",
+      "name": "Align Mounting Holes",
+      "description": "Place up to four mounting-hole footprints at explicit offsets from the board edges.",
+      "script": "../modules/align_holes.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 60,
+      "parameters": [
+        {"name": "top_left", "label": "Top-left reference", "description": "Top-left mounting-hole footprint reference.", "kind": "option", "flag": "--top-left", "type": "string", "required": false, "default": "H1"},
+        {"name": "top_right", "label": "Top-right reference", "description": "Top-right mounting-hole footprint reference.", "kind": "option", "flag": "--top-right", "type": "string", "required": false, "default": "H2"},
+        {"name": "bottom_left", "label": "Bottom-left reference", "description": "Bottom-left mounting-hole footprint reference.", "kind": "option", "flag": "--bottom-left", "type": "string", "required": false, "default": "H3"},
+        {"name": "bottom_right", "label": "Bottom-right reference", "description": "Bottom-right mounting-hole footprint reference.", "kind": "option", "flag": "--bottom-right", "type": "string", "required": false, "default": "H4"},
+        {"name": "direction", "label": "Direction", "description": "Coordinates to replace from the calculated targets.", "kind": "option", "flag": "--direction", "type": "enum", "required": false, "default": "horizontal", "choices": ["horizontal", "vertical", "both"]},
+        {"name": "left_offset", "label": "Left offset", "description": "Left hole-center offset in millimetres.", "kind": "option", "flag": "--left-offset", "type": "number", "required": false, "default": 3.0, "minimum": 0},
+        {"name": "right_offset", "label": "Right offset", "description": "Right hole-center offset in millimetres.", "kind": "option", "flag": "--right-offset", "type": "number", "required": false, "default": 3.0, "minimum": 0},
+        {"name": "top_offset", "label": "Top offset", "description": "Top hole-center offset in millimetres.", "kind": "option", "flag": "--top-offset", "type": "number", "required": false, "default": 35.5, "minimum": 0},
+        {"name": "bottom_offset", "label": "Bottom offset", "description": "Bottom hole-center offset in millimetres.", "kind": "option", "flag": "--bottom-offset", "type": "number", "required": false, "default": 5.5, "minimum": 0}
+      ],
+      "risk": {"level": "medium", "summary": "Moves matching mounting-hole footprints in one undoable PCB Editor transaction.", "confirmation_required": true}
+    },
+    {
+      "id": "center-and-distribute-items",
+      "name": "Center and Distribute Footprints",
+      "description": "Align selected footprint centers to the first reference and optionally distribute their spacing.",
+      "script": "../modules/center_and_distribute_items.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 60,
+      "parameters": [
+        {"name": "references", "label": "Footprint references", "description": "Ordered footprint references; the first is the alignment anchor.", "kind": "option", "flag": "--references", "type": "string_list", "required": true, "default": null},
+        {"name": "alignment", "label": "Alignment", "description": "Axis on which footprint centers are aligned.", "kind": "option", "flag": "--alignment", "type": "enum", "required": false, "default": "horizontal", "choices": ["horizontal", "vertical"]},
+        {"name": "distribute_spacing", "label": "Distribute spacing", "description": "Also distribute items on the perpendicular axis.", "kind": "option", "flag": "--distribute-spacing", "type": "boolean", "required": false, "default": false}
+      ],
+      "risk": {"level": "medium", "summary": "Moves every selected footprint in one undoable PCB Editor transaction.", "confirmation_required": true}
+    },
+    {
+      "id": "center-routed-design",
+      "name": "Center Routed Design in Board",
+      "description": "Translate all footprints, tracks, and vias together to center them inside Edge.Cuts.",
+      "script": "../modules/center_components_inside_edge.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 120,
+      "parameters": [
+        {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text in the design bounds.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false}
+      ],
+      "risk": {"level": "high", "summary": "Moves all footprints and routed copper together in one undoable transaction.", "confirmation_required": true}
+    },
+    {
+      "id": "center-board-outline",
+      "name": "Center Board Outline Around Components",
+      "description": "Move Edge.Cuts and board-spanning zones around the fixed component layout.",
+      "script": "../modules/center_edge_around_components.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 120,
+      "parameters": [
+        {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text in the component bounds.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false},
+        {"name": "zone_edge_tolerance", "label": "Zone-edge tolerance", "description": "Tolerance in millimetres for identifying board-spanning zones.", "kind": "option", "flag": "--zone-edge-tolerance", "type": "number", "required": false, "default": 0.2, "minimum": 0}
+      ],
+      "risk": {"level": "high", "summary": "Moves the complete board outline and matching board-spanning zones in one undoable transaction.", "confirmation_required": true}
+    },
+    {
+      "id": "space-components",
+      "name": "Space Two Components",
+      "description": "Set center-to-center spacing between a fixed anchor footprint and one moving footprint.",
+      "script": "../modules/space_components.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 60,
+      "parameters": [
+        {"name": "anchor", "label": "Anchor reference", "description": "Footprint reference that remains fixed.", "kind": "positional", "type": "string", "required": true, "default": null},
+        {"name": "moving", "label": "Moving reference", "description": "Footprint reference to move.", "kind": "positional", "type": "string", "required": true, "default": null},
+        {"name": "alignment", "label": "Alignment", "description": "Axis on which to set the center spacing.", "kind": "option", "flag": "--alignment", "type": "enum", "required": false, "default": "vertical", "choices": ["horizontal", "vertical"]},
+        {"name": "spacing", "label": "Spacing", "description": "Requested center-to-center spacing in millimetres.", "kind": "option", "flag": "--spacing", "type": "number", "required": false, "default": 35.0, "minimum": 0},
+        {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text in footprint bounds.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false}
+      ],
+      "risk": {"level": "medium", "summary": "Moves one selected footprint in a single undoable PCB Editor transaction.", "confirmation_required": true}
+    },
+    {
       "id": "kill-kicad",
       "name": "Stop KiCad",
       "description": "Terminate KiCad processes owned by the current user and remove stale IPC sockets.",

@@ -175,7 +175,9 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
         roots = [Path(root).resolve() for root in body.allowed_roots]
         if not roots or not all(root.is_dir() for root in roots):
             raise HTTPException(status_code=422, detail="Allowed roots must exist")
-        executable = Path(body.python_executable).resolve()
+        # Keep a virtual-environment launcher symlink intact. Resolving it to
+        # the base interpreter would discard that environment at execution.
+        executable = Path(body.python_executable).expanduser().absolute()
         if not executable.is_file():
             raise HTTPException(status_code=422, detail="Python executable must exist")
         body.allowed_roots = [str(root) for root in roots]

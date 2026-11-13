@@ -103,6 +103,17 @@ class ModuleIndexTests(unittest.TestCase):
             if module["execution_type"] == "system_control":
                 self.assertFalse(module["enabled"])
 
+    def test_board_edits_require_confirmation_and_preflight(self) -> None:
+        """Keep every enabled KiCad mutation confirmed and readiness-gated."""
+        for module in self.index["modules"]:
+            if not module["enabled"] or module["execution_type"] != "kicad_modify":
+                continue
+            with self.subTest(module=module["id"]):
+                self.assertTrue(module["risk"]["confirmation_required"])
+                self.assertTrue(module["requires_kicad"])
+                self.assertTrue(module["requires_pcb_editor"])
+                self.assertTrue(module["requires_kicad_api"])
+
 
 if __name__ == "__main__":
     unittest.main()
