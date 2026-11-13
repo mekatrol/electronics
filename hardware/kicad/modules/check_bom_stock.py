@@ -85,6 +85,14 @@ class BomPart:
     datasheet: str
 
 
+def is_excluded_from_bom(component: object) -> bool:
+    """Return whether KiCad marked a netlist component as excluded from BOMs."""
+    return any(
+        prop.attributes.get("name") == "exclude_from_bom"
+        for prop in component.element.getChildren("property")
+    )
+
+
 def clean(value: str) -> str:
     """Strip values before comparison or display."""
     return (value or "").strip()
@@ -180,6 +188,8 @@ def bom_parts(netlist_file: Path) -> list[BomPart]:
     netlist = kicad_netlist_reader.netlist(str(netlist_file))
     grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
     for component in netlist.getInterestingComponents():
+        if is_excluded_from_bom(component):
+            continue
         reference = clean(component.getRef())
         if any(
             re.fullmatch(pattern, reference, flags=re.IGNORECASE)

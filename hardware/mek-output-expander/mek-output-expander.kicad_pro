@@ -837,7 +837,7 @@
         "uuid": "6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9"
       }
     ],
-    "used_designators": "#FLG1-5,#PWR1-30,C1-27,D1-20,F1-2,FID1-3,H1-4,J1-8,L1,Q1-8,R1-48,TP1-3,U1-14,Y1",
+    "used_designators": "#FLG1-5,#PWR1-30,C1-27,D1-20,F1-2,FID1-3,H1-4,J1-8,L1-2,Q1-8,R1-48,TP1-3,U1-14,Y1",
     "variants": []
   },
   "sheets": [
@@ -852,10 +852,6 @@
     [
       "3faf0709-b75d-4529-9a59-5fde1c27ee5b",
       "Microcontroller"
-    ],
-    [
-      "a15e6b6f-a593-4ea0-96c4-158304854d2a",
-      "Outputs"
     ]
   ],
   "text_variables": {},

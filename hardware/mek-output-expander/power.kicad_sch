@@ -483,12 +483,13 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:C_Polarized"
+		(symbol "Device:C_Polarized_Small"
 			(pin_numbers
 				(hide yes)
 			)
 			(pin_names
 				(offset 0.254)
+				(hide yes)
 			)
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -496,7 +497,7 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "C"
-				(at 0.635 2.54 0)
+				(at 0.254 1.778 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -506,8 +507,8 @@
 					(justify left)
 				)
 			)
-			(property "Value" "C_Polarized"
-				(at 0.635 -2.54 0)
+			(property "Value" "C_Polarized_Small"
+				(at 0.254 -2.032 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -518,7 +519,7 @@
 				)
 			)
 			(property "Footprint" ""
-				(at 0.9652 -3.81 0)
+				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -539,7 +540,7 @@
 					)
 				)
 			)
-			(property "Description" "Polarized capacitor"
+			(property "Description" "Polarized capacitor, small symbol"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -572,34 +573,10 @@
 					)
 				)
 			)
-			(symbol "C_Polarized_0_1"
+			(symbol "C_Polarized_Small_0_1"
 				(rectangle
-					(start -2.286 0.508)
-					(end 2.286 1.016)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.778 2.286) (xy -0.762 2.286)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.27 2.794) (xy -1.27 1.778)
-					)
+					(start -1.524 0.6858)
+					(end 1.524 0.3048)
 					(stroke
 						(width 0)
 						(type default)
@@ -609,8 +586,8 @@
 					)
 				)
 				(rectangle
-					(start 2.286 -0.508)
-					(end -2.286 -1.016)
+					(start -1.524 -0.3048)
+					(end 1.524 -0.6858)
 					(stroke
 						(width 0)
 						(type default)
@@ -619,11 +596,35 @@
 						(type outline)
 					)
 				)
+				(polyline
+					(pts
+						(xy -1.27 1.524) (xy -0.762 1.524)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.016 1.27) (xy -1.016 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
 			)
-			(symbol "C_Polarized_1_1"
+			(symbol "C_Polarized_Small_1_1"
 				(pin passive line
-					(at 0 3.81 270)
-					(length 2.794)
+					(at 0 2.54 270)
+					(length 1.8542)
 					(name ""
 						(effects
 							(font
@@ -640,8 +641,8 @@
 					)
 				)
 				(pin passive line
-					(at 0 -3.81 90)
-					(length 2.794)
+					(at 0 -2.54 90)
+					(length 1.8542)
 					(name ""
 						(effects
 							(font
@@ -1290,6 +1291,287 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Device:L_Coupled_Small"
+			(pin_names
+				(offset 0.254)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "L"
+				(at 0 3.175 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "L_Coupled_Small"
+				(at 0 -3.175 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Coupled inductor, small symbol"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "inductor choke coil reactor magnetic coupled"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "L_Coupled_Small_0_1"
+				(arc
+					(start -1.016 1.27)
+					(mid -1.524 0.7642)
+					(end -2.032 1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -1.524 1.27)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center -1.524 -1.27)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(arc
+					(start -2.032 -1.27)
+					(mid -1.524 -0.7642)
+					(end -1.016 -1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 0 1.27)
+					(mid -0.508 0.7642)
+					(end -1.016 1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start -1.016 -1.27)
+					(mid -0.508 -0.7642)
+					(end 0 -1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.016 1.27)
+					(mid 0.508 0.7642)
+					(end 0 1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 0 -1.27)
+					(mid 0.508 -0.7642)
+					(end 1.016 -1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 2.032 1.27)
+					(mid 1.524 0.7642)
+					(end 1.016 1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 1.016 -1.27)
+					(mid 1.524 -0.7642)
+					(end 2.032 -1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "L_Coupled_Small_1_1"
+				(pin passive line
+					(at -2.54 1.27 0)
+					(length 0.508)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 1.27 180)
+					(length 0.508)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -2.54 -1.27 0)
+					(length 0.508)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 -1.27 180)
+					(length 0.508)
+					(name "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2926,7 +3208,7 @@
 	)
 	(wire
 		(pts
-			(xy 166.37 101.6) (xy 166.37 107.95)
+			(xy 166.37 101.6) (xy 166.37 109.22)
 		)
 		(stroke
 			(width 0)
@@ -3156,16 +3438,6 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 48.26) (xy 234.95 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4cb5cfb9-ba62-4f0c-8d6f-e65a98864295")
-	)
-	(wire
-		(pts
 			(xy 115.57 35.56) (xy 115.57 36.83)
 		)
 		(stroke
@@ -3196,7 +3468,7 @@
 	)
 	(wire
 		(pts
-			(xy 166.37 115.57) (xy 166.37 121.92)
+			(xy 166.37 114.3) (xy 166.37 121.92)
 		)
 		(stroke
 			(width 0)
@@ -3316,6 +3588,16 @@
 	)
 	(wire
 		(pts
+			(xy 167.64 36.83) (xy 167.64 43.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "78048c9f-cd4a-4c99-9228-b6e943cdf3da")
+	)
+	(wire
+		(pts
 			(xy 149.86 62.23) (xy 158.75 62.23)
 		)
 		(stroke
@@ -3343,16 +3625,6 @@
 			(type default)
 		)
 		(uuid "841e7c55-54c1-48c6-a09e-deafd20271aa")
-	)
-	(wire
-		(pts
-			(xy 167.64 36.83) (xy 167.64 41.91)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8493c66e-868d-43c7-94b0-ba322f0b0d1d")
 	)
 	(wire
 		(pts
@@ -3456,23 +3728,13 @@
 	)
 	(wire
 		(pts
-			(xy 234.95 30.48) (xy 234.95 40.64)
+			(xy 167.64 48.26) (xy 167.64 62.23)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "962eef37-da9d-437e-a926-46b4fb80850b")
-	)
-	(wire
-		(pts
-			(xy 167.64 49.53) (xy 167.64 62.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a45fa803-c2b5-4975-a78a-56dd2c4afd3e")
+		(uuid "98d87d97-5215-4286-b4db-ae01b3df51c4")
 	)
 	(wire
 		(pts
@@ -3656,6 +3918,16 @@
 	)
 	(wire
 		(pts
+			(xy 234.95 46.99) (xy 234.95 62.23)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e8ecb5ca-62bc-40d0-82b8-7ea380851f4e")
+	)
+	(wire
+		(pts
 			(xy 44.45 29.21) (xy 44.45 39.37)
 		)
 		(stroke
@@ -3703,6 +3975,16 @@
 			(type default)
 		)
 		(uuid "f3e0966e-b1fc-4810-918a-5fd2c81ea1a4")
+	)
+	(wire
+		(pts
+			(xy 234.95 30.48) (xy 234.95 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f6d89304-37f3-44bc-bd31-13575af7216a")
 	)
 	(wire
 		(pts
@@ -4331,7 +4613,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25803.pdf"
 			(at 63.5 49.53 0)
 			(hide yes)
 			(show_name no)
@@ -4481,7 +4763,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized")
+		(lib_id "Device:C_Polarized_Small")
 		(at 234.95 44.45 0)
 		(unit 1)
 		(body_style 1)
@@ -4514,17 +4796,6 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x7.7"
-			(at 235.9152 48.26 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
 			(at 234.95 44.45 0)
 			(hide yes)
 			(show_name no)
@@ -4535,7 +4806,18 @@
 				)
 			)
 		)
-		(property "Description" "Polarized capacitor"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C4747974.pdf"
+			(at 234.95 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Polarized capacitor, small symbol"
 			(at 234.95 44.45 0)
 			(hide yes)
 			(show_name no)
@@ -4595,7 +4877,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized")
+		(lib_id "Device:C_Polarized_Small")
 		(at 167.64 45.72 0)
 		(unit 1)
 		(body_style 1)
@@ -4628,17 +4910,6 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:CP_Elec_6.3x7.7"
-			(at 168.6052 49.53 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
 			(at 167.64 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -4649,7 +4920,18 @@
 				)
 			)
 		)
-		(property "Description" "Polarized capacitor"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C4747974.pdf"
+			(at 167.64 45.72 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Polarized capacitor, small symbol"
 			(at 167.64 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -4751,7 +5033,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C130880.pdf"
 			(at 203.2 25.4 0)
 			(hide yes)
 			(show_name no)
@@ -4888,7 +5170,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 217.17 44.45 0)
 			(hide yes)
 			(show_name no)
@@ -5003,7 +5285,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 149.86 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -5094,8 +5376,9 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "Screw2P_plug_right_angle"
 			(at 20.32 189.23 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5115,7 +5398,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C90074.pdf"
 			(at 27.94 189.23 0)
 			(hide yes)
 			(show_name no)
@@ -5159,7 +5442,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "N/A"
+		(property "LCSC Part #" "C90074"
 			(at 27.94 189.23 0)
 			(hide yes)
 			(show_name no)
@@ -5186,7 +5469,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C_Polarized")
+		(lib_id "Device:C_Polarized_Small")
 		(at 166.37 111.76 0)
 		(unit 1)
 		(body_style 1)
@@ -5198,7 +5481,7 @@
 		(fields_autoplaced yes)
 		(uuid "856ce85c-21da-4309-90a6-10330b2303ee")
 		(property "Reference" "C5"
-			(at 170.18 109.6009 0)
+			(at 168.91 109.9438 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5209,7 +5492,7 @@
 			)
 		)
 		(property "Value" "1000u"
-			(at 170.18 112.1409 0)
+			(at 168.91 112.4838 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5220,7 +5503,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_THT:CP_Radial_D16.0mm_P7.50mm"
-			(at 167.3352 115.57 0)
+			(at 166.37 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5241,7 +5524,7 @@
 				)
 			)
 		)
-		(property "Description" "Polarized capacitor"
+		(property "Description" "Polarized capacitor, small symbol"
 			(at 166.37 111.76 0)
 			(hide yes)
 			(show_name no)
@@ -5422,7 +5705,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 53.34 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -5536,7 +5819,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25803.pdf"
 			(at 130.81 41.91 0)
 			(hide yes)
 			(show_name no)
@@ -5727,7 +6010,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/datasheet/pdf/745a250a38aa3d771ef194d70adc64cb.pdf?productCode=C123897"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C123897.pdf"
 			(at 71.12 110.49 0)
 			(hide yes)
 			(show_name no)
@@ -5804,6 +6087,92 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:L_Coupled_Small")
+		(at 106.68 110.49 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "bf19d590-9d3c-432a-a83a-745985735fe4")
+		(property "Reference" "L2"
+			(at 106.68 104.14 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "L_Coupled_Small"
+			(at 106.68 106.68 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "CommonModeChokes:SMCM7060-501T"
+			(at 106.68 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 106.68 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Coupled inductor, small symbol"
+			(at 106.68 110.49 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "3"
+			(uuid "c5556247-4d66-41e8-afc7-1cd5cd829156")
+		)
+		(pin "2"
+			(uuid "d5b67748-c512-44ea-97f8-98d67c7b9270")
+		)
+		(pin "1"
+			(uuid "26d2249a-8743-4098-af62-adedd33cf47f")
+		)
+		(pin "4"
+			(uuid "c43d3983-e63d-4c79-915e-c6052cb5e60d")
+		)
+		(instances
+			(project "mek-output-expander"
+				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/021753ef-9e56-4253-8d75-5ca8ab357aa4"
+					(reference "L2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C_Small")
 		(at 115.57 33.02 0)
 		(unit 1)
@@ -5847,7 +6216,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 115.57 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -6074,7 +6443,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 187.96 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -6166,7 +6535,7 @@
 				)
 			)
 		)
-		(property "Value" "Fuse"
+		(property "Value" "FuseHolder"
 			(at 44.45 182.88 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6187,7 +6556,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C108518.pdf"
 			(at 44.45 186.69 0)
 			(hide yes)
 			(show_name no)
@@ -6200,6 +6569,17 @@
 		)
 		(property "Description" "Fuse"
 			(at 44.45 186.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C108518"
+			(at 44.45 186.69 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6266,7 +6646,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C173501.pdf"
 			(at 52.07 114.3 0)
 			(hide yes)
 			(show_name no)
@@ -6358,7 +6738,7 @@
 				)
 			)
 		)
-		(property "Value" "LMR38020FDDAR"
+		(property "Value" "LMR38020"
 			(at 90.17 21.59 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6514,7 +6894,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "http://www.advanced-monolithic.com/pdf/ds1117.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5205141.pdf"
 			(at 205.74 43.18 0)
 			(hide yes)
 			(show_name no)
@@ -6536,7 +6916,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C6186"
+		(property "LCSC Part #" "C5205141"
 			(at 203.2 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -6631,7 +7011,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25803.pdf"
 			(at 139.7 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -6745,7 +7125,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C269612.pdf"
 			(at 139.7 57.15 0)
 			(hide yes)
 			(show_name no)

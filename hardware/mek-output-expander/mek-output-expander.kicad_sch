@@ -1520,52 +1520,6 @@
 			)
 		)
 	)
-	(sheet
-		(at 74.93 92.71)
-		(size 35.56 48.26)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0)
-		)
-		(uuid "a15e6b6f-a593-4ea0-96c4-158304854d2a")
-		(property "Sheetname" "Outputs"
-			(at 74.93 91.9984 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "outputs.kicad_sch"
-			(at 74.93 141.5546 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(instances
-			(project "mek-output-expander"
-				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9"
-					(page "4")
-				)
-			)
-		)
-	)
 	(sheet_instances
 		(path "/"
 			(page "1")

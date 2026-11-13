@@ -4901,7 +4901,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 129.54 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -5091,7 +5091,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C17902.pdf"
 			(at 80.01 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -5438,7 +5438,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5181479.pdf"
 			(at 161.29 102.87 0)
 			(hide yes)
 			(show_name no)
@@ -5559,7 +5559,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 43.18 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -5830,7 +5830,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 120.65 48.26 0)
 			(hide yes)
 			(show_name no)
@@ -5923,7 +5923,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "CH32V003FxPx"
+		(property "Value" "CH32V003"
 			(at 140.5733 63.5 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5945,7 +5945,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.wch-ic.com/products/CH32V003.html"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5187096.pdf"
 			(at 137.16 81.28 0)
 			(hide yes)
 			(show_name no)
@@ -6092,7 +6092,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "SN65HVD72DR"
+		(property "Value" "SN65HVD72"
 			(at 140.5733 140.97 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6247,7 +6247,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 120.65 132.08 0)
 			(hide yes)
 			(show_name no)
@@ -6561,7 +6561,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C118845.pdf"
 			(at 39.37 129.54 0)
 			(hide yes)
 			(show_name no)
@@ -6808,7 +6808,7 @@
 				)
 			)
 		)
-		(property "Value" ""
+		(property "Value" "Screw2P_plug_right_angle"
 			(at 184.15 148.59 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6829,7 +6829,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C90074.pdf"
 			(at 176.53 148.59 0)
 			(hide yes)
 			(show_name no)
@@ -6873,7 +6873,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "N/A"
+		(property "LCSC Part #" "C90074"
 			(at 176.53 148.59 0)
 			(hide yes)
 			(show_name no)
@@ -7022,7 +7022,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5137620.pdf"
 			(at 173.99 109.22 0)
 			(hide yes)
 			(show_name no)
@@ -7134,7 +7134,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C17902.pdf"
 			(at 181.61 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -7248,7 +7248,7 @@
 				(justify left top)
 			)
 		)
-		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2843785.pdf"
 			(at 54.61 139.065 0)
 			(hide yes)
 			(show_name no)
@@ -7448,7 +7448,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 181.61 91.44 0)
 			(hide yes)
 			(show_name no)
@@ -7560,7 +7560,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C17902.pdf"
 			(at 71.12 36.83 0)
 			(hide yes)
 			(show_name no)
@@ -7878,7 +7878,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5137620.pdf"
 			(at 149.86 109.22 0)
 			(hide yes)
 			(show_name no)
@@ -8071,7 +8071,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 34.29 31.75 0)
 			(hide yes)
 			(show_name no)
@@ -8186,7 +8186,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 72.39 129.54 0)
 			(hide yes)
 			(show_name no)
@@ -8301,7 +8301,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 129.54 48.26 0)
 			(hide yes)
 			(show_name no)

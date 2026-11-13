@@ -1,6 +1,7 @@
 import unittest
+from types import SimpleNamespace
 
-from check_bom_stock import BomPart, StockPart, check_parts
+from check_bom_stock import BomPart, StockPart, check_parts, is_excluded_from_bom
 
 
 def stock(
@@ -29,6 +30,27 @@ def bom(
 
 
 class CheckBomStockTests(unittest.TestCase):
+    def test_kicad_exclude_from_bom_property_is_honoured(self):
+        properties = [
+            SimpleNamespace(attributes={"name": "Sheetname", "value": "Root"}),
+            SimpleNamespace(attributes={"name": "exclude_from_bom"}),
+        ]
+        component = SimpleNamespace(
+            element=SimpleNamespace(getChildren=lambda name: properties)
+        )
+
+        self.assertTrue(is_excluded_from_bom(component))
+
+    def test_component_without_exclude_from_bom_property_is_included(self):
+        properties = [
+            SimpleNamespace(attributes={"name": "Sheetname", "value": "Root"})
+        ]
+        component = SimpleNamespace(
+            element=SimpleNamespace(getChildren=lambda name: properties)
+        )
+
+        self.assertFalse(is_excluded_from_bom(component))
+
     def test_matching_part_passes(self):
         self.assertEqual(check_parts([bom()], [stock()], 20), [])
 
