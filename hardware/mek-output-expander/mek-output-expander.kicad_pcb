@@ -520,7 +520,7 @@
 			)
 		)
 	)
-	(footprint "TI LMR38020FDDAR:DDA0008E-IPC_A"
+	(footprint "MekatrolCustom:TexasInstruments_BuckConverter_LMR38020FDDAR-IPC-A"
 		(layer "F.Cu")
 		(uuid "17be828c-eab6-473f-9fbd-48fa8235e960")
 		(at 100.93 61.585)
@@ -4626,7 +4626,7 @@
 			)
 		)
 	)
-	(footprint "LittleFuse:Littelfuse_FuseHolder_01550900M"
+	(footprint "MekatrolCustom:Littelfuse_FuseHolder_01550900M"
 		(layer "F.Cu")
 		(uuid "6a1ab2bd-d531-4c23-9bb7-1a6fd7047aa8")
 		(at 58.325 61.075)
@@ -12500,7 +12500,7 @@
 			)
 		)
 	)
-	(footprint "Sumida:L_CDRH129RNP-330MC"
+	(footprint "MekatrolCustom:Sumida_Inductor_CDRH129RNP-330MC"
 		(layer "F.Cu")
 		(uuid "a6d1a18a-233a-4d43-a380-3e3594262c35")
 		(at 109.74 51.915 180)
@@ -12868,7 +12868,7 @@
 			)
 		)
 	)
-	(footprint "Jingdao_ABS210:ABS210_ABS-LBF"
+	(footprint "MekatrolCustom:Jingdao_BridgeRectifier_ABS210"
 		(layer "F.Cu")
 		(uuid "b958c1aa-120f-4fb4-93c5-25c924885cab")
 		(at 92.77 70.715 -90)
@@ -14996,7 +14996,7 @@
 			)
 		)
 	)
-	(footprint "CommonModeChokes:SMCM7060-501T"
+	(footprint "MekatrolCustom:SXN_CommonModeChoke_SMCM7060-501T"
 		(layer "F.Cu")
 		(uuid "ea7ecbf6-b4cc-4490-91bf-ea797c0a5d98")
 		(at 53.425 73.525)

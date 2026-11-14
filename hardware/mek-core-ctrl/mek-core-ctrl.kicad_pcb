@@ -3640,7 +3640,7 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "TI LMR38020FDDAR:DDA0008E-IPC_A"
+	(footprint "MekatrolCustom:TexasInstruments_BuckConverter_LMR38020FDDAR-IPC-A"
 		(layer "F.Cu")
 		(uuid "b2c6a8fd-29df-4c77-83f3-3c98578c4589")
 		(at 131.456066 108.235)

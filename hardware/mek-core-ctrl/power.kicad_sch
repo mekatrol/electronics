@@ -1691,7 +1691,7 @@
 					)
 				)
 			)
-			(property "Footprint" "TI LMR38020FDDAR:DDA0008E-IPC_A"
+			(property "Footprint" "MekatrolCustom:TexasInstruments_BuckConverter_LMR38020FDDAR-IPC-A"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -4843,7 +4843,7 @@
 				)
 			)
 		)
-		(property "Footprint" "TI LMR38020FDDAR:DDA0008E-IPC_A"
+		(property "Footprint" "MekatrolCustom:TexasInstruments_BuckConverter_LMR38020FDDAR-IPC-A"
 			(at 58.42 83.82 0)
 			(hide yes)
 			(show_name no)
