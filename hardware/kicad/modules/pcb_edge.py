@@ -37,10 +37,10 @@ from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
 # Fabrication dimensions are measured along the Edge.Cuts centreline. The
 # origin is the top-left point of the finished outline in board coordinates;
 # KiCad X increases rightwards and Y increases downwards.
-BOARD_WIDTH_MM = 240.0
-BOARD_HEIGHT_MM = 100.0
-ORIGIN_X_MM = 136.0
-ORIGIN_Y_MM = 80.0
+BOARD_WIDTH_MM = 140.0
+BOARD_HEIGHT_MM = 120.0
+ORIGIN_X_MM = 80.0
+ORIGIN_Y_MM = 20.0
 
 # Preserve the area centroid of the current connected Edge.Cuts contour when
 # replacing it. If no outline exists, the configured origin above is used.
@@ -49,7 +49,7 @@ KEEP_CENTRE = False
 # Centre the new PCB on the drawing page. This takes precedence over
 # KEEP_CENTRE and the configured origin. The page size and orientation are
 # read from the live board (including custom User page sizes).
-CENTRE_ON_PAGE = True
+CENTRE_ON_PAGE = False
 
 # Use 0 for square corners. A positive value creates four tangent quarter-circle
 # arcs and must not exceed half of the board's smaller dimension.
