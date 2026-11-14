@@ -63,7 +63,7 @@ EDGE_PLACEMENT = "off-edge"
 # Clear space between adjacent daughter-board Edge.Cuts.  This is added only
 # between slots, not outside the first and last boards.  The gap keeps board
 # outlines apart and leaves additional space around mounting hardware.
-DAUGHTER_BOARD_GAP_MM = 3.0
+DAUGHTER_BOARD_GAP_MM = 4.0
 
 # J1 on each daughter board is a horizontal four-pin row, represented by a
 # footprint rotation of +90 degrees in KiCad.
@@ -192,9 +192,7 @@ def main():
     _client, board = connect_board()
     footprints = footprints_by_reference(board)
     missing_connectors = [
-        reference
-        for reference in CONNECTOR_REFERENCES
-        if reference not in footprints
+        reference for reference in CONNECTOR_REFERENCES if reference not in footprints
     ]
     if missing_connectors:
         raise SystemExit(
@@ -326,9 +324,7 @@ def main():
                         f"alignment error {to_mm(alignment_error):+.3f} mm"
                     )
             changed.append(connector)
-            changed.extend(
-                hole for hole in (left_hole, right_hole) if hole is not None
-            )
+            changed.extend(hole for hole in (left_hole, right_hole) if hole is not None)
 
             hole_status = ", ".join(
                 reference if hole is not None else f"{reference} excluded"
