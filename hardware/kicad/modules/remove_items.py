@@ -11,8 +11,8 @@ reviewing the result.
 
 from kicad_ipc import connect_board, editor_commit
 
-REMOVE_TRACKS = False
-REMOVE_VIAS = False
+REMOVE_TRACKS = True
+REMOVE_VIAS = True
 REMOVE_ZONES = True
 
 

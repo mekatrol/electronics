@@ -30,6 +30,7 @@ from kicad_ipc import (
 from kicad_utils import edge_cuts_centroid
 from kipy.board_types import BoardArc, BoardSegment, Zone
 from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
+from kipy.proto.board.board_types_pb2 import ZoneType
 
 # ============================================================
 # User settings: board geometry
@@ -278,10 +279,16 @@ def configured_zone_names(layer_count):
     ]
 
 
-def fill_zones(board, layers, origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
+def fill_zones(
+    board,
+    layers,
+    origin_x_mm=ORIGIN_X_MM,
+    origin_y_mm=ORIGIN_Y_MM,
+    names=None,
+):
     """Construct one configured rectangular fill zone per copper layer."""
     nets = {net.name: net for net in board.get_nets()}
-    names = configured_zone_names(len(layers))
+    names = configured_zone_names(len(layers)) if names is None else names
     missing = sorted({name for name in names if name not in nets})
     if missing:
         quoted = ", ".join(f'"{name}"' for name in missing)
@@ -296,6 +303,45 @@ def fill_zones(board, layers, origin_x_mm=ORIGIN_X_MM, origin_y_mm=ORIGIN_Y_MM):
         zone.outline = rectangular_polygon(origin_x_mm, origin_y_mm)
         zones.append(zone)
     return zones
+
+
+def validate_created_zones(zones, expected_names):
+    """Reject zones that PCB Editor did not create as assigned copper pours.
+
+    KiCad returns the canonical items it actually staged.  Checking those
+    wrappers before the surrounding commit is pushed prevents a successful
+    looking run from deleting working pours and replacing them with rule
+    areas (a failure mode observed with KiCad 10's IPC zone creation).
+    """
+    if len(zones) != len(expected_names):
+        raise RuntimeError(
+            f"PCB Editor created {len(zones)} of {len(expected_names)} requested zones"
+        )
+
+    problems = []
+    for index, (zone, expected_name) in enumerate(zip(zones, expected_names), start=1):
+        actual_net = zone.net.name if zone.net is not None else None
+        if zone.type != ZoneType.ZT_COPPER or actual_net != expected_name:
+            problems.append(
+                f"zone {index}: type={ZoneType.Name(zone.type)}, "
+                f"net={actual_net!r} (expected {expected_name!r})"
+            )
+
+    if problems:
+        raise RuntimeError(
+            "PCB Editor did not create the requested copper zones; the entire "
+            "outline/zone transaction was rolled back:\n  " + "\n  ".join(problems)
+        )
+
+
+def zone_matches_rectangle(zone, origin_x_mm, origin_y_mm):
+    """Return whether a zone has the exact board-spanning rectangle."""
+    expected = rectangular_polygon(origin_x_mm, origin_y_mm).outline.nodes
+    actual = zone.outline.outline.nodes
+    return len(actual) == len(expected) and all(
+        left.point.x == right.point.x and left.point.y == right.point.y
+        for left, right in zip(actual, expected)
+    )
 
 
 def main():
@@ -324,17 +370,59 @@ def main():
     # transaction. Configuration failures therefore cannot remove live items.
     new_outline = create_outline_items(origin_x_mm, origin_y_mm)
     layers = copper_layers(board) if REPLACE_GROUND_ZONES else []
-    replacement_names = set(configured_zone_names(len(layers)))
-    existing_fill_zones = [
-        zone
-        for zone in board.get_zones()
-        if zone.net is not None
-        and zone.net.name in replacement_names
-        and any(layer in layers for layer in zone.layers)
+    new_zone_names = configured_zone_names(len(layers))
+    nets = {net.name: net for net in board.get_nets()}
+    reusable_zones = []
+    zones_to_remove = []
+    missing_layers = []
+    if REPLACE_GROUND_ZONES:
+        available = list(board.get_zones())
+        for layer, name in zip(layers, new_zone_names):
+            matches = [
+                zone
+                for zone in available
+                if zone.type == ZoneType.ZT_COPPER
+                and zone.net is not None
+                and zone.net.name == name
+                and layer in zone.layers
+            ]
+            if matches:
+                zone = matches[0]
+                available.remove(zone)
+                zone.name = name
+                zone.net = nets[name]
+                zone.layers = [layer]
+                zone.outline = rectangular_polygon(origin_x_mm, origin_y_mm)
+                reusable_zones.append(zone)
+                zones_to_remove.extend(matches[1:])
+            else:
+                missing_layers.append(layer)
+
+        # Remove only malformed leftovers made by older runs of this script:
+        # netless rule areas with the configured name, layer, and exact board
+        # rectangle.  Unrelated user-authored rule areas are preserved.
+        for zone in available:
+            if (
+                zone.type == ZoneType.ZT_RULE_AREA
+                and zone.name in new_zone_names
+                and len(zone.layers) == 1
+                and zone.layers[0] in layers
+                and zone_matches_rectangle(zone, origin_x_mm, origin_y_mm)
+            ):
+                zones_to_remove.append(zone)
+
+    missing_zone_names = [
+        new_zone_names[layers.index(layer)] for layer in missing_layers
     ]
     new_zones = (
-        fill_zones(board, layers, origin_x_mm, origin_y_mm)
-        if REPLACE_GROUND_ZONES
+        fill_zones(
+            board,
+            missing_layers,
+            origin_x_mm,
+            origin_y_mm,
+            missing_zone_names,
+        )
+        if missing_layers
         else []
     )
 
@@ -347,13 +435,18 @@ def main():
     ):
         if DELETE_EXISTING_EDGE_CUTS and existing_edges:
             board.remove_items(existing_edges)
-        if REPLACE_GROUND_ZONES and existing_fill_zones:
-            board.remove_items(existing_fill_zones)
+        if zones_to_remove:
+            board.remove_items(zones_to_remove)
 
         board.create_items(new_outline)
 
+        if reusable_zones:
+            updated_zones = board.update_items(reusable_zones)
+            validate_created_zones(updated_zones, [zone.name for zone in reusable_zones])
+
         if new_zones:
-            board.create_items(new_zones)
+            created_zones = board.create_items(new_zones)
+            validate_created_zones(created_zones, missing_zone_names)
 
     print(
         f"Created {BOARD_WIDTH_MM:.3f} x {BOARD_HEIGHT_MM:.3f} mm outline with "
