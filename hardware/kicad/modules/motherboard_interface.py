@@ -23,6 +23,10 @@ EDGE_CUTS_LINE_WIDTH_MM = 0.10
 # asymmetric X value is the first-pin location of a four-pin, 2.54 mm row.
 PRIMARY_CONNECTOR_LEFT_MM = 8.69
 PRIMARY_CONNECTOR_TOP_MM = 3.15
+# Motherboard layouts that place the daughter-board mounting holes beyond the
+# motherboard outline keep the centre of the four-pin connector this far
+# inside the motherboard edge.
+PRIMARY_CONNECTOR_BOARD_EDGE_DISTANCE_MM = 3.15
 OPTIONAL_CONNECTOR_LEFT_MM = 9.96
 OPTIONAL_CONNECTOR_TOP_MM = 36.0
 

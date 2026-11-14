@@ -7,9 +7,11 @@ Run from the repository root with::
 Open the motherboard in PCB Editor before running this script.  The default
 layout places four daughter boards down the left edge and four down the right
 edge, rotated toward the board interior.  The optional bottom layout retains
-the original single horizontal row.  In either mode, adjacent daughter-board
-outlines use the configured clearance and the complete group is centred on
-the applicable motherboard edge.
+the original single horizontal row.  By default, the connectors sit just
+inside the motherboard edge while the mounting holes lie beyond it.  The
+original fully-inside placement remains available.  In either layout mode,
+adjacent daughter-board outlines use the configured clearance and the complete
+group is centred on the applicable motherboard edge.
 
 All rotations and moves form one PCB Editor Undo/Redo entry.  Changes are left
 unsaved so the complete result can be inspected before saving manually.
@@ -32,6 +34,7 @@ from motherboard_interface import (
     INTERFACE_TOLERANCE_MM,
     LEFT_HOLE_LEFT_MM,
     MOUNTING_HOLE_TOP_MM,
+    PRIMARY_CONNECTOR_BOARD_EDGE_DISTANCE_MM,
     PRIMARY_CONNECTOR_TOP_MM,
     RIGHT_HOLE_LEFT_MM,
 )
@@ -51,6 +54,11 @@ RIGHT_HOLE_REFERENCES = ("H6", "H8", "H10", "H12", "H14", "H16", "H18", "H20")
 # Select ``"left-right"`` for equal groups on the two vertical edges, or
 # ``"bottom"`` for one horizontal row along the bottom edge.
 LAYOUT_MODE = "left-right"
+
+# Select ``"off-edge"`` to put the four-pin connectors near the motherboard
+# edge and the mounting holes beyond the board outline, or ``"inside"`` to
+# keep the complete daughter-board envelope over the motherboard.
+EDGE_PLACEMENT = "off-edge"
 
 # Clear space between adjacent daughter-board Edge.Cuts.  This is added only
 # between slots, not outside the first and last boards.  The gap keeps board
@@ -101,6 +109,12 @@ def validate_reference_settings():
     """Reject incomplete or ambiguous slot mappings before opening a commit."""
     if LAYOUT_MODE not in {"bottom", "left-right"}:
         raise ValueError('LAYOUT_MODE must be "bottom" or "left-right"')
+    if EDGE_PLACEMENT not in {"off-edge", "inside"}:
+        raise ValueError('EDGE_PLACEMENT must be "off-edge" or "inside"')
+    if PRIMARY_CONNECTOR_BOARD_EDGE_DISTANCE_MM < 0:
+        raise ValueError(
+            "PRIMARY_CONNECTOR_BOARD_EDGE_DISTANCE_MM must not be negative"
+        )
     if DAUGHTER_BOARD_GAP_MM < 0:
         raise ValueError("DAUGHTER_BOARD_GAP_MM must not be negative")
     counts = {
@@ -153,21 +167,39 @@ def transformed_point(edge, anchor_x, anchor_y, local_x_mm, local_y_mm):
     raise ValueError(f"unsupported motherboard edge: {edge}")
 
 
+def perpendicular_anchor(edge, board_edge):
+    """Return the daughter-board origin perpendicular to ``board_edge``."""
+    if EDGE_PLACEMENT == "inside":
+        if edge == "bottom":
+            return board_edge - from_mm(DAUGHTER_BOARD_HEIGHT_MM)
+        return board_edge
+
+    connector_distance = from_mm(PRIMARY_CONNECTOR_BOARD_EDGE_DISTANCE_MM)
+    connector_top = from_mm(PRIMARY_CONNECTOR_TOP_MM)
+    daughter_height = from_mm(DAUGHTER_BOARD_HEIGHT_MM)
+    if edge == "bottom":
+        return board_edge - connector_distance - connector_top
+    if edge == "left":
+        return board_edge + connector_distance - daughter_height + connector_top
+    if edge == "right":
+        return board_edge - connector_distance + daughter_height - connector_top
+    raise ValueError(f"unsupported motherboard edge: {edge}")
+
+
 def main():
     """Arrange every configured motherboard interface in one transaction."""
     validate_reference_settings()
     _client, board = connect_board()
     footprints = footprints_by_reference(board)
-    references = (
-        *CONNECTOR_REFERENCES,
-        *LEFT_HOLE_REFERENCES,
-        *RIGHT_HOLE_REFERENCES,
-    )
-    missing = [reference for reference in references if reference not in footprints]
-    if missing:
+    missing_connectors = [
+        reference
+        for reference in CONNECTOR_REFERENCES
+        if reference not in footprints
+    ]
+    if missing_connectors:
         raise SystemExit(
             "Cannot lay out the motherboard interface because footprint(s) "
-            f"are missing: {', '.join(missing)}."
+            f"are missing: {', '.join(missing_connectors)}."
         )
 
     left, right, top, bottom = board_edge_bounds(board)
@@ -185,7 +217,7 @@ def main():
     # undersized outline visible instead of silently violating the configured
     # daughter-board pitch.
     bottom_row_left = (left + right - layout_span) // 2
-    bottom_daughter_top = bottom - from_mm(DAUGHTER_BOARD_HEIGHT_MM)
+    bottom_daughter_top = perpendicular_anchor("bottom", bottom)
     side_row_top = (top + bottom - layout_span) // 2
     changed = []
     action = "Lay out motherboard daughter-board interfaces"
@@ -211,13 +243,13 @@ def main():
             elif slot_index < slots_per_edge:
                 edge = "left"
                 edge_slot_index = slot_index
-                anchor_x = left
+                anchor_x = perpendicular_anchor("left", left)
                 anchor_y = side_row_top + from_mm(edge_slot_index * slot_pitch_mm)
                 board_rotation_degrees = -90.0
             else:
                 edge = "right"
                 edge_slot_index = slot_index - slots_per_edge
-                anchor_x = right
+                anchor_x = perpendicular_anchor("right", right)
                 anchor_y = side_row_top + from_mm(edge_slot_index * slot_pitch_mm)
                 board_rotation_degrees = 90.0
 
@@ -245,7 +277,6 @@ def main():
                 connector_target,
             )
 
-            left_hole = footprints[left_hole_reference]
             left_hole_target = transformed_point(
                 edge,
                 anchor_x,
@@ -253,9 +284,10 @@ def main():
                 LEFT_HOLE_LEFT_MM,
                 MOUNTING_HOLE_TOP_MM,
             )
-            translate_datum_to(left_hole, pad_center(left_hole), left_hole_target)
+            left_hole = footprints.get(left_hole_reference)
+            if left_hole is not None:
+                translate_datum_to(left_hole, pad_center(left_hole), left_hole_target)
 
-            right_hole = footprints[right_hole_reference]
             right_hole_target = transformed_point(
                 edge,
                 anchor_x,
@@ -263,34 +295,52 @@ def main():
                 RIGHT_HOLE_LEFT_MM,
                 MOUNTING_HOLE_TOP_MM,
             )
-            translate_datum_to(right_hole, pad_center(right_hole), right_hole_target)
+            right_hole = footprints.get(right_hole_reference)
+            if right_hole is not None:
+                translate_datum_to(
+                    right_hole,
+                    pad_center(right_hole),
+                    right_hole_target,
+                )
 
             # The centre of the four connector pins must remain on the line
             # halfway between the two holes.  Bottom slots share X; rotated
             # side slots share Y.  Check this invariant before sending any
             # items to KiCad so a footprint numbering or rotation change can
             # never silently reproduce a mechanically shifted connector.
-            connector_center = pad_center(connector)
-            hole_midpoint = vector(
-                (left_hole_target.x + right_hole_target.x) // 2,
-                (left_hole_target.y + right_hole_target.y) // 2,
-            )
-            alignment_error = (
-                connector_center.x - hole_midpoint.x
-                if edge == "bottom"
-                else connector_center.y - hole_midpoint.y
-            )
-            if abs(alignment_error) > from_mm(INTERFACE_TOLERANCE_MM):
-                raise RuntimeError(
-                    f"{connector_reference} is not centred between "
-                    f"{left_hole_reference} and {right_hole_reference}; "
-                    f"alignment error {to_mm(alignment_error):+.3f} mm"
+            if left_hole is not None and right_hole is not None:
+                connector_center = pad_center(connector)
+                hole_midpoint = vector(
+                    (left_hole_target.x + right_hole_target.x) // 2,
+                    (left_hole_target.y + right_hole_target.y) // 2,
                 )
-            changed.extend((connector, left_hole, right_hole))
+                alignment_error = (
+                    connector_center.x - hole_midpoint.x
+                    if edge == "bottom"
+                    else connector_center.y - hole_midpoint.y
+                )
+                if abs(alignment_error) > from_mm(INTERFACE_TOLERANCE_MM):
+                    raise RuntimeError(
+                        f"{connector_reference} is not centred between "
+                        f"{left_hole_reference} and {right_hole_reference}; "
+                        f"alignment error {to_mm(alignment_error):+.3f} mm"
+                    )
+            changed.append(connector)
+            changed.extend(
+                hole for hole in (left_hole, right_hole) if hole is not None
+            )
+
+            hole_status = ", ".join(
+                reference if hole is not None else f"{reference} excluded"
+                for reference, hole in (
+                    (left_hole_reference, left_hole),
+                    (right_hole_reference, right_hole),
+                )
+            )
 
             print(
                 f"Slot {slot_index + 1}: {connector_reference}, "
-                f"{left_hole_reference}, {right_hole_reference}; {edge} edge, "
+                f"{hole_status}; {edge} edge, "
                 f"edge slot {edge_slot_index + 1}, rotation "
                 f"{board_rotation_degrees:+.0f} degrees"
             )
@@ -301,7 +351,8 @@ def main():
     dimension_name = "width" if LAYOUT_MODE == "bottom" else "height"
     print(f"Active PCB: {board_document_path(board.document)}")
     print(
-        f"Laid out {slot_count} interfaces in {LAYOUT_MODE} mode; each edge "
+        f"Laid out {slot_count} interfaces in {LAYOUT_MODE} mode with "
+        f"{EDGE_PLACEMENT} edge placement; each edge "
         f"group spans {to_mm(layout_span):.3f} mm with "
         f"{DAUGHTER_BOARD_GAP_MM:.3f} mm gaps, centred on the motherboard's "
         f"{to_mm(board_dimension):.3f} mm {dimension_name} "
