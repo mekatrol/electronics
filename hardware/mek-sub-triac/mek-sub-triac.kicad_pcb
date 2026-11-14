@@ -154,7 +154,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C22962.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -339,7 +339,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2933675.pdf"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -513,7 +513,7 @@
 				)
 			)
 		)
-		(property "Value" "Screw_Terminal_01x02"
+		(property "Value" "Header2P_RA_5.08"
 			(at 2.54 5.72 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -525,7 +525,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C90074.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -536,7 +536,7 @@
 				)
 			)
 		)
-		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -573,7 +573,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "N/A"
+		(property "LCSC Part #" "C90074"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -586,7 +586,7 @@
 				)
 			)
 		)
-		(property ki_fp_filters "TerminalBlock*:*")
+		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/4ceb7526-72eb-4307-8b49-14b5a60c1a0f")
 		(sheetname "/")
 		(sheetfile "mek-sub-triac.kicad_sch")
@@ -918,7 +918,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C173501.pdf"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1381,7 +1381,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C4410.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -1566,7 +1566,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -1989,7 +1989,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C25803.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -2174,7 +2174,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.onsemi.com/pdf/datasheet/pzt3904-d.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C20526.pdf"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -2692,7 +2692,7 @@
 				)
 			)
 		)
-		(property "Value" "LED"
+		(property "Value" "Blue"
 			(at 0 1.65 90)
 			(layer "F.Fab")
 			(uuid "af0dd27b-b5c2-48c8-9c96-b3b4ea536d37")
@@ -2703,7 +2703,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C965819.pdf"
 			(at 0 0 90)
 			(layer "F.Fab")
 			(hide yes)
@@ -3137,7 +3137,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C3013388.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3442,7 +3442,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C46638858.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -3638,7 +3638,7 @@
 				)
 			)
 		)
-		(property "Value" "MOC3063S"
+		(property "Value" "MOC3063"
 			(at 0 4.87 90)
 			(layer "F.Fab")
 			(uuid "93d9a443-4960-404a-9d90-a517e81f4b34")
@@ -4306,7 +4306,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C2933683.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C22962.pdf"
 			(at 0 0 0)
 			(layer "F.Fab")
 			(hide yes)
@@ -4481,7 +4481,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "Connector:Conn_01x04_Pin"
+		(property "Value" "Pin1x4"
 			(at 0 -10 90)
 			(layer "B.Fab")
 			(uuid "8ba6b800-47d5-4b1a-93c0-762fd5e2dd84")
@@ -4493,7 +4493,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2691448.pdf"
 			(at 0 0 90)
 			(layer "B.Fab")
 			(hide yes)

@@ -739,7 +739,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector:Screw_Terminal_01x02"
+		(symbol "Connector_Generic:Conn_01x02"
 			(pin_names
 				(offset 1.016)
 				(hide yes)
@@ -759,7 +759,7 @@
 					)
 				)
 			)
-			(property "Value" "Screw_Terminal_01x02"
+			(property "Value" "Conn_01x02"
 				(at 0 -5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -791,7 +791,7 @@
 					)
 				)
 			)
-			(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -802,7 +802,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "screw terminal"
+			(property "ki_keywords" "connector"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -813,7 +813,7 @@
 					)
 				)
 			)
-			(property "ki_fp_filters" "TerminalBlock*:*"
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -824,7 +824,7 @@
 					)
 				)
 			)
-			(symbol "Screw_Terminal_01x02_1_1"
+			(symbol "Conn_01x02_1_1"
 				(rectangle
 					(start -1.27 1.27)
 					(end 1.27 -3.81)
@@ -836,10 +836,9 @@
 						(type background)
 					)
 				)
-				(polyline
-					(pts
-						(xy -0.5334 0.3302) (xy 0.3302 -0.508)
-					)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -848,56 +847,9 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy -0.5334 -2.2098) (xy 0.3302 -3.048)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 0.508) (xy 0.508 -0.3302)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.3556 -2.032) (xy 0.508 -2.8702)
-					)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 0)
-					(radius 0.635)
-					(stroke
-						(width 0.1524)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 -2.54)
-					(radius 0.635)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
 					(stroke
 						(width 0.1524)
 						(type default)
@@ -2379,7 +2331,7 @@
 			(embedded_fonts no)
 		)
 	)
-	(text "Power-On Delay Circuit (High-Pass / Decay Topology)\n\nGoal: Disable buffer (~{OE} = High) during MCU boot (~3ms), then enable it.\n\nComponent Values:\n* C = 100 nF (Connected between +5V and Schmitt-trigger input)\n* R = 100 kΩ (Connected between Schmitt-trigger input and GND)\n\nTiming Calculations (Vcc = 5.0V):\n* Schmitt-Trigger Negative Threshold (Vt-) ≈ 2.5V (*** Worst case scenario at 5.5V)\n* Equation: t = -R * C * ln(Vt- / Vcc)\n* Calculation: t = -100kΩ * 100nF * ln(2.5V / 5.0V)\n* Calculation: t = -0.01 * ln(0.50) ≈ 6.93 ms\n\nResult:\nProvides a ~6.93 ms delay before enabling the buffer, leaving a safe ~3.93 ms\nmargin for the MCU to boot and stabilize its data outputs.\n\nhttps://www.lcsc.com/datasheet/C10429.pdf"
+	(text "Power-On Delay Circuit (High-Pass / Decay Topology)\n\nGoal: Disable buffer (~{OE} = High) during MCU boot (~3ms), then enable it.\n\nComponent Values:\n* C = 100 nF (Connected between +5V and Schmitt-trigger input)\n* R = 220 kΩ (Connected between Schmitt-trigger input and GND)\n\nTiming Calculations (Vcc = 5.0V):\n* Schmitt-Trigger Negative Threshold (Vt-) ≈ 2.5V (Worst case at 5.5V)\n* Equation: t = -R * C * ln(Vt- / Vcc)\n* Calculation: t = -220kΩ * 100nF * ln(2.5V / 5.0V)\n* Calculation: t = -0.022 * ln(0.50) ≈ 15.25 ms\n\nResult:\nProvides a calculated ~15.25 ms delay before enabling the buffer, leaving\nan estimated ~12.25 ms margin for the MCU to boot and stabilize its data outputs.\n\nNote: Assumes an ideal 5V supply step and ignores component tolerances,\ninput leakage current and supply ramp time.\n"
 		(exclude_from_sim no)
 		(at 90.678 120.65 0)
 		(effects
@@ -3120,7 +3072,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "01183d6e-ae72-4d2a-96b2-07c90d9ee089")
-		(property "Reference" "C2"
+		(property "Reference" "C1"
 			(at 33.02 127.762 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3206,7 +3158,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "C2")
+					(reference "C1")
 					(unit 1)
 				)
 			)
@@ -3224,7 +3176,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "014e8320-fd2b-4ccc-9124-d49b3b0c7e57")
-		(property "Reference" "#PWR03"
+		(property "Reference" "#PWR05"
 			(at 151.13 96.52 0)
 			(hide yes)
 			(show_name no)
@@ -3284,7 +3236,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR03")
+					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -3301,7 +3253,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1786e669-c7c5-4be4-a656-7fb118136360")
-		(property "Reference" "#PWR04"
+		(property "Reference" "#PWR06"
 			(at 234.95 123.19 0)
 			(hide yes)
 			(show_name no)
@@ -3361,7 +3313,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR04")
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -3378,7 +3330,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "1e16ba47-b2a4-45ab-8b93-02e61458c9a4")
-		(property "Reference" "R1"
+		(property "Reference" "R3"
 			(at 148.844 67.31 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3484,7 +3436,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "R1")
+					(reference "R3")
 					(unit 1)
 				)
 			)
@@ -3501,7 +3453,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "20b4c7a8-2cf2-4366-b26d-fdf1f887bd77")
-		(property "Reference" "#PWR01"
+		(property "Reference" "#PWR04"
 			(at 125.73 33.02 0)
 			(hide yes)
 			(show_name no)
@@ -3561,7 +3513,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR01")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
@@ -3579,7 +3531,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "24f88e69-056b-431f-bb33-b032f7baac2f")
-		(property "Reference" "U3"
+		(property "Reference" "U1"
 			(at 262.89 134.6199 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3677,7 +3629,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "U3")
+					(reference "U1")
 					(unit 3)
 				)
 			)
@@ -3817,7 +3769,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "43ddf277-9681-475f-8f3f-c9a29f9f7176")
-		(property "Reference" "C1"
+		(property "Reference" "C3"
 			(at 238.76 134.112 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3903,7 +3855,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "C1")
+					(reference "C3")
 					(unit 1)
 				)
 			)
@@ -4043,7 +3995,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "4b277b51-8df8-44a4-968d-3b5c928f06fc")
-		(property "Reference" "U1"
+		(property "Reference" "U2"
 			(at 120.65 51.308 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4136,14 +4088,14 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "U1")
+					(reference "U2")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Connector:Screw_Terminal_01x02")
+		(lib_id "Connector_Generic:Conn_01x02")
 		(at 229.87 64.77 0)
 		(mirror x)
 		(unit 1)
@@ -4164,7 +4116,7 @@
 				)
 			)
 		)
-		(property "Value" "Screw2P_plug_right_angle"
+		(property "Value" "Header2P_RA_5.08"
 			(at 232.41 62.2301 0)
 			(hide yes)
 			(show_name no)
@@ -4198,7 +4150,7 @@
 				)
 			)
 		)
-		(property "Description" "Generic screw terminal, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 229.87 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -4358,7 +4310,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "6290827b-58e4-4d27-a112-2c054805a0a2")
-		(property "Reference" "C3"
+		(property "Reference" "C2"
 			(at 109.22 36.322 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4444,7 +4396,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "C3")
+					(reference "C2")
 					(unit 1)
 				)
 			)
@@ -4461,7 +4413,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "7598404d-25f0-4ff5-8840-6bb6c1665cb9")
-		(property "Reference" "R6"
+		(property "Reference" "R2"
 			(at 70.104 70.104 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4567,7 +4519,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "R6")
+					(reference "R2")
 					(unit 1)
 				)
 			)
@@ -4827,7 +4779,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e9b68cc-26fa-4fb3-86ec-4e105c1f7a19")
-		(property "Reference" "Q2"
+		(property "Reference" "Q1"
 			(at 185.42 55.8799 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4916,7 +4868,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "Q2")
+					(reference "Q1")
 					(unit 1)
 				)
 			)
@@ -5147,7 +5099,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "af1edc72-06a3-4ee2-b866-ef19b5ea64a3")
-		(property "Reference" "#PWR06"
+		(property "Reference" "#PWR02"
 			(at 38.1 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -5207,7 +5159,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR06")
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -5224,7 +5176,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "bd6aabc2-1aed-4bac-baf5-ea971511e28b")
-		(property "Reference" "R9"
+		(property "Reference" "R1"
 			(at 35.814 145.034 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5234,7 +5186,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "220k"
 			(at 40.132 144.78 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5255,7 +5207,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C25803.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2907013.pdf"
 			(at 38.1 144.78 0)
 			(hide yes)
 			(show_name no)
@@ -5277,7 +5229,7 @@
 				)
 			)
 		)
-		(property "LCSC Part #" "C25803"
+		(property "LCSC Part #" "C2907013"
 			(at 38.1 144.78 90)
 			(hide yes)
 			(show_name no)
@@ -5330,7 +5282,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "R9")
+					(reference "R1")
 					(unit 1)
 				)
 			)
@@ -5456,7 +5408,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d4e065b5-12bd-4e51-a5c7-648694093cab")
-		(property "Reference" "U3"
+		(property "Reference" "U1"
 			(at 60.96 125.73 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5552,7 +5504,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "U3")
+					(reference "U1")
 					(unit 1)
 				)
 			)
@@ -5570,7 +5522,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d87ffcb0-06a5-4193-bfdd-5bceadc9e369")
-		(property "Reference" "#PWR07"
+		(property "Reference" "#PWR03"
 			(at 114.3 49.53 0)
 			(hide yes)
 			(show_name no)
@@ -5630,7 +5582,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR07")
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -5648,7 +5600,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d9bd0142-9cc1-40b6-92c8-baca5ec7b754")
-		(property "Reference" "U3"
+		(property "Reference" "U1"
 			(at 97.79 45.72 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5744,7 +5696,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "U3")
+					(reference "U1")
 					(unit 2)
 				)
 			)
@@ -5761,7 +5713,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "e5d32711-9cb2-495a-a999-2de09c76baf3")
-		(property "Reference" "#PWR02"
+		(property "Reference" "#PWR01"
 			(at 38.1 127 0)
 			(hide yes)
 			(show_name no)
@@ -5821,7 +5773,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR02")
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -5839,7 +5791,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f0320ed4-39a6-4dbe-b530-1339291d6fa8")
-		(property "Reference" "#PWR05"
+		(property "Reference" "#PWR07"
 			(at 243.84 157.48 0)
 			(hide yes)
 			(show_name no)
@@ -5899,7 +5851,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "#PWR05")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -5916,7 +5868,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "f950a90a-89a2-4e25-88c4-91b8fd62ea97")
-		(property "Reference" "R8"
+		(property "Reference" "R5"
 			(at 169.164 72.644 90)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6022,7 +5974,7 @@
 		(instances
 			(project "mek-sub-fet"
 				(path "/973100c4-7c40-4fcd-81a3-83bae7980b4a"
-					(reference "R8")
+					(reference "R5")
 					(unit 1)
 				)
 			)
