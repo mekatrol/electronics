@@ -1,4 +1,4 @@
-"""Orthogonalize copper-zone outlines through KiCad's IPC API.
+"""Orthogonalize copper-zone and keep-out outlines through KiCad's IPC API.
 
 Run from the repository root with::
 
@@ -18,10 +18,21 @@ from kicad_ipc import (
     vector,
 )
 from kipy.geometry import PolygonWithHoles, PolyLine, PolyLineNode
+from kipy.proto.board.board_types_pb2 import ZoneType
 
-ZONE_NAME = ""  # Exact name; empty processes every zone.
+ZONE_NAME = ""  # Exact name; empty processes every copper zone and keep-out.
 PREFER_HORIZONTAL_FIRST = True
 DEBUG = True
+
+
+def is_supported_zone(zone):
+    """Return whether a zone is copper or a keep-out/rule area."""
+    return zone.type in (ZoneType.ZT_COPPER, ZoneType.ZT_RULE_AREA)
+
+
+def zone_kind(zone):
+    """Return a human-readable zone kind for diagnostics."""
+    return "keep-out" if zone.type == ZoneType.ZT_RULE_AREA else "copper zone"
 
 
 def compress(points):
@@ -89,10 +100,12 @@ def main():
     """Update matching zones, refill them, and push one editor transaction."""
     _client, board = connect_board()
     zones = [
-        zone for zone in board.get_zones() if not ZONE_NAME or zone.name == ZONE_NAME
+        zone
+        for zone in board.get_zones()
+        if is_supported_zone(zone) and (not ZONE_NAME or zone.name == ZONE_NAME)
     ]
     if not zones:
-        raise RuntimeError(f'no zones found with name "{ZONE_NAME}"')
+        raise RuntimeError(f'no copper or keep-out zones found with name "{ZONE_NAME}"')
 
     with editor_commit(
         board,
@@ -103,22 +116,29 @@ def main():
             nodes = zone.outline.outline.nodes
             if any(not node.has_point for node in nodes):
                 raise RuntimeError(
-                    f"zone {index} contains arc nodes; cannot orthogonalize safely"
+                    f"{zone_kind(zone)} {index} contains arc nodes; "
+                    "cannot orthogonalize safely"
                 )
             original = [node.point for node in nodes]
             final = orthogonalize(original)
             if len(final) < 3:
-                raise RuntimeError(f"zone {index} would have fewer than three vertices")
+                raise RuntimeError(
+                    f"{zone_kind(zone)} {index} would have fewer than three vertices"
+                )
             zone.outline = polygon_from_points(final)
             if DEBUG:
                 print(
-                    f'Zone {index} "{zone.name}": {len(original)} -> {len(final)} vertices'
+                    f'{zone_kind(zone).title()} {index} "{zone.name}": '
+                    f"{len(original)} -> {len(final)} vertices"
                 )
                 for point in final:
                     print(f"  ({to_mm(point.x):.3f}, {to_mm(point.y):.3f}) mm")
         board.update_items(zones)
 
-    print(f"Updated {len(zones)} zone(s) (undo: Orthogonalize zone outlines).")
+    print(
+        f"Updated {len(zones)} copper/keep-out zone(s) "
+        "(undo: Orthogonalize zone outlines)."
+    )
 
 
 if __name__ == "__main__":

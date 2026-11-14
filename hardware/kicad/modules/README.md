@@ -346,11 +346,13 @@ text are intentionally excluded. Save manually after review.
 
 ### `zone_outline_perp.py`
 
-Replaces every diagonal edge in a matching copper-zone outline with two
-orthogonal segments, then refills the zones. Set `ZONE_NAME` to an exact zone
-name; leaving it empty processes all zones. `PREFER_HORIZONTAL_FIRST` chooses
-the inserted corner orientation. Only the first outer contour is retained:
-zone holes/cutouts are not preserved. Save manually after careful review.
+Replaces every diagonal edge in a matching copper-zone or keep-out (rule-area)
+outline with two orthogonal segments, then refills the zones. Set `ZONE_NAME`
+to an exact zone name; leaving it empty processes all copper zones and
+keep-outs. Graphical and teardrop zones are ignored. `PREFER_HORIZONTAL_FIRST`
+chooses the inserted corner orientation. Only the first outer contour is
+retained: zone holes/cutouts are not preserved. Save manually after careful
+review.
 
 Set `DEBUG = False` in scripts that provide it to reduce console output.
 

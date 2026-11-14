@@ -76,7 +76,7 @@ DELETE_EXISTING_EDGE_CUTS = True
 # setting.
 # The zone polygon remains square even when Edge.Cuts has rounded corners;
 # KiCad clips its copper fill to the actual board boundary.
-REPLACE_GROUND_ZONES = False
+REPLACE_GROUND_ZONES = True
 GROUND_NET_NAME = "GND"
 FILL_ZONE_NAMES = ["GND", "GND", "GND", "GND"]
 
