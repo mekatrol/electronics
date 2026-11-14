@@ -1,0 +1,202 @@
+(footprint "ZE_Inductor_ZENR4030T4R7M"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "ZE ZENR4030T4R7M 4.7uH shielded inductor, body 4x4x3mm, vendor land pattern| Source: ")
+	(tags " ZENR4030T4R7M ordered ")
+	(property "Reference" "REF**"
+ (at 0 -3.3 0)
+ (layer "F.SilkS")
+ (uuid "03e36526-ce82-4e94-bfaf-bfc705b34391")
+ (effects
+ (font
+ (size 0.8 0.8)
+ (thickness 0.15)
+ )
+ )
+	)
+	(property "Value" "ZE_Inductor_ZENR4030T4R7M"
+ (at 0 3.3 0)
+ (layer "F.Fab")
+ (uuid "5d466020-2561-4a1b-8891-2d0cbb56b571")
+ (effects
+ (font
+ (size 0.8 0.8)
+ (thickness 0.15)
+ )
+ )
+	)
+	(property "Datasheet" ""
+ (at 0 0 0)
+ (layer "F.Fab")
+ (uuid "988978ab-41ab-4bbb-9425-2a43555057d0")
+ (effects
+ (font
+ (size 0.5 0.5)
+ (thickness 0.125)
+ )
+ )
+	)
+	(property "Description" ""
+ (at 0 0 0)
+ (layer "F.Fab")
+ (hide yes)
+ (uuid "5f67061f-84a0-442f-ac15-ebe5f371cd91")
+ (effects
+ (font
+ (size 1.27 1.27)
+ )
+ )
+	)
+	(attr smd)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_line
+ (start -2.12 -2)
+ (end -2.12 2)
+ (stroke
+ (width 0.12)
+ (type default)
+ )
+ (layer "F.SilkS")
+ (uuid "7df977ab-9add-407f-a060-0809b6d92580")
+	)
+	(fp_line
+ (start 2.12 -2)
+ (end 2.12 2)
+ (stroke
+ (width 0.12)
+ (type default)
+ )
+ (layer "F.SilkS")
+ (uuid "fa7c923e-abdd-4a75-a117-31cdabb095a0")
+	)
+	(fp_line
+ (start -2.25 -2.3)
+ (end 2.25 -2.3)
+ (stroke
+ (width 0.05)
+ (type default)
+ )
+ (layer "F.CrtYd")
+ (uuid "ef0d3458-c2e7-46c7-ab1d-30b339381384")
+	)
+	(fp_line
+ (start -2.25 2.3)
+ (end -2.25 -2.3)
+ (stroke
+ (width 0.05)
+ (type default)
+ )
+ (layer "F.CrtYd")
+ (uuid "2fcb292b-03b9-4899-8100-832e67e255a3")
+	)
+	(fp_line
+ (start 2.25 -2.3)
+ (end 2.25 2.3)
+ (stroke
+ (width 0.05)
+ (type default)
+ )
+ (layer "F.CrtYd")
+ (uuid "f2def862-b522-46d9-9017-d26344c48770")
+	)
+	(fp_line
+ (start 2.25 2.3)
+ (end -2.25 2.3)
+ (stroke
+ (width 0.05)
+ (type default)
+ )
+ (layer "F.CrtYd")
+ (uuid "84bb5ec5-214d-4ba5-9012-3d6cce2c5e4b")
+	)
+	(fp_line
+ (start -2 -2)
+ (end 2 -2)
+ (stroke
+ (width 0.1)
+ (type default)
+ )
+ (layer "F.Fab")
+ (uuid "86db387d-b726-467a-be57-dd37a14a8a2f")
+	)
+	(fp_line
+ (start -2 2)
+ (end -2 -2)
+ (stroke
+ (width 0.1)
+ (type default)
+ )
+ (layer "F.Fab")
+ (uuid "72889de2-29c9-497f-8fb6-4c3e1e3aedc0")
+	)
+	(fp_line
+ (start 2 -2)
+ (end 2 2)
+ (stroke
+ (width 0.1)
+ (type default)
+ )
+ (layer "F.Fab")
+ (uuid "62445b7f-638d-442a-b887-1230cd694849")
+	)
+	(fp_line
+ (start 2 2)
+ (end -2 2)
+ (stroke
+ (width 0.1)
+ (type default)
+ )
+ (layer "F.Fab")
+ (uuid "73c39af4-e20b-42e8-a53d-fcb432377509")
+	)
+	(fp_circle
+ (center -2.23 -2.35)
+ (end -2.09 -2.35)
+ (stroke
+ (width 0.1)
+ (type default)
+ )
+ (fill no)
+ (layer "F.Fab")
+ (uuid "0466df19-6a3b-461d-a3e6-5eda825a7271")
+	)
+	(fp_text user "${REFERENCE}"
+ (at 0 0 0)
+ (layer "F.Fab")
+ (uuid "9bf93639-aeba-46a7-93c8-471f5f9f6500")
+ (effects
+ (font
+ (size 0.65 0.65)
+ (thickness 0.1)
+ )
+ )
+	)
+	(pad "1" smd roundrect
+ (at 0 -1.5)
+ (size 3.7 1.1)
+ (layers "F.Cu" "F.Mask" "F.Paste")
+ (roundrect_rratio 0.15)
+ (uuid "3ca4a25d-3a23-4415-a59a-187d24e3ea02")
+	)
+	(pad "2" smd roundrect
+ (at 0 1.5)
+ (size 3.7 1.1)
+ (layers "F.Cu" "F.Mask" "F.Paste")
+ (roundrect_rratio 0.15)
+ (uuid "dd1a19e7-bdf5-4721-b223-760aea5f921e")
+	)
+	(embedded_fonts no)
+	(model "${MY_KICAD_LIBS}/MekatrolCustom.pretty/ZE_Inductor_ZENR4030T4R7M.step"
+ (offset
+ (xyz 0 0 0)
+ )
+ (scale
+ (xyz 1 1 1)
+ )
+ (rotate
+ (xyz 0 0 0)
+ )
+	)
+)
