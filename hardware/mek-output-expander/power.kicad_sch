@@ -6733,7 +6733,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://datasheet.lcsc.com/datasheet/pdf/745a250a38aa3d771ef194d70adc64cb.pdf?productCode=C123897"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C123897.pdf"
 			(at 71.12 110.49 0)
 			(hide yes)
 			(show_name no)
@@ -7584,7 +7584,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://www.ti.com/lit/gpn/lmr38020"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5149193.pdf"
 			(at 69.85 29.21 0)
 			(hide yes)
 			(show_name no)

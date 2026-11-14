@@ -6478,7 +6478,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 264.16 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -6489,7 +6489,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 264.16 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -6501,6 +6501,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 264.16 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 264.16 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -6800,7 +6811,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 264.16 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -6811,7 +6822,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 264.16 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -6823,6 +6834,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 264.16 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 264.16 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -7590,7 +7612,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 264.16 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -7601,7 +7623,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 264.16 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -7613,6 +7635,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 264.16 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 264.16 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -7962,7 +7995,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 229.87 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -7973,7 +8006,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 229.87 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -7985,6 +8018,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 229.87 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 229.87 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -8454,7 +8498,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 229.87 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -8465,7 +8509,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 229.87 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -8477,6 +8521,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 229.87 27.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 229.87 27.94 0)
 			(hide yes)
 			(show_name no)
@@ -9551,7 +9606,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 264.16 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -9562,7 +9617,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 264.16 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -9574,6 +9629,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 264.16 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 264.16 53.34 0)
 			(hide yes)
 			(show_name no)
@@ -10184,7 +10250,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 229.87 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -10195,7 +10261,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 229.87 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -10207,6 +10273,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 229.87 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 229.87 104.14 0)
 			(hide yes)
 			(show_name no)
@@ -10272,7 +10349,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
 			(at 229.87 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -10283,7 +10360,7 @@
 				)
 			)
 		)
-		(property "Datasheet" ""
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C541851.pdf"
 			(at 229.87 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -10295,6 +10372,17 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x04, script generated"
+			(at 229.87 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "LCSC Part #" "C541851"
 			(at 229.87 78.74 0)
 			(hide yes)
 			(show_name no)
