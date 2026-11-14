@@ -25,6 +25,20 @@ from kicad_ipc import (
     to_mm,
 )
 from kipy.board_types import BoardArc, BoardSegment
+from motherboard_interface import (
+    DAUGHTER_BOARD_CORNER_RADIUS_MM,
+    DAUGHTER_BOARD_HEIGHT_MM,
+    DAUGHTER_BOARD_WIDTH_MM,
+    EDGE_CUTS_LINE_WIDTH_MM,
+    INTERFACE_TOLERANCE_MM,
+    LEFT_HOLE_LEFT_MM,
+    MOUNTING_HOLE_TOP_MM,
+    OPTIONAL_CONNECTOR_LEFT_MM,
+    OPTIONAL_CONNECTOR_TOP_MM,
+    PRIMARY_CONNECTOR_LEFT_MM,
+    PRIMARY_CONNECTOR_TOP_MM,
+    RIGHT_HOLE_LEFT_MM,
+)
 
 # ============================================================
 # User settings: shared motherboard interface
@@ -35,20 +49,20 @@ FIX_MOTHERBOARD_INTERFACE = True
 
 # Finished outline dimensions and construction shared by every daughter board.
 # Dimensions are measured along the Edge.Cuts centreline.
-BOARD_WIDTH_MM = 25.0
-BOARD_HEIGHT_MM = 42.0
-CORNER_RADIUS_MM = 1.0
-EDGE_LINE_WIDTH_MM = 0.10
+BOARD_WIDTH_MM = DAUGHTER_BOARD_WIDTH_MM
+BOARD_HEIGHT_MM = DAUGHTER_BOARD_HEIGHT_MM
+CORNER_RADIUS_MM = DAUGHTER_BOARD_CORNER_RADIUS_MM
+EDGE_LINE_WIDTH_MM = EDGE_CUTS_LINE_WIDTH_MM
 
 # Interface offsets from the finished top and left edges, expressed as
 # (reference, left offset, top offset). J1/J2 use the center of their top-left
 # pins; H1/H2 use their hole centers. J2 is optional. The right offset is
 # derived and also validated.
 INTERFACE_FOOTPRINTS_MM = [
-    ("J1", 8.69, 3.15),
-    ("J2", 9.96, 36),
-    ("H1", 3.00, 38.15),
-    ("H2", 22.00, 38.15),
+    ("J1", PRIMARY_CONNECTOR_LEFT_MM, PRIMARY_CONNECTOR_TOP_MM),
+    ("J2", OPTIONAL_CONNECTOR_LEFT_MM, OPTIONAL_CONNECTOR_TOP_MM),
+    ("H1", LEFT_HOLE_LEFT_MM, MOUNTING_HOLE_TOP_MM),
+    ("H2", RIGHT_HOLE_LEFT_MM, MOUNTING_HOLE_TOP_MM),
 ]
 OPTIONAL_REFERENCES = {"J2"}
 PIN_DATUM_REFERENCES = {"J1", "J2"}
@@ -56,7 +70,7 @@ HOLE_REFERENCES = {"H1", "H2"}
 
 # IPC dimensions are integral nanometres. This tolerance permits harmless
 # serializer rounding while still catching a one-micron mechanical change.
-TOLERANCE_MM = 0.001
+TOLERANCE_MM = INTERFACE_TOLERANCE_MM
 
 
 def close_mm(actual_nm, expected_mm):
