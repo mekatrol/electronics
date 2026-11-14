@@ -63,7 +63,7 @@ EDGE_PLACEMENT = "off-edge"
 # Clear space between adjacent daughter-board Edge.Cuts.  This is added only
 # between slots, not outside the first and last boards.  The gap keeps board
 # outlines apart and leaves additional space around mounting hardware.
-DAUGHTER_BOARD_GAP_MM = 4.0
+DAUGHTER_BOARD_GAP_MM = 2.0
 
 # J1 on each daughter board is a horizontal four-pin row, represented by a
 # footprint rotation of +90 degrees in KiCad.
@@ -355,9 +355,25 @@ def main():
         f"(undo: {action})."
     )
     if layout_span > board_dimension:
+        group_start = bottom_row_left if LAYOUT_MODE == "bottom" else side_row_top
+        board_start = left if LAYOUT_MODE == "bottom" else top
+        board_end = right if LAYOUT_MODE == "bottom" else bottom
+        start_edge = "left" if LAYOUT_MODE == "bottom" else "top"
+        end_edge = "right" if LAYOUT_MODE == "bottom" else "bottom"
+        start_overhang = max(0, board_start - group_start)
+        end_overhang = max(0, group_start + layout_span - board_end)
+        overhangs = [
+            f"{edge} edge by {to_mm(overhang):.3f} mm"
+            for edge, overhang in (
+                (start_edge, start_overhang),
+                (end_edge, end_overhang),
+            )
+            if overhang > 0
+        ]
         print(
-            "WARNING: an interface group is longer than the applicable "
-            "motherboard edge; enlarge the board or reduce the slot count."
+            "INFO: the daughter-board envelope extends past the motherboard "
+            + " and ".join(overhangs)
+            + "."
         )
     print("Live board changes are left unsaved for review in KiCad.")
 

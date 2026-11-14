@@ -8,12 +8,12 @@ Review every setting below, especially both replacement switches, before
 running the script.
 
 The script changes the live board held by PCB Editor; it does not edit a board
-file directly or save automatically. Deletion and creation are grouped into
-one ``Replace board outline and fill zones`` entry in PCB Editor's Undo/Redo
-history. The blocking zone refill runs immediately after that staged commit is
-published, because KiCad cannot fill against geometry that is still staged.
-If an edit fails, the IPC transaction is dropped so a partial outline is not
-retained.
+file directly or save automatically. Exhaustive zone cleanup is committed as
+its own Undo/Redo entry so malformed zones stay removed even if KiCad rejects
+their replacements. Outline and zone creation use a second transaction. The
+blocking zone refill runs after that staged commit is published, because KiCad
+cannot fill against geometry that is still staged. If creation fails, that
+second transaction is dropped so a partial replacement is not retained.
 """
 
 import math
@@ -68,8 +68,9 @@ EDGE_LINE_WIDTH_MM = 0.10
 # them; use False only when that duplication is intentional.
 DELETE_EXISTING_EDGE_CUTS = True
 
-# True removes existing zones using the configured nets on enabled copper
-# layers and creates one rectangular zone on every copper layer in the stack.
+# True removes every existing zone, including copper pours, keep-outs/rule
+# areas, graphical zones, cached fills, and malformed zones, then creates one
+# rectangular copper zone on every copper layer in the stack.
 # Names are ordered from F.Cu through the inner layers to B.Cu. Missing entries
 # default to GND; entries beyond the board's layer count are ignored. Each name
 # must be a net present on the board and is used for both the zone and its net.
@@ -77,7 +78,7 @@ DELETE_EXISTING_EDGE_CUTS = True
 # setting.
 # The zone polygon remains square even when Edge.Cuts has rounded corners;
 # KiCad clips its copper fill to the actual board boundary.
-REPLACE_GROUND_ZONES = True
+REPLACE_GROUND_ZONES = False
 GROUND_NET_NAME = "GND"
 FILL_ZONE_NAMES = ["GND", "GND", "GND", "GND"]
 
@@ -297,6 +298,10 @@ def fill_zones(
     zones = []
     for layer, name in zip(layers, names):
         zone = Zone()
+        # Be explicit even though current kipy releases default new zones to
+        # copper.  This also protects against protobuf/default changes and
+        # makes it impossible to submit an intentionally netless rule area.
+        zone.type = ZoneType.ZT_COPPER
         zone.name = name
         zone.net = nets[name]
         zone.layers = [layer]
@@ -334,16 +339,6 @@ def validate_created_zones(zones, expected_names):
         )
 
 
-def zone_matches_rectangle(zone, origin_x_mm, origin_y_mm):
-    """Return whether a zone has the exact board-spanning rectangle."""
-    expected = rectangular_polygon(origin_x_mm, origin_y_mm).outline.nodes
-    actual = zone.outline.outline.nodes
-    return len(actual) == len(expected) and all(
-        left.point.x == right.point.x and left.point.y == right.point.y
-        for left, right in zip(actual, expected)
-    )
-
-
 def main():
     """Replace configured items in one atomic PCB Editor transaction."""
     _client, board = connect_board()
@@ -371,63 +366,32 @@ def main():
     new_outline = create_outline_items(origin_x_mm, origin_y_mm)
     layers = copper_layers(board) if REPLACE_GROUND_ZONES else []
     new_zone_names = configured_zone_names(len(layers))
-    nets = {net.name: net for net in board.get_nets()}
-    reusable_zones = []
-    zones_to_remove = []
-    missing_layers = []
-    if REPLACE_GROUND_ZONES:
-        available = list(board.get_zones())
-        for layer, name in zip(layers, new_zone_names):
-            matches = [
-                zone
-                for zone in available
-                if zone.type == ZoneType.ZT_COPPER
-                and zone.net is not None
-                and zone.net.name == name
-                and layer in zone.layers
-            ]
-            if matches:
-                zone = matches[0]
-                available.remove(zone)
-                zone.name = name
-                zone.net = nets[name]
-                zone.layers = [layer]
-                zone.outline = rectangular_polygon(origin_x_mm, origin_y_mm)
-                reusable_zones.append(zone)
-                zones_to_remove.extend(matches[1:])
-            else:
-                missing_layers.append(layer)
-
-        # Remove only malformed leftovers made by older runs of this script:
-        # netless rule areas with the configured name, layer, and exact board
-        # rectangle.  Unrelated user-authored rule areas are preserved.
-        for zone in available:
-            if (
-                zone.type == ZoneType.ZT_RULE_AREA
-                and zone.name in new_zone_names
-                and len(zone.layers) == 1
-                and zone.layers[0] in layers
-                and zone_matches_rectangle(zone, origin_x_mm, origin_y_mm)
-            ):
-                zones_to_remove.append(zone)
-
-    missing_zone_names = [
-        new_zone_names[layers.index(layer)] for layer in missing_layers
-    ]
+    # Zone replacement is intentionally exhaustive.  KiCad exposes copper
+    # pours, their fills, keep-outs/rule areas, graphical zones, and malformed
+    # zones through this same collection, so no type/name/geometry filtering
+    # belongs here.
+    zones_to_remove = list(board.get_zones()) if REPLACE_GROUND_ZONES else []
     new_zones = (
         fill_zones(
             board,
-            missing_layers,
+            layers,
             origin_x_mm,
             origin_y_mm,
-            missing_zone_names,
+            new_zone_names,
         )
-        if missing_layers
+        if REPLACE_GROUND_ZONES
         else []
     )
 
-    # The shared context manager calls begin_commit/push_commit, producing one
-    # named Undo/Redo entry. It calls drop_commit if any IPC request raises.
+    # Commit cleanup separately.  If KiCad canonicalizes a requested copper
+    # pour into an invalid rule area, validation below rolls back only the
+    # failed replacement; every pre-existing zone still remains deleted.
+    if zones_to_remove:
+        with editor_commit(board, "Remove all existing zones"):
+            board.remove_items(zones_to_remove)
+
+    # The shared context manager calls begin_commit/push_commit and calls
+    # drop_commit if any IPC request or validation raises.
     with editor_commit(
         board,
         "Replace board outline and fill zones",
@@ -435,25 +399,20 @@ def main():
     ):
         if DELETE_EXISTING_EDGE_CUTS and existing_edges:
             board.remove_items(existing_edges)
-        if zones_to_remove:
-            board.remove_items(zones_to_remove)
 
         board.create_items(new_outline)
 
-        if reusable_zones:
-            updated_zones = board.update_items(reusable_zones)
-            validate_created_zones(updated_zones, [zone.name for zone in reusable_zones])
-
         if new_zones:
             created_zones = board.create_items(new_zones)
-            validate_created_zones(created_zones, missing_zone_names)
+            validate_created_zones(created_zones, new_zone_names)
 
     print(
         f"Created {BOARD_WIDTH_MM:.3f} x {BOARD_HEIGHT_MM:.3f} mm outline with "
         f"{CORNER_RADIUS_MM:.3f} mm corners at "
         f"({origin_x_mm:.3f}, {origin_y_mm:.3f}) mm"
         f" {position_description} "
-        f"(undo: Replace board outline and ground zones)."
+        f"(undo: Replace board outline and fill zones"
+        f"{' / Remove all existing zones' if zones_to_remove else ''})."
     )
 
 

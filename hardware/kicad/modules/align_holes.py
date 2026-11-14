@@ -2,7 +2,14 @@
 
 Run from the repository root with::
 
-    .venv-kicad-ipc/bin/python hardware/kicad/modules/align_holes.py
+    .venv-kicad-ipc/bin/python hardware/kicad/modules/align_holes.py \
+        --top-left H1 --top-right H2 \
+        --bottom-left H3 --bottom-right H4 \
+        --left-offset 6.0 --right-offset 6.0 \
+        --top-offset 6.0 --bottom-offset 6.0 \
+        --direction both
+
+Hole positions are offsets in millimetres from their corresponding board edges.
 
 The complete operation is one entry in PCB Editor's Undo/Redo history.
 """
@@ -31,10 +38,10 @@ class ModuleOptions:
     bottom_left: str = "H3"
     bottom_right: str = "H4"
     direction: str = "horizontal"
-    left_offset_mm: float = 3.0
+    left_offset_mm: float = 6.0
     right_offset_mm: float = 3.0
-    top_offset_mm: float = 35.5
-    bottom_offset_mm: float = 5.5
+    top_offset_mm: float = 3.0
+    bottom_offset_mm: float = 3.0
 
 
 def run(options: ModuleOptions) -> int:
