@@ -122,7 +122,7 @@ The editor history labels are:
 | `resize_matching_text.py` | Resize matching board text |
 | `thermal_reliefs.py` | Set zone thermal reliefs |
 | `vias.py` | Validate or set JLCPCB-oriented vias |
-| `zone_outline_perp.py` | Orthogonalize zone outlines |
+| `zone_outline_45_90.py` | Snap zone outlines to 45/90 degrees |
 
 `report_board_dimensions.py` is read-only and creates no history entry.
 
@@ -344,15 +344,19 @@ text exactly matches an entry in `TEXT_STRINGS`. Configure the target strings
 and the three `TEXT_*_MM` dimensions. Footprint fields and footprint graphical
 text are intentionally excluded. Save manually after review.
 
-### `zone_outline_perp.py`
+### `zone_outline_45_90.py`
 
-Replaces every diagonal edge in a matching copper-zone or keep-out (rule-area)
-outline with two orthogonal segments, then refills the zones. Set `ZONE_NAME`
-to an exact zone name; leaving it empty processes all copper zones and
-keep-outs. Graphical and teardrop zones are ignored. `PREFER_HORIZONTAL_FIRST`
-chooses the inserted corner orientation. Only the first outer contour is
-retained: zone holes/cutouts are not preserved. Save manually after careful
-review.
+Snaps each edge in a matching copper-zone or keep-out (rule-area) outline to a
+45-degree or perpendicular edge, then refills the zones. Edges whose angle from
+horizontal is inclusively between `MIN_DIAGONAL_ANGLE_DEGREES` (25 degrees) and
+`MAX_DIAGONAL_ANGLE_DEGREES` (65 degrees) are made 45 degrees; shallower edges
+become horizontal and steeper edges become vertical. Existing corners are moved
+to satisfy the new directions, so the vertex and segment counts never change.
+`ZONE_NAME` must identify exactly one zone; bulk updates are deliberately
+rejected because sending unrelated zones back through the IPC API can damage
+metadata such as copper-zone net assignments. Graphical and teardrop zones are
+ignored. Only the first outer contour is retained: zone holes/cutouts are not
+preserved. Save manually after careful review.
 
 Set `DEBUG = False` in scripts that provide it to reduce console output.
 
