@@ -24,10 +24,8 @@ from kipy.proto.board.board_types_pb2 import ZoneType
 # Every keep-out/rule-area zone is updated, regardless of its name or layers.
 # Copper zones are selected by electrical net rather than their optional zone
 # display name. Every zone on every layer assigned to one of these nets is
-# updated. Keep this list narrow because sending unrelated copper zones through
-# KiCad IPC can rewrite metadata such as net assignments. Leave empty to update
-# keep-outs only.
-COPPER_NET_NAMES = ["VIN"]
+# updated. Leave this list empty to update every copper zone.
+COPPER_NET_NAMES = []
 # Edges in this inclusive range are kept as diagonal paths, but made exactly
 # 45 degrees. Shallower and steeper edges are replaced by perpendicular paths.
 MIN_DIAGONAL_ANGLE_DEGREES = 25.0
@@ -35,7 +33,7 @@ MAX_DIAGONAL_ANGLE_DEGREES = 65.0
 # Applied after the existing 45/90-degree adjustment. A value less than or
 # equal to zero preserves the current square-corner behaviour exactly.
 CORNER_RADIUS_MM = 0.5
-IGNORE_CORNER_RADIUS = False
+IGNORE_CORNER_RADIUS = True
 DEBUG = True
 
 
@@ -359,7 +357,7 @@ def polygon_from_points(points, corner_radius=0):
 
 
 def main():
-    """Update all keep-outs and copper zones on configured nets."""
+    """Update all keep-outs and either all or selected copper zones."""
     corner_radius = from_mm(CORNER_RADIUS_MM)
     _client, board = connect_board()
     board_zones = board.get_zones()
@@ -367,13 +365,12 @@ def main():
     copper_zones = [
         zone
         for zone in board_zones
-        if zone.type == ZoneType.ZT_COPPER and zone_net_name(zone) in COPPER_NET_NAMES
+        if zone.type == ZoneType.ZT_COPPER
+        and (not COPPER_NET_NAMES or zone_net_name(zone) in COPPER_NET_NAMES)
     ]
     zones = keep_outs + copper_zones
     if not zones:
-        raise RuntimeError(
-            "no keep-out zones or copper zones on configured COPPER_NET_NAMES found"
-        )
+        raise RuntimeError("no keep-out or matching copper zones found")
 
     with editor_commit(
         board,

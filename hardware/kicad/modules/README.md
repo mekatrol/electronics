@@ -365,9 +365,7 @@ operation repeatable and allowing the configured radius to be changed.
 All keep-out/rule-area zones are updated regardless of their names or layers.
 Use `COPPER_NET_NAMES` to select copper zones by their electrical net names,
 regardless of optional zone display names; every matching zone on every layer
-is updated. Leave the list empty to update keep-outs only. Unrestricted bulk
-copper-zone updates remain disabled because sending unrelated copper zones back
-through the IPC API can damage metadata such as net assignments. Graphical and
+is updated. Leave the list empty to update every copper zone. Graphical and
 teardrop zones are ignored. Only the first outer contour is retained: zone
 holes/cutouts are not preserved. Save manually after careful review.
 
