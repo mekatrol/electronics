@@ -137,13 +137,15 @@ def _print_drc_entries(title, entries):
             print(f"       - {item_description}")
 
 
-def run_live_board_drc(board):
+def run_live_board_drc(board, *, fail_on_unconnected=True):
     """Run full KiCad DRC on a temporary copy of the live, unsaved board.
 
     KiCad 10's IPC API does not expose the DRC engine. Serializing the live
     board into an isolated temporary project lets ``kicad-cli`` inspect editor
     changes without saving or otherwise touching the real board. Every finding
-    is printed, and the combined error count is returned.
+    is printed. By default the returned error count includes both violations
+    and unconnected items; callers that intentionally operate on a partially
+    routed board can set ``fail_on_unconnected=False``.
     """
     cli = find_kicad_cli()
     if not cli:
@@ -202,11 +204,18 @@ def run_live_board_drc(board):
     print("KiCad DRC results for the updated live board:")
     _print_drc_entries("Violations", violations)
     _print_drc_entries("Unconnected items", unconnected)
-    total = len(violations) + len(unconnected)
+    total = len(violations) + (len(unconnected) if fail_on_unconnected else 0)
     if total:
+        unconnected_status = (
+            f"{len(unconnected)} unconnected item(s)"
+            if fail_on_unconnected
+            else f"{len(unconnected)} unconnected item(s) ignored"
+        )
+        print(f"DRC FAILED: {len(violations)} violation(s), {unconnected_status}.")
+    elif unconnected:
         print(
-            f"DRC FAILED: {len(violations)} violation(s), "
-            f"{len(unconnected)} unconnected item(s)."
+            f"DRC PASSED: no violations; "
+            f"{len(unconnected)} unconnected item(s) ignored."
         )
     else:
         print("DRC PASSED: no violations or unconnected items.")

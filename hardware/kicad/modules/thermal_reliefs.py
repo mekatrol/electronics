@@ -7,10 +7,11 @@ Run from the repository root with::
 Open the PCB to check in PCB Editor before running the script. By default this
 script checks every copper zone assigned to the GND or +5V net. Set
 ``SET_RELIEFS`` to ``True`` to write the configured settings to every matching
-zone in one undoable PCB Editor transaction and refill all zones. Pad-level and
-custom-rule overrides are outside this zone-level check. After applying the
-settings, the script runs KiCad DRC on an isolated copy of the updated live
-board, reports every finding, and leaves the real board unsaved for review.
+zone and explicitly applies the same thermal settings to pads on those nets in
+one undoable PCB Editor transaction before refilling all zones. After applying
+the settings, the script runs KiCad DRC on an isolated copy of the updated live
+board, reports every finding, ignores expected unconnected-item findings on a
+partially routed board, and leaves the real board unsaved for review.
 """
 
 import sys
@@ -42,7 +43,7 @@ RUN_DRC_AFTER_SET = True
 
 # Only copper zones on these nets are checked. Net matching is case-sensitive,
 # just as it is in KiCad.
-ZONE_NET_NAMES = ["GND", "+5V"]
+ZONE_NET_NAMES = ["GND", "+5V", "+3.3V"]
 
 # Conservative values for an ordinary JLCPCB 2-layer, 1 oz copper board.
 # Numeric settings are minimums: a larger existing value passes the check.
@@ -135,6 +136,45 @@ def configure_zone(zone):
     zone.island_mode = ISLAND_REMOVAL
 
 
+def matching_footprints_and_pads(board):
+    """Return footprints and pads assigned to a configured zone net.
+
+    Pads do not need to be routed yet. An explicit thermal setting has no
+    visible effect until a same-net zone overlaps the pad, so this safely
+    prepares partially routed boards without requiring every pad to connect.
+    """
+    matches = []
+    footprints = []
+    for footprint in board.get_footprints():
+        pads = [
+            pad
+            for pad in footprint.definition.pads
+            if pad.net is not None and pad.net.name in ZONE_NET_NAMES
+        ]
+        if pads:
+            footprints.append(footprint)
+            matches.extend(pads)
+    return footprints, matches
+
+
+def configure_pad(pad):
+    """Explicitly apply the configured thermal style to one power pad."""
+    connection = pad.padstack.zone_settings
+    connection.zone_connection = PAD_CONNECTION
+    connection.thermal_spokes.gap = from_mm(THERMAL_RELIEF_GAP_MM)
+    connection.thermal_spokes.width = from_mm(THERMAL_SPOKE_WIDTH_MM)
+
+
+def pad_has_configured_thermal(pad):
+    """Return whether one pad has the exact explicit thermal configuration."""
+    connection = pad.padstack.zone_settings
+    return (
+        connection.zone_connection == PAD_CONNECTION
+        and connection.thermal_spokes.gap == from_mm(THERMAL_RELIEF_GAP_MM)
+        and connection.thermal_spokes.width == from_mm(THERMAL_SPOKE_WIDTH_MM)
+    )
+
+
 def matching_zones(board):
     """Return copper zones assigned to any configured net."""
     return [
@@ -172,6 +212,7 @@ def main():
     """Check matching zones and optionally correct their settings."""
     _client, board = connect_board()
     zones = matching_zones(board)
+    footprints, pads = matching_footprints_and_pads(board)
     missing_names = missing_zone_net_names(zones)
     for name in missing_names:
         print(
@@ -194,17 +235,29 @@ def main():
     with editor_commit(board, "Set zone thermal reliefs", refill_zones=True):
         for zone in zones:
             configure_zone(zone)
+        for pad in pads:
+            configure_pad(pad)
         board.update_items(zones)
+        # Pads are children of footprint instances, so publish their modified
+        # definitions by updating the containing footprints.
+        board.update_items(footprints)
 
     remaining = sum(bool(zone_problems(zone)) for zone in zones)
     if remaining:
         raise RuntimeError(f"{remaining} updated zone(s) failed verification")
+    remaining_pads = sum(not pad_has_configured_thermal(pad) for pad in pads)
+    if remaining_pads:
+        raise RuntimeError(f"{remaining_pads} updated power pad(s) failed verification")
     print(
-        f"Updated all {len(zones)} matching zone(s) (undo: Set zone thermal reliefs)."
+        f"Updated all {len(zones)} matching zone(s) and {len(pads)} power pad(s) "
+        "(undo: Set zone thermal reliefs)."
     )
     if RUN_DRC_AFTER_SET:
         try:
-            drc_errors = run_live_board_drc(board)
+            # This check is useful while routing is still in progress. Report
+            # ratsnest/unconnected findings for visibility, but only make
+            # actual DRC violations fail the thermal-relief update.
+            drc_errors = run_live_board_drc(board, fail_on_unconnected=False)
         except RuntimeError as error:
             raise SystemExit(f"DRC could not be completed: {error}") from None
         if drc_errors:

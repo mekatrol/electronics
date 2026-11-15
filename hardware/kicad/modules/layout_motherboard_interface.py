@@ -5,8 +5,9 @@ Run from the repository root with::
     .venv-kicad-ipc/bin/python hardware/kicad/modules/layout_motherboard_interface.py
 
 Open the motherboard in PCB Editor before running this script.  The default
-layout places four daughter boards down the left edge and four down the right
-edge, rotated toward the board interior.  The optional bottom layout retains
+layout places four daughter boards down the left edge and four up the right
+edge, giving counter-clockwise numbering around the board.  The interfaces are
+rotated toward the board interior.  The optional bottom layout retains
 the original single horizontal row.  By default, the connectors sit just
 inside the motherboard edge while the mounting holes lie beyond it.  The
 original fully-inside placement remains available.  In either layout mode,
@@ -44,7 +45,7 @@ from motherboard_interface import (
 # ============================================================
 # References are deliberately explicit.  In bottom mode they are ordered
 # left-to-right.  In left-right mode the first half is ordered top-to-bottom on
-# the left edge and the second half top-to-bottom on the right edge.  Change
+# the left edge and the second half bottom-to-top on the right edge.  Change
 # these tuples here if a future schematic annotation assigns different names;
 # the placement code below never guesses relationships from reference numbers.
 CONNECTOR_REFERENCES = ("J4", "J5", "J6", "J7", "J8", "J9", "J10", "J11")
@@ -246,7 +247,9 @@ def main():
                 board_rotation_degrees = -90.0
             else:
                 edge = "right"
-                edge_slot_index = slot_index - slots_per_edge
+                # Continue counter-clockwise around the motherboard: after
+                # descending the left edge, ascend the right edge.
+                edge_slot_index = slot_count - slot_index - 1
                 anchor_x = perpendicular_anchor("right", right)
                 anchor_y = side_row_top + from_mm(edge_slot_index * slot_pitch_mm)
                 board_rotation_degrees = 90.0
