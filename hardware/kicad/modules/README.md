@@ -351,12 +351,25 @@ Snaps each edge in a matching copper-zone or keep-out (rule-area) outline to a
 horizontal is inclusively between `MIN_DIAGONAL_ANGLE_DEGREES` (25 degrees) and
 `MAX_DIAGONAL_ANGLE_DEGREES` (65 degrees) are made 45 degrees; shallower edges
 become horizontal and steeper edges become vertical. Existing corners are moved
-to satisfy the new directions, so the vertex and segment counts never change.
-`ZONE_NAME` must identify exactly one zone; bulk updates are deliberately
-rejected because sending unrelated zones back through the IPC API can damage
-metadata such as copper-zone net assignments. Graphical and teardrop zones are
-ignored. Only the first outer contour is retained: zone holes/cutouts are not
-preserved. Save manually after careful review.
+to satisfy the new directions. Redundant vertices that merely split a continuous
+straight edge are then removed; this prevents a harmless short fragment from
+artificially limiting the corner radius.
+After that adjustment, a positive `CORNER_RADIUS_MM` replaces every true corner
+with a tangent circular arc of exactly that radius. If the radius cannot fit on
+an edge without adjacent fillets overlapping, the update is rejected. A zero
+or negative radius preserves the original square-corner behaviour.
+On later runs, existing arc corners are first restored to sharp corners by
+extending and intersecting the straight segments on either side. The normal
+45/90-degree adjustment and optional radius are then applied again, making the
+operation repeatable and allowing the configured radius to be changed.
+All keep-out/rule-area zones are updated regardless of their names or layers.
+Use `COPPER_NET_NAMES` to select copper zones by their electrical net names,
+regardless of optional zone display names; every matching zone on every layer
+is updated. Leave the list empty to update keep-outs only. Unrestricted bulk
+copper-zone updates remain disabled because sending unrelated copper zones back
+through the IPC API can damage metadata such as net assignments. Graphical and
+teardrop zones are ignored. Only the first outer contour is retained: zone
+holes/cutouts are not preserved. Save manually after careful review.
 
 Set `DEBUG = False` in scripts that provide it to reduce console output.
 
