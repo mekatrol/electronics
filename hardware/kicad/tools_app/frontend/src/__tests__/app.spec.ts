@@ -34,7 +34,7 @@ const moduleDefinition = {
       minimum: 1
     }
   ],
-  risk: { level: 'medium', summary: 'Writes a file.', confirmation_required: true }
+  risk: { level: 'medium', summary: 'Writes a file.' }
 };
 const settings = {
   allowed_roots: ['/projects'],
@@ -82,7 +82,7 @@ const mockFetch = (extra?: (url: string, init?: RequestInit) => Response | undef
 afterEach(() => vi.unstubAllGlobals());
 
 describe('App', () => {
-  it('builds module forms from API metadata and requires risk confirmation', async () => {
+  it('builds module forms from API metadata without confirmation gating', async () => {
     mockFetch();
     const wrapper = mount(App);
     await flushPromises();
@@ -90,9 +90,8 @@ describe('App', () => {
     expect(wrapper.find('input#input').exists()).toBe(true);
     expect(wrapper.find('input#count').attributes('min')).toBe('1');
     const runButton = wrapper.get('button[type="submit"]');
-    expect(runButton.attributes('disabled')).toBeDefined();
-    await wrapper.get('.confirm input').setValue(true);
     expect(runButton.attributes('disabled')).toBeUndefined();
+    expect(wrapper.find('.confirm').exists()).toBe(false);
   });
 
   it('shows backend validation errors clearly', async () => {
@@ -107,9 +106,41 @@ describe('App', () => {
     const wrapper = mount(App);
     await flushPromises();
     await wrapper.get('input#input').setValue('/bad/board.kicad_pcb');
-    await wrapper.get('.confirm input').setValue(true);
     await wrapper.get('form').trigger('submit');
     await flushPromises();
     expect(wrapper.get('[role="alert"]').text()).toContain('outside the allowed roots');
+  });
+
+  it('allows both validation and fix mode without confirmation', async () => {
+    const thermalModule = {
+      ...moduleDefinition,
+      id: 'validate-thermal-reliefs',
+      name: 'Validate Thermal Reliefs',
+      parameters: [
+        {
+          name: 'fix', label: 'Validate and fix', description: 'Fix problems.', kind: 'option',
+          flag: '--fix', type: 'boolean', required: false, default: false
+        }
+      ],
+      risk: { level: 'high', summary: 'May change the board.' }
+    };
+    mockFetch((url) =>
+      url === '/api/modules'
+        ? new Response(JSON.stringify([thermalModule]), {
+            status: 200, headers: { 'Content-Type': 'application/json' }
+          })
+        : undefined
+    );
+    const wrapper = mount(App);
+    await flushPromises();
+    const runButton = wrapper.get('button[type="submit"]');
+    expect(runButton.text()).toBe('Validate');
+    expect(runButton.attributes('disabled')).toBeUndefined();
+    expect(wrapper.find('.confirm').exists()).toBe(false);
+
+    await wrapper.get('input#fix').setValue(true);
+    expect(runButton.text()).toBe('Validate and fix');
+    expect(runButton.attributes('disabled')).toBeUndefined();
+    expect(wrapper.find('.confirm').exists()).toBe(false);
   });
 });

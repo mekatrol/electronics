@@ -25,7 +25,7 @@ export interface ModuleDefinition {
   requires_kicad_api: boolean;
   timeout_seconds: number;
   parameters: ModuleParameter[];
-  risk: { level: string; summary: string; confirmation_required: boolean };
+  risk: { level: string; summary: string };
 }
 export interface RunRecord {
   id: string;
@@ -84,14 +84,10 @@ export const api = {
   latestRun: (): Promise<RunRecord | null> => request('/api/runs/latest'),
   run: (id: string): Promise<RunRecord> => request(`/api/runs/${id}`),
   output: (id: string): Promise<RunOutput> => request(`/api/runs/${id}/output`),
-  start: (
-    moduleId: string,
-    parameters: Record<string, unknown>,
-    confirmed: boolean
-  ): Promise<RunRecord> =>
+  start: (moduleId: string, parameters: Record<string, unknown>): Promise<RunRecord> =>
     request('/api/runs', {
       method: 'POST',
-      body: JSON.stringify({ module_id: moduleId, parameters, confirmed })
+      body: JSON.stringify({ module_id: moduleId, parameters })
     }),
   cancel: (id: string): Promise<RunRecord> => request(`/api/runs/${id}/cancel`, { method: 'POST' }),
   settings: (): Promise<AppSettings> => request('/api/settings'),

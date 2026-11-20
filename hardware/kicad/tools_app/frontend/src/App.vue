@@ -86,7 +86,7 @@
               </select>
               <label v-else-if="parameter.type === 'boolean'" class="checkbox"
                 ><input :id="parameter.name" v-model="form[parameter.name]" type="checkbox" />
-                Enabled</label
+                {{ parameter.label }}</label
               ><textarea
                 v-else
                 :id="parameter.name"
@@ -95,20 +95,8 @@
                 placeholder="One value per line"
               ></textarea>
             </div>
-            <div v-if="selected.risk.confirmation_required" class="confirm">
-              <strong>Confirmation required</strong>
-              <p>{{ selected.risk.summary }}</p>
-              <label class="checkbox"
-                ><input v-model="confirmed" type="checkbox" /> I understand and want to run this
-                tool.</label
-              >
-            </div>
-            <button
-              class="primary"
-              type="submit"
-              :disabled="submitting || (selected.risk.confirmation_required && !confirmed)"
-            >
-              {{ submitting ? 'Submitting…' : 'Run tool' }}
+            <button class="primary" type="submit" :disabled="submitting">
+              {{ submitting ? 'Submitting…' : runButtonLabel }}
             </button>
           </form>
           <section v-if="activeRun" class="output last-run">
@@ -193,7 +181,6 @@ const health = ref<HealthReport>();
 const settings = ref<AppSettings>();
 const form = ref<Record<string, unknown>>({});
 const listForm = ref<Record<string, string>>({});
-const confirmed = ref(false);
 const submitting = ref(false);
 const error = ref('');
 const notice = ref('');
@@ -204,6 +191,13 @@ const groupedModules = computed(() =>
     category,
     items: modules.value.filter((item) => item.category === category)
   }))
+);
+const runButtonLabel = computed(() =>
+  selected.value?.parameters.some((parameter) => parameter.name === 'fix') && form.value.fix
+    ? 'Validate and fix'
+    : selected.value?.parameters.some((parameter) => parameter.name === 'fix')
+      ? 'Validate'
+      : 'Run tool'
 );
 const readinessChecks = computed(() =>
   health.value
@@ -252,7 +246,6 @@ const clearMessages = (): void => {
 };
 const selectModule = (module: ModuleDefinition): void => {
   selected.value = module;
-  confirmed.value = false;
   form.value = {};
   listForm.value = {};
   for (const parameter of module.parameters) {
@@ -284,7 +277,7 @@ const submitRun = async (): Promise<void> => {
   clearMessages();
   submitting.value = true;
   try {
-    const run = await api.start(selected.value.id, parameters(), confirmed.value);
+    const run = await api.start(selected.value.id, parameters());
     await showRun(run);
   } catch (caught) {
     report(caught);

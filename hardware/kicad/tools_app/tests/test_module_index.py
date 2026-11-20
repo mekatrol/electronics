@@ -97,12 +97,11 @@ class ModuleIndexTests(unittest.TestCase):
                 self.assertGreater(module["timeout_seconds"], 0)
                 self.assertTrue(module["risk"]["summary"].strip())
 
-    def test_system_control_requires_critical_confirmation(self) -> None:
-        """Keep exposed process-control actions behind the strongest warning."""
+    def test_system_control_is_marked_critical(self) -> None:
+        """Keep exposed process-control actions visibly marked as critical."""
         for module in self.index["modules"]:
             if module["execution_type"] == "system_control":
                 self.assertEqual(module["risk"]["level"], "critical")
-                self.assertTrue(module["risk"]["confirmation_required"])
 
     def test_every_command_module_is_indexed_and_enabled(self) -> None:
         """Expose every direct entry point while excluding libraries and tests."""
@@ -122,13 +121,12 @@ class ModuleIndexTests(unittest.TestCase):
         }
         self.assertEqual(commands, indexed)
 
-    def test_board_edits_require_confirmation_and_preflight(self) -> None:
-        """Keep every enabled KiCad mutation confirmed and readiness-gated."""
+    def test_board_edits_require_preflight(self) -> None:
+        """Keep every enabled KiCad mutation readiness-gated."""
         for module in self.index["modules"]:
             if not module["enabled"] or module["execution_type"] != "kicad_modify":
                 continue
             with self.subTest(module=module["id"]):
-                self.assertTrue(module["risk"]["confirmation_required"])
                 self.assertTrue(module["requires_kicad"])
                 self.assertTrue(module["requires_pcb_editor"])
                 self.assertTrue(module["requires_kicad_api"])

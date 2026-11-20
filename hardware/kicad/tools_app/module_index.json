@@ -23,7 +23,7 @@
       "working_directory": "repository_root",
       "timeout_seconds": 60,
       "parameters": [],
-      "risk": {"level": "low", "summary": "Reads the open board through KiCad IPC without changing it.", "confirmation_required": false}
+      "risk": {"level": "low", "summary": "Reads the open board through KiCad IPC without changing it."}
     },
     {
       "id": "check-bom-stock",
@@ -45,7 +45,7 @@
         {"name": "minimum_stock", "label": "Minimum stock", "description": "Minimum acceptable quantity for each BOM item.", "kind": "option", "flag": "--minimum-stock", "type": "number", "required": false, "default": 10, "minimum": 0},
         {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
       ],
-      "risk": {"level": "low", "summary": "Reads project and workbook files and creates only a temporary netlist.", "confirmation_required": false}
+      "risk": {"level": "low", "summary": "Reads project and workbook files and creates only a temporary netlist."}
     },
     {
       "id": "generate-jlcpcb",
@@ -64,7 +64,7 @@
         {"name": "project", "label": "Project", "description": "Project directory, .kicad_pro file, or .kicad_pcb file.", "kind": "positional", "type": "file", "required": true, "default": null, "extensions": [".kicad_pro", ".kicad_pcb"]},
         {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
       ],
-      "risk": {"level": "medium", "summary": "Creates or replaces manufacturing artifacts beneath the selected project.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Creates or replaces manufacturing artifacts beneath the selected project."}
     },
     {
       "id": "panelize-routed-pcb",
@@ -91,7 +91,7 @@
         {"name": "mouse_bite_clearance", "label": "Mouse-bite clearance", "description": "Edge-to-edge drill clearance in millimetres.", "kind": "option", "flag": "--mouse-bite-clearance", "type": "number", "required": false, "default": 0.4, "minimum": 0.3, "maximum": 0.4},
         {"name": "force", "label": "Replace output", "description": "Allow replacement of an existing output file.", "kind": "option", "flag": "--force", "type": "boolean", "required": false, "default": false}
       ],
-      "risk": {"level": "medium", "summary": "Creates a panel file and can replace it when explicitly requested.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Creates a panel file and can replace it when explicitly requested."}
     },
     {
       "id": "manufacture-jlcpcb",
@@ -112,7 +112,7 @@
         {"name": "count_y", "label": "Vertical count", "description": "Number of boards down the panel.", "kind": "option", "flag": "--count-y", "type": "integer", "required": true, "default": 1, "minimum": 1},
         {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
       ],
-      "risk": {"level": "high", "summary": "Replaces the generated panel and manufacturing package in the project output directory.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Replaces the generated panel and manufacturing package in the project output directory."}
     },
     {
       "id": "align-component-edge-center",
@@ -132,7 +132,7 @@
         {"name": "alignment", "label": "Alignment axis", "description": "Coordinate axis along which to center the footprint.", "kind": "option", "flag": "--alignment", "type": "enum", "required": false, "default": "horizontal", "choices": ["horizontal", "vertical"]},
         {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text when calculating the footprint center.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false}
       ],
-      "risk": {"level": "medium", "summary": "Moves one footprint on the open board in a single undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Moves one footprint on the open board in a single undoable PCB Editor transaction."}
     },
     {
       "id": "align-mounting-holes",
@@ -158,7 +158,7 @@
         {"name": "top_offset", "label": "Top offset", "description": "Top hole-center offset in millimetres.", "kind": "option", "flag": "--top-offset", "type": "number", "required": false, "default": 35.5, "minimum": 0},
         {"name": "bottom_offset", "label": "Bottom offset", "description": "Bottom hole-center offset in millimetres.", "kind": "option", "flag": "--bottom-offset", "type": "number", "required": false, "default": 5.5, "minimum": 0}
       ],
-      "risk": {"level": "medium", "summary": "Moves matching mounting-hole footprints in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Moves matching mounting-hole footprints in one undoable PCB Editor transaction."}
     },
     {
       "id": "center-and-distribute-items",
@@ -178,7 +178,7 @@
         {"name": "alignment", "label": "Alignment", "description": "Axis on which footprint centers are aligned.", "kind": "option", "flag": "--alignment", "type": "enum", "required": false, "default": "horizontal", "choices": ["horizontal", "vertical"]},
         {"name": "distribute_spacing", "label": "Distribute spacing", "description": "Also distribute items on the perpendicular axis.", "kind": "option", "flag": "--distribute-spacing", "type": "boolean", "required": false, "default": false}
       ],
-      "risk": {"level": "medium", "summary": "Moves every selected footprint in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Moves every selected footprint in one undoable PCB Editor transaction."}
     },
     {
       "id": "center-routed-design",
@@ -196,7 +196,7 @@
       "parameters": [
         {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text in the design bounds.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false}
       ],
-      "risk": {"level": "high", "summary": "Moves all footprints and routed copper together in one undoable transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Moves all footprints and routed copper together in one undoable transaction."}
     },
     {
       "id": "center-board-outline",
@@ -215,7 +215,7 @@
         {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text in the component bounds.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false},
         {"name": "zone_edge_tolerance", "label": "Zone-edge tolerance", "description": "Tolerance in millimetres for identifying board-spanning zones.", "kind": "option", "flag": "--zone-edge-tolerance", "type": "number", "required": false, "default": 0.2, "minimum": 0}
       ],
-      "risk": {"level": "high", "summary": "Moves the complete board outline and matching board-spanning zones in one undoable transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Moves the complete board outline and matching board-spanning zones in one undoable transaction."}
     },
     {
       "id": "space-components",
@@ -237,7 +237,7 @@
         {"name": "spacing", "label": "Spacing", "description": "Requested center-to-center spacing in millimetres.", "kind": "option", "flag": "--spacing", "type": "number", "required": false, "default": 35.0, "minimum": 0},
         {"name": "include_text", "label": "Include footprint text", "description": "Include reference and value text in footprint bounds.", "kind": "option", "flag": "--include-text", "type": "boolean", "required": false, "default": false}
       ],
-      "risk": {"level": "medium", "summary": "Moves one selected footprint in a single undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Moves one selected footprint in a single undoable PCB Editor transaction."}
     },
     {
       "id": "clear-routing-and-zones",
@@ -245,7 +245,7 @@
       "description": "Remove all tracks, vias, and zones from the board open in PCB Editor.",
       "script": "../modules/design/board/clear_routing_and_zones.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 120, "parameters": [],
-      "risk": {"level": "critical", "summary": "Removes all routed copper and zones in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "critical", "summary": "Removes all routed copper and zones in one undoable PCB Editor transaction."}
     },
     {
       "id": "create-board-outline-and-zones",
@@ -253,7 +253,7 @@
       "description": "Replace the board outline and configured zones using the dimensions embedded in the module.",
       "script": "../modules/design/board/create_board_outline_and_zones.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 180, "parameters": [],
-      "risk": {"level": "critical", "summary": "Can remove every existing outline graphic and zone before creating configured replacements.", "confirmation_required": true}
+      "risk": {"level": "critical", "summary": "Can remove every existing outline graphic and zone before creating configured replacements."}
     },
     {
       "id": "snap-zone-outlines",
@@ -261,7 +261,7 @@
       "description": "Snap zone polygon segments to 45-degree and 90-degree geometry on the open board.",
       "script": "../modules/design/board/snap_zone_outlines_to_45_and_90_degrees.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 120, "parameters": [],
-      "risk": {"level": "high", "summary": "Rebuilds matching zone contours in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Rebuilds matching zone contours in one undoable PCB Editor transaction."}
     },
     {
       "id": "align-connector-labels",
@@ -269,7 +269,7 @@
       "description": "Match and position connector pin labels using the module's configured naming and clearance rules.",
       "script": "../modules/design/layout/align_connector_labels.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 120, "parameters": [],
-      "risk": {"level": "high", "summary": "Moves every matching board label in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Moves every matching board label in one undoable PCB Editor transaction."}
     },
     {
       "id": "arrange-repeated-footprint-groups",
@@ -277,7 +277,7 @@
       "description": "Arrange configured repeated footprint groups and reconstruct their routed tracks and vias.",
       "script": "../modules/design/layout/arrange_repeated_footprint_groups.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 180, "parameters": [],
-      "risk": {"level": "critical", "summary": "Moves configured footprint groups and replaces destination routing in one undoable transaction.", "confirmation_required": true}
+      "risk": {"level": "critical", "summary": "Moves configured footprint groups and replaces destination routing in one undoable transaction."}
     },
     {
       "id": "position-motherboard-interfaces",
@@ -285,7 +285,7 @@
       "description": "Arrange configured motherboard interface footprints, outlines, and associated geometry.",
       "script": "../modules/design/layout/position_motherboard_interfaces.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 180, "parameters": [],
-      "risk": {"level": "high", "summary": "Moves all configured interface geometry in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Moves all configured interface geometry in one undoable PCB Editor transaction."}
     },
     {
       "id": "resize-matching-board-text",
@@ -293,7 +293,7 @@
       "description": "Resize board text selected by the matching rules embedded in the module.",
       "script": "../modules/design/layout/resize_matching_board_text.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 60, "parameters": [],
-      "risk": {"level": "medium", "summary": "Resizes every matching text item in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Resizes every matching text item in one undoable PCB Editor transaction."}
     },
     {
       "id": "update-board-text",
@@ -301,7 +301,7 @@
       "description": "Update configured board or component text sizes, alignment, and clearances.",
       "script": "../modules/design/layout/update_board_text.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 120, "parameters": [],
-      "risk": {"level": "high", "summary": "Changes all text selected by the module's configured rules in an undoable transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Changes all text selected by the module's configured rules in an undoable transaction."}
     },
     {
       "id": "configure-jlcpcb-routing-rules",
@@ -309,7 +309,7 @@
       "description": "Apply the module's configured JLCPCB net classes and routing constraints to the open project.",
       "script": "../modules/design/rules/configure_jlcpcb_routing_rules.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 180, "parameters": [],
-      "risk": {"level": "high", "summary": "Changes live net classes and may atomically patch the project file after KiCad exits.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "Changes live net classes and may atomically patch the project file after KiCad exits."}
     },
     {
       "id": "validate-fiducials",
@@ -317,15 +317,16 @@
       "description": "Check configured fiducials and optionally align them using the behavior selected in the module.",
       "script": "../modules/design/rules/validate_fiducials.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 180, "parameters": [],
-      "risk": {"level": "high", "summary": "May move fiducials and refill zones in one undoable PCB Editor transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "May move fiducials and refill zones in one undoable PCB Editor transaction."}
     },
     {
       "id": "validate-thermal-reliefs",
       "name": "Validate Thermal Reliefs",
-      "description": "Check zone thermal-relief settings, optionally correct them, refill zones, and run DRC.",
+      "description": "Validate zone thermal-relief settings, with an option to fix problems, refill zones, and run DRC.",
       "script": "../modules/design/rules/validate_thermal_reliefs.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
-      "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 300, "parameters": [],
-      "risk": {"level": "high", "summary": "May change every matching zone's thermal settings, refill zones, and run DRC.", "confirmation_required": true}
+      "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 300,
+      "parameters": [{"name": "fix", "label": "Validate and fix", "description": "Correct non-compliant thermal-relief settings, refill zones, and run DRC. Leave unchecked to validate only without changing the board.", "kind": "option", "flag": "--fix", "type": "boolean", "required": false, "default": false}],
+      "risk": {"level": "high", "summary": "Validate and fix may change every matching zone and power pad's thermal settings, refill zones, and run DRC."}
     },
     {
       "id": "validate-vias",
@@ -333,7 +334,7 @@
       "description": "Check via sizes, optionally correct non-compliant vias, and run DRC on the updated board.",
       "script": "../modules/design/rules/validate_vias.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 300, "parameters": [],
-      "risk": {"level": "high", "summary": "May resize or convert every non-compliant via in an undoable transaction and run DRC.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "May resize or convert every non-compliant via in an undoable transaction and run DRC."}
     },
     {
       "id": "check-board-unsaved-changes",
@@ -342,7 +343,7 @@
       "script": "../modules/inspection/check_board_has_unsaved_changes.py", "enabled": true, "category": "analysis", "execution_type": "read_only",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 15,
       "parameters": [{"name": "board", "label": "Board", "description": "Open PCB file to compare with its saved version.", "kind": "positional", "type": "file", "required": true, "default": null, "extensions": [".kicad_pcb"]}],
-      "risk": {"level": "low", "summary": "Reads the open board and its saved path without changing either.", "confirmation_required": false}
+      "risk": {"level": "low", "summary": "Reads the open board and its saved path without changing either."}
     },
     {
       "id": "validate-motherboard-interface",
@@ -350,7 +351,7 @@
       "description": "Validate and optionally repair the configured motherboard interface geometry.",
       "script": "../modules/inspection/validate_motherboard_interface.py", "enabled": true, "category": "board-editing", "execution_type": "kicad_modify",
       "requires_kicad": true, "requires_pcb_editor": true, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 180, "parameters": [],
-      "risk": {"level": "high", "summary": "May move interface footprints and replace matching edge geometry in one undoable transaction.", "confirmation_required": true}
+      "risk": {"level": "high", "summary": "May move interface footprints and replace matching edge geometry in one undoable transaction."}
     },
     {
       "id": "generate-jlcpcb-panel-files",
@@ -363,7 +364,7 @@
         {"name": "output_dir", "label": "Output directory", "description": "Dedicated destination for fabrication and assembly outputs.", "kind": "option", "flag": "--output-dir", "type": "directory", "required": false, "default": null, "may_create": true},
         {"name": "kicad_cli", "label": "KiCad CLI", "description": "Optional validated path to the KiCad CLI executable.", "kind": "option", "flag": "--kicad-cli", "type": "file", "required": false, "default": null}
       ],
-      "risk": {"level": "medium", "summary": "Refills and saves the selected panel and replaces generated manufacturing outputs.", "confirmation_required": true}
+      "risk": {"level": "medium", "summary": "Refills and saves the selected panel and replaces generated manufacturing outputs."}
     },
     {
       "id": "find-open-schematic",
@@ -371,7 +372,7 @@
       "description": "Print the uniquely resolved root schematic open in KiCad Schematic Editor.",
       "script": "../modules/system/find_open_schematic.py", "enabled": true, "category": "analysis", "execution_type": "read_only",
       "requires_kicad": true, "requires_pcb_editor": false, "requires_kicad_api": true, "working_directory": "repository_root", "timeout_seconds": 15, "parameters": [],
-      "risk": {"level": "low", "summary": "Reads open-document metadata without changing KiCad or project files.", "confirmation_required": false}
+      "risk": {"level": "low", "summary": "Reads open-document metadata without changing KiCad or project files."}
     },
     {
       "id": "kill-kicad",
@@ -387,7 +388,7 @@
       "working_directory": "repository_root",
       "timeout_seconds": 30,
       "parameters": [],
-      "risk": {"level": "critical", "summary": "Terminates external application processes and may discard unsaved work.", "confirmation_required": true}
+      "risk": {"level": "critical", "summary": "Terminates external application processes and may discard unsaved work."}
     }
   ]
 }

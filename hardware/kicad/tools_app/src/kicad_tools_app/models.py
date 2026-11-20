@@ -26,7 +26,6 @@ class RunRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     module_id: str = Field(pattern=r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
     parameters: dict[str, Any] = Field(default_factory=dict)
-    confirmed: bool = False
 
 
 class RunRecord(BaseModel):

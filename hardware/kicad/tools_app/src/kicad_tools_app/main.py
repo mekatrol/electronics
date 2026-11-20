@@ -98,10 +98,6 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
             module = request.app.state.index.get(body.module_id)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail="Module not found") from exc
-        if module["risk"]["confirmation_required"] and not body.confirmed:
-            raise HTTPException(
-                status_code=409, detail="Explicit confirmation is required"
-            )
         settings: AppSettings = request.app.state.settings
         validator = ParameterValidator(
             [Path(root) for root in settings.allowed_roots],

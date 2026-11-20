@@ -49,8 +49,11 @@
       ]
     },
     "risk": {
-      "type": "object", "additionalProperties": false, "required": ["level", "summary", "confirmation_required"],
-      "properties": {"level": {"enum": ["low", "medium", "high", "critical"]}, "summary": {"type": "string", "minLength": 1}, "confirmation_required": {"type": "boolean"}}
+      "type": "object", "additionalProperties": false, "required": ["level", "summary"],
+      "properties": {
+        "level": {"enum": ["low", "medium", "high", "critical"]},
+        "summary": {"type": "string", "minLength": 1}
+      }
     }
   }
 }

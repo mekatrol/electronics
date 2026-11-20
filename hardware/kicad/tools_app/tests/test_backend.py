@@ -82,7 +82,6 @@ def test_align_component_edge_center_contract() -> None:
     )
     module = index.get("align-component-edge-center")
     assert module["execution_type"] == "kicad_modify"
-    assert module["risk"]["confirmation_required"] is True
     assert module["requires_pcb_editor"] is True
     assert module["requires_kicad_api"] is True
     values = ParameterValidator([repository_root], repository_root).validate(
@@ -217,7 +216,6 @@ def test_phase_four_board_editing_contracts(
     )
     module = index.get(module_id)
     assert module["execution_type"] == "kicad_modify"
-    assert module["risk"]["confirmation_required"] is True
     assert module["requires_pcb_editor"] is True
     assert module["requires_kicad_api"] is True
     values = ParameterValidator([repository_root], repository_root).validate(
@@ -487,7 +485,6 @@ def _app_tree(tmp_path: Path) -> AppPaths:
         "risk": {
             "level": "low",
             "summary": "Test only.",
-            "confirmation_required": False,
         },
     }
     index = {
