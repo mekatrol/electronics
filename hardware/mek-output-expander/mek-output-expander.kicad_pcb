@@ -19869,6 +19869,14 @@
 			(justify left bottom)
 		)
 	)
+	(via
+		(at 224.5 58.2)
+		(size 0.6)
+		(drill 0.3)
+		(layers "F.Cu" "B.Cu")
+		(net "")
+		(uuid "55aebeb8-4424-4e85-b555-a6978366b120")
+	)
 	(segment
 		(start 149.475 113.8)
 		(end 147.99 115.285)
