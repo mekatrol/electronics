@@ -5072,6 +5072,26 @@
 		)
 		(uuid "fe88890a-aa4c-49d7-8d65-750c44935a8a")
 	)
+	(label "A"
+		(at 82.55 162.56 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "be7f7479-a330-4713-a535-16743ae691f5")
+	)
+	(label "B"
+		(at 82.55 167.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "de19fea7-2166-470f-8c09-82014118ece5")
+	)
 	(global_label "OP3_GPIO"
 		(shape input)
 		(at 222.25 81.28 180)
@@ -10410,7 +10430,7 @@
 			)
 		)
 		(property "Value" "Header2P_RA_5.08"
-			(at 115.57 162.56 0)
+			(at 115.57 168.402 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
