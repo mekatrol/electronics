@@ -57,7 +57,7 @@ from modules.shared.via_settings import (
 class ModuleOptions:
     """User-configurable via geometry and placement clearances, in mm."""
 
-    edge_offset: float = 0.60
+    edge_offset: float = 1.00
     spacing: float = 2.50
     clearance: float = 0.25
     via_diameter: float = DEFAULT_VIA_DIAMETER_MM
@@ -409,7 +409,7 @@ def parse_args(argv: Sequence[str] | None = None) -> ModuleOptions:
     parser.add_argument(
         "--edge-offset",
         type=float,
-        default=0.60,
+        default=1.00,
         help="via-centre distance inward from Edge.Cuts, in mm",
     )
     parser.add_argument(

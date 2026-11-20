@@ -261,7 +261,7 @@
       "working_directory": "repository_root",
       "timeout_seconds": 180,
       "parameters": [
-        {"name": "edge_offset", "label": "Minimum edge offset", "description": "Requested minimum distance from Edge.Cuts to each via centre; automatically increased when required by the board's copper-to-edge rule.", "kind": "option", "flag": "--edge-offset", "type": "number", "required": false, "default": 0.6, "minimum": 0.01},
+        {"name": "edge_offset", "label": "Minimum edge offset", "description": "Requested minimum distance from Edge.Cuts to each via centre; automatically increased when required by the board's copper-to-edge rule.", "kind": "option", "flag": "--edge-offset", "type": "number", "required": false, "default": 1.0, "minimum": 0.01},
         {"name": "spacing", "label": "Via spacing", "description": "Target centre-to-centre spacing measured along the board perimeter, in millimetres.", "kind": "option", "flag": "--spacing", "type": "number", "required": false, "default": 2.5, "minimum": 0.01},
         {"name": "clearance", "label": "Item clearance", "description": "Minimum edge-to-edge clearance between a new via and existing board items, in millimetres.", "kind": "option", "flag": "--clearance", "type": "number", "required": false, "default": 0.25, "minimum": 0},
         {"name": "via_diameter", "label": "Via diameter", "description": "Copper diameter of each stitching via, in millimetres; defaults to the shared via-rule setting.", "kind": "option", "flag": "--via-diameter", "type": "number", "required": false, "default": 0.5, "minimum": 0.01},

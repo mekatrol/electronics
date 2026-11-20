@@ -1,5 +1,5 @@
 <template>
-  <div class="shell">
+  <div class="shell" :inert="Boolean(activeRun && isActive(activeRun))">
     <header>
       <div>
         <span class="eyebrow">LOCAL WORKBENCH</span>
@@ -170,6 +170,33 @@
       </section>
     </main>
   </div>
+  <Teleport to="body">
+    <div
+      v-if="activeRun && isActive(activeRun)"
+      class="run-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="run-overlay-title"
+      aria-describedby="run-overlay-description"
+    >
+      <div class="run-overlay-card">
+        <span class="spinner" aria-hidden="true"></span>
+        <h2 id="run-overlay-title">Running {{ activeModuleName }}</h2>
+        <p id="run-overlay-description">
+          {{ cancelling ? 'Stopping the running script…' : 'Please wait while the module completes.' }}
+        </p>
+        <button
+          class="cancel-run"
+          type="button"
+          :disabled="cancelling"
+          autofocus
+          @click="cancelRun"
+        >
+          {{ cancelling ? 'Cancelling…' : 'Cancel' }}
+        </button>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
@@ -194,6 +221,7 @@ const settings = ref<AppSettings>();
 const form = ref<Record<string, unknown>>({});
 const listForm = ref<Record<string, string>>({});
 const submitting = ref(false);
+const cancelling = ref(false);
 const error = ref('');
 const notice = ref('');
 const rootsText = ref('');
@@ -216,6 +244,9 @@ const runButtonLabel = computed(() =>
     : selected.value?.parameters.some((parameter) => parameter.name === 'fix')
       ? 'Validate'
       : 'Run tool'
+);
+const activeModuleName = computed(
+  () => modules.value.find((module) => module.id === activeRun.value?.module_id)?.name ?? 'module'
 );
 const readinessChecks = computed(() =>
   health.value
@@ -315,12 +346,15 @@ const showRun = async (run: RunRecord): Promise<void> => {
   }
 };
 const cancelRun = async (): Promise<void> => {
-  if (!activeRun.value) return;
+  if (!activeRun.value || cancelling.value) return;
+  cancelling.value = true;
   try {
     activeRun.value = await api.cancel(activeRun.value.id);
     await showRun(activeRun.value);
   } catch (caught) {
     report(caught);
+  } finally {
+    cancelling.value = false;
   }
 };
 const saveSettings = async (): Promise<void> => {
@@ -427,6 +461,9 @@ button {
   padding: 9px 13px;
   border-radius: 5px;
   color: inherit;
+}
+button:disabled {
+  cursor: not-allowed;
 }
 nav button {
   border-color: transparent;
@@ -581,6 +618,60 @@ textarea {
 .primary:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+.run-overlay {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(24 32 27 / 72%);
+  backdrop-filter: blur(2px);
+}
+.run-overlay-card {
+  width: min(420px, 100%);
+  padding: 36px;
+  border: 1px solid #d5d4ca;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 18px 60px rgb(10 18 13 / 35%);
+  text-align: center;
+}
+.run-overlay-card h2 {
+  margin: 22px 0 8px;
+}
+.run-overlay-card p {
+  color: #69716b;
+  margin-bottom: 24px;
+}
+.spinner {
+  display: inline-block;
+  width: 52px;
+  height: 52px;
+  border: 5px solid #dce3dd;
+  border-top-color: #263a30;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.cancel-run {
+  min-width: 120px;
+  border-color: #9b4135;
+  background: #a94d40;
+  color: #fff;
+}
+.cancel-run:disabled {
+  opacity: 0.65;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.8s;
+  }
 }
 .message {
   padding: 12px 15px;

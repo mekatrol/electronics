@@ -174,4 +174,52 @@ describe('App', () => {
     expect(runButton.attributes('disabled')).toBeUndefined();
     expect(wrapper.find('.confirm').exists()).toBe(false);
   });
+
+  it('blocks the page while a module runs and only closes after cancellation completes', async () => {
+    const running = {
+      id: 'run-1', module_id: 'panelize', parameters: {}, status: 'running',
+      created_at: '2026-11-20T00:00:00Z', started_at: '2026-11-20T00:00:00Z',
+      finished_at: null, exit_code: null, error_summary: null, artifacts: []
+    };
+    const cancelled = {
+      ...running, status: 'cancelled', finished_at: '2026-11-20T00:00:01Z',
+      error_summary: 'Cancelled by the user.'
+    };
+    let finishCancellation: ((response: Response) => void) | undefined;
+    let cancellationFinished = false;
+    mockFetch((url, init) => {
+      if (url === '/api/runs/latest') return new Response(JSON.stringify(running));
+      if (url === '/api/runs/run-1')
+        return new Response(JSON.stringify(cancellationFinished ? cancelled : running));
+      if (url === '/api/runs/run-1/output')
+        return new Response(JSON.stringify({ stdout: '', stderr: '' }));
+      if (url === '/api/runs/run-1/cancel' && init?.method === 'POST')
+        return new Promise<Response>((resolve) => { finishCancellation = resolve; }) as never;
+      return undefined;
+    });
+    const wrapper = mount(App, { attachTo: document.body });
+    await flushPromises();
+
+    const overlay = document.body.querySelector<HTMLElement>('.run-overlay');
+    expect(overlay).not.toBeNull();
+    expect(overlay?.getAttribute('aria-modal')).toBe('true');
+    expect(overlay?.textContent).toContain('Running Panelize PCB');
+    expect(wrapper.get('.shell').attributes()).toHaveProperty('inert');
+
+    overlay?.click();
+    await flushPromises();
+    expect(document.body.querySelector('.run-overlay')).not.toBeNull();
+
+    const cancelButton = document.body.querySelector<HTMLButtonElement>('.cancel-run');
+    cancelButton?.click();
+    await flushPromises();
+    expect(cancelButton?.disabled).toBe(true);
+    expect(document.body.querySelector('.run-overlay')).not.toBeNull();
+
+    cancellationFinished = true;
+    finishCancellation?.(new Response(JSON.stringify(cancelled)));
+    await flushPromises();
+    expect(document.body.querySelector('.run-overlay')).toBeNull();
+    wrapper.unmount();
+  });
 });
