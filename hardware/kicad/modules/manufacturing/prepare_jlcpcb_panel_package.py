@@ -16,6 +16,19 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+# Ruff: noqa: E402
+# Support direct path execution from any working directory.
+if __package__ in {None, ""}:
+    import sys
+    from pathlib import Path
+
+    modules_directory = next(
+        parent
+        for parent in Path(__file__).resolve().parents
+        if parent.name == "modules"
+    )
+    sys.path.insert(0, str(modules_directory.parent))
+
 from modules.manufacturing.generate_jlcpcb_files import HARDWARE_DIR, run_command
 
 

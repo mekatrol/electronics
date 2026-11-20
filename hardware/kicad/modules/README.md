@@ -1,7 +1,7 @@
 # KiCad automation
 
 The modules are organised by the stage of the PCB workflow in which they are
-used. Run commands from this repository directory using Python's module mode:
+used. They support both module mode from the `hardware/kicad` directory:
 
 ```sh
 .venv-kicad-ipc/bin/python -m modules.design.layout.center_footprint_between_edges --help
@@ -9,6 +9,13 @@ python3 -m modules.manufacturing.generate_jlcpcb_files --help
 ```
 
 Module mode keeps imports reliable regardless of the script's subdirectory.
+Direct paths also work from the parent electronics repository, matching the
+existing virtual-environment workflow:
+
+```sh
+.venv-kicad-ipc/bin/python hardware/kicad/modules/design/layout/align_connector_labels.py
+```
+
 Tools that use KiCad IPC require PCB Editor to be open with the API server
 enabled. Mutating IPC tools make one undoable editor transaction and leave the
 board unsaved for review.

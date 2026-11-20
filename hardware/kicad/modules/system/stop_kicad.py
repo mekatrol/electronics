@@ -22,6 +22,19 @@ import tempfile
 import time
 from pathlib import Path
 
+# Ruff: noqa: E402
+# Support direct path execution from any working directory.
+if __package__ in {None, ""}:
+    import sys
+    from pathlib import Path
+
+    modules_directory = next(
+        parent
+        for parent in Path(__file__).resolve().parents
+        if parent.name == "modules"
+    )
+    sys.path.insert(0, str(modules_directory.parent))
+
 from modules.shared.kicad_discovery import FLATPAK_APP_ID
 
 # Match executable names rather than command-line text so an unrelated command

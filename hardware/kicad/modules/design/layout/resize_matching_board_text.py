@@ -10,6 +10,19 @@ The update appears as one item in PCB Editor's Undo/Redo history.
 from kipy.board_types import BoardText
 from kipy.geometry import Vector2
 
+# Ruff: noqa: E402
+# Support direct path execution from any working directory.
+if __package__ in {None, ""}:
+    import sys
+    from pathlib import Path
+
+    modules_directory = next(
+        parent
+        for parent in Path(__file__).resolve().parents
+        if parent.name == "modules"
+    )
+    sys.path.insert(0, str(modules_directory.parent))
+
 from modules.shared.kicad_ipc import connect_board, editor_commit, from_mm
 
 TEXT_STRINGS = ["GND", "5V", "D", "JLCJLCJLCJLC"]

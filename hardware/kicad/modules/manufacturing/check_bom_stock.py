@@ -23,6 +23,19 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+# Ruff: noqa: E402
+# Support direct path execution from any working directory.
+if __package__ in {None, ""}:
+    import sys
+    from pathlib import Path
+
+    modules_directory = next(
+        parent
+        for parent in Path(__file__).resolve().parents
+        if parent.name == "modules"
+    )
+    sys.path.insert(0, str(modules_directory.parent))
+
 from modules.shared import kicad_netlist_reader
 from modules.shared.kicad_discovery import find_kicad_cli
 from modules.shared.xlsx_reader import read_rows
