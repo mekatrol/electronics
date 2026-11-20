@@ -94,6 +94,37 @@ describe('App', () => {
     expect(wrapper.find('.confirm').exists()).toBe(false);
   });
 
+  it('filters modules by a case-insensitive partial name', async () => {
+    const inspectionModule = {
+      ...moduleDefinition,
+      id: 'inspect-board',
+      name: 'Inspect Board',
+      category: 'analysis'
+    };
+    mockFetch((url) =>
+      url === '/api/modules'
+        ? new Response(JSON.stringify([moduleDefinition, inspectionModule]), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          })
+        : undefined
+    );
+    const wrapper = mount(App);
+    await flushPromises();
+
+    const filter = wrapper.get('input[type="search"]');
+    await filter.setValue('SPECT bo');
+
+    const moduleButtons = wrapper.findAll('.module-button');
+    expect(moduleButtons).toHaveLength(1);
+    expect(moduleButtons[0]?.text()).toContain('Inspect Board');
+    expect(wrapper.text()).not.toContain('Manufacturing');
+
+    await filter.setValue('missing');
+    expect(wrapper.findAll('.module-button')).toHaveLength(0);
+    expect(wrapper.text()).toContain('No modules match “missing”.');
+  });
+
   it('shows backend validation errors clearly', async () => {
     mockFetch((url, init) =>
       url === '/api/runs' && init?.method === 'POST'

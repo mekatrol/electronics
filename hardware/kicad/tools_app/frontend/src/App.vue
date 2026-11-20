@@ -27,6 +27,14 @@
         <aside>
           <h2>Tool catalogue</h2>
           <p class="muted">Choose an approved tool. Inputs are validated again by the backend.</p>
+          <label class="module-filter">
+            Filter by name
+            <input
+              v-model="moduleFilter"
+              type="search"
+              placeholder="Type part of a module name"
+            />
+          </label>
           <div v-for="group in groupedModules" :key="group.category" class="group">
             <h3>{{ title(group.category) }}</h3>
             <button
@@ -40,6 +48,9 @@
               >
             </button>
           </div>
+          <p v-if="groupedModules.length === 0" class="muted no-modules">
+            No modules match “{{ moduleFilter.trim() }}”.
+          </p>
         </aside>
         <article v-if="selected" class="panel">
           <div class="panel-heading">
@@ -174,6 +185,7 @@ import {
 const tabs = ['Modules', 'Readiness', 'Settings'] as const;
 const tab = ref<(typeof tabs)[number]>('Modules');
 const modules = ref<ModuleDefinition[]>([]);
+const moduleFilter = ref('');
 const selected = ref<ModuleDefinition>();
 const activeRun = ref<RunRecord>();
 const output = ref<RunOutput>({ stdout: '', stderr: '' });
@@ -186,10 +198,16 @@ const error = ref('');
 const notice = ref('');
 const rootsText = ref('');
 let pollTimer: ReturnType<typeof setTimeout> | undefined;
+const filteredModules = computed(() => {
+  const filter = moduleFilter.value.trim().toLocaleLowerCase();
+  return filter
+    ? modules.value.filter((module) => module.name.toLocaleLowerCase().includes(filter))
+    : modules.value;
+});
 const groupedModules = computed(() =>
-  [...new Set(modules.value.map((item) => item.category))].map((category) => ({
+  [...new Set(filteredModules.value.map((item) => item.category))].map((category) => ({
     category,
-    items: modules.value.filter((item) => item.category === category)
+    items: filteredModules.value.filter((item) => item.category === category)
   }))
 );
 const runButtonLabel = computed(() =>
@@ -425,6 +443,14 @@ nav button.active {
 }
 aside {
   padding-right: 10px;
+}
+.module-filter {
+  display: block;
+  margin-top: 20px;
+  font-weight: 650;
+}
+.no-modules {
+  margin-top: 22px;
 }
 .muted,
 .field p,
