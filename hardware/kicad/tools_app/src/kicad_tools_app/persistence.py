@@ -1,14 +1,13 @@
-"""Atomic JSON settings and run-history persistence."""
+"""Atomic JSON settings persistence and ephemeral latest-run state."""
 
 from __future__ import annotations
 
 import json
 import os
 import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 
-from .models import AppSettings, RunRecord, RunStatus
+from .models import AppSettings, RunRecord
 
 
 def atomic_write_json(path: Path, value: object) -> None:
@@ -38,7 +37,12 @@ class SettingsStore:
         if not self.path.exists():
             self.save(self.defaults)
             return self.defaults.model_copy(deep=True)
-        return AppSettings.model_validate_json(self.path.read_text(encoding="utf-8"))
+        value = json.loads(self.path.read_text(encoding="utf-8"))
+        # Migrate settings written before run-history retention was removed.
+        if value.pop("history_limit", None) is not None:
+            settings = AppSettings.model_validate(value)
+            return self.save(settings)
+        return AppSettings.model_validate(value)
 
     def save(self, settings: AppSettings) -> AppSettings:
         """Atomically persist and return ``settings``."""
@@ -47,61 +51,42 @@ class SettingsStore:
 
 
 class RunStore:
-    """Persist one metadata document and two log files per run."""
+    """Keep only the latest run and its output in process memory."""
 
-    def __init__(self, runs_dir: Path):
-        self.runs_dir = runs_dir
-        runs_dir.mkdir(parents=True, exist_ok=True)
+    def __init__(self) -> None:
+        self._record: RunRecord | None = None
+        self._stdout = ""
+        self._stderr = ""
 
     def save(self, record: RunRecord) -> None:
-        """Atomically store a complete run snapshot."""
-        atomic_write_json(self._metadata(record.id), record.model_dump(mode="json"))
+        """Replace the in-memory latest-run snapshot."""
+        if (
+            self._record is None
+            or record.id == self._record.id
+            or record.created_at > self._record.created_at
+        ):
+            if self._record is None or record.id != self._record.id:
+                self._stdout = ""
+                self._stderr = ""
+            self._record = record.model_copy(deep=True)
 
     def get(self, run_id: str) -> RunRecord:
-        """Load ``run_id`` or raise ``KeyError`` for an unknown UUID."""
-        path = self._metadata(run_id)
-        try:
-            return RunRecord.model_validate_json(path.read_text(encoding="utf-8"))
-        except FileNotFoundError as exc:
-            raise KeyError(run_id) from exc
+        """Return ``run_id`` if it is the latest run."""
+        if self._record is None or self._record.id != run_id:
+            raise KeyError(run_id)
+        return self._record.model_copy(deep=True)
 
-    def list(self) -> list[RunRecord]:
-        """Return all records newest first, ignoring unrelated files."""
-        records = [
-            RunRecord.model_validate_json(path.read_text(encoding="utf-8"))
-            for path in self.runs_dir.glob("*.json")
-        ]
-        return sorted(records, key=lambda item: item.created_at, reverse=True)
+    def latest(self) -> RunRecord | None:
+        """Return the latest submitted run, if one exists."""
+        return self._record.model_copy(deep=True) if self._record else None
 
-    def recover_interrupted(self) -> int:
-        """Mark queued or running records failed after an unclean restart."""
-        recovered = 0
-        for record in self.list():
-            if record.status in (RunStatus.QUEUED, RunStatus.RUNNING):
-                record.status = RunStatus.FAILED
-                record.finished_at = datetime.now(UTC)
-                record.error_summary = "Backend restarted before this run completed."
-                self.save(record)
-                recovered += 1
-        return recovered
+    def set_output(self, run_id: str, stdout: bytes, stderr: bytes) -> None:
+        """Store decoded output only when ``run_id`` is still the latest run."""
+        if self._record is not None and self._record.id == run_id:
+            self._stdout = stdout.decode("utf-8", errors="replace")
+            self._stderr = stderr.decode("utf-8", errors="replace")
 
-    def prune(self, limit: int) -> None:
-        """Remove metadata and logs older than the newest ``limit`` records."""
-        for record in self.list()[limit:]:
-            for path in (
-                self._metadata(record.id),
-                self.stdout(record.id),
-                self.stderr(record.id),
-            ):
-                path.unlink(missing_ok=True)
-
-    def stdout(self, run_id: str) -> Path:
-        """Return the server-controlled stdout path for ``run_id``."""
-        return self.runs_dir / f"{run_id}.stdout.log"
-
-    def stderr(self, run_id: str) -> Path:
-        """Return the server-controlled stderr path for ``run_id``."""
-        return self.runs_dir / f"{run_id}.stderr.log"
-
-    def _metadata(self, run_id: str) -> Path:
-        return self.runs_dir / f"{run_id}.json"
+    def output(self, run_id: str) -> tuple[str, str]:
+        """Return output for the latest run or raise ``KeyError``."""
+        self.get(run_id)
+        return self._stdout, self._stderr

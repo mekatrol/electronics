@@ -42,7 +42,6 @@ const settings = {
   kicad_executable: 'kicad',
   kicad_cli_executable: 'kicad-cli',
   max_concurrent_runs: 2,
-  history_limit: 200,
   frontend_origin: 'http://localhost:5173'
 };
 const health = {
@@ -65,8 +64,8 @@ const mockFetch = (extra?: (url: string, init?: RequestInit) => Response | undef
       const data =
         url === '/api/modules'
           ? [moduleDefinition]
-          : url === '/api/runs'
-            ? []
+          : url === '/api/runs/latest'
+            ? null
             : url === '/api/health'
               ? health
               : settings;

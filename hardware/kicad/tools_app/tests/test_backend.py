@@ -285,7 +285,6 @@ def test_default_settings_discover_repository_ipc_python(tmp_path: Path) -> None
         index_path=app_dir / "module_index.json",
         schema_path=app_dir / "schemas/module_index.schema.json",
         data_dir=app_dir / "data",
-        runs_dir=app_dir / "data/runs",
         settings_path=app_dir / "data/settings.json",
     )
 
@@ -336,8 +335,8 @@ def test_reachable_editor_satisfies_gui_availability() -> None:
 
 @pytest.mark.asyncio
 async def test_runner_success_failure_and_timeout(tmp_path: Path) -> None:
-    """Persist terminal states and captured output for representative processes."""
-    store = RunStore(tmp_path / "runs")
+    """Keep terminal states and captured output in memory."""
+    store = RunStore()
     runner = ProcessRunner(store)
     cases = [
         ("ok", "print('hello')", 5, RunStatus.SUCCEEDED),
@@ -358,13 +357,26 @@ async def test_runner_success_failure_and_timeout(tmp_path: Path) -> None:
             if store.get(run_id).status not in (RunStatus.QUEUED, RunStatus.RUNNING):
                 break
         assert store.get(run_id).status is expected
-    assert store.stdout("ok").read_text(encoding="utf-8") == "hello\n"
+    # Only the latest run remains available; exercise output separately.
+    output_record = _record(store, "output")
+    runner.submit(
+        output_record,
+        command=[sys.executable, "-c", "print('hello')"],
+        cwd=tmp_path,
+        timeout=5,
+        mutates_kicad=False,
+    )
+    for _ in range(100):
+        await asyncio.sleep(0.03)
+        if store.get("output").status not in (RunStatus.QUEUED, RunStatus.RUNNING):
+            break
+    assert store.output("output")[0] == "hello\n"
 
 
 @pytest.mark.asyncio
 async def test_runner_cancellation(tmp_path: Path) -> None:
-    """Cancel an active process and persist the cancelled state."""
-    store = RunStore(tmp_path / "runs")
+    """Cancel an active process and retain its state in memory."""
+    store = RunStore()
     runner = ProcessRunner(store)
     record = _record(store, "cancel")
     runner.submit(
@@ -381,17 +393,26 @@ async def test_runner_cancellation(tmp_path: Path) -> None:
     assert (await runner.cancel("cancel")).status is RunStatus.CANCELLED
 
 
-def test_recovery_marks_interrupted_runs_failed(tmp_path: Path) -> None:
-    """Make pre-restart active records honest historical failures."""
-    store = RunStore(tmp_path / "runs")
-    store.save(_record(store, "interrupted"))
-    assert store.recover_interrupted() == 1
-    assert store.get("interrupted").status is RunStatus.FAILED
+def test_run_store_keeps_only_latest_run_in_memory(tmp_path: Path) -> None:
+    """Replace the prior run without creating a run directory or files."""
+    store = RunStore()
+    older = _record(store, "older")
+    store.save(older)
+    store.set_output(older.id, b"old output", b"")
+    newer = _record(store, "newer")
+    newer.created_at = datetime.now(UTC)
+    store.save(newer)
+
+    assert store.latest() == newer
+    assert store.output(newer.id) == ("", "")
+    assert not (tmp_path / "runs").exists()
+    with pytest.raises(KeyError):
+        store.get(older.id)
 
 
 @pytest.mark.asyncio
 async def test_api_contract_and_disabled_module_hiding(tmp_path: Path) -> None:
-    """Expose module/settings/history APIs without leaking script paths."""
+    """Expose module/settings/latest-run APIs without leaking script paths."""
     paths = _app_tree(tmp_path)
     app = create_app(paths)
     transport = ASGITransport(app=app)
@@ -415,7 +436,7 @@ async def test_api_contract_and_disabled_module_hiding(tmp_path: Path) -> None:
         assert [item["id"] for item in modules] == ["fake-tool"]
         assert "script" not in modules[0]
         assert (await client.get("/api/modules/disabled-tool")).status_code == 404
-        assert (await client.get("/api/runs")).json() == []
+        assert (await client.get("/api/runs/latest")).json() is None
         assert (await client.get("/api/settings")).status_code == 200
         response = await client.post(
             "/api/runs", json={"module_id": "fake-tool", "parameters": {"bogus": 1}}
@@ -432,8 +453,6 @@ def _record(store: RunStore, run_id: str) -> RunRecord:
         arguments=[sys.executable],
         status=RunStatus.QUEUED,
         created_at=datetime.now(UTC),
-        stdout_path=str(store.stdout(run_id)),
-        stderr_path=str(store.stderr(run_id)),
     )
 
 
@@ -486,6 +505,5 @@ def _app_tree(tmp_path: Path) -> AppPaths:
         index_path=app_dir / "module_index.json",
         schema_path=schemas / "module_index.schema.json",
         data_dir=app_dir / "data",
-        runs_dir=app_dir / "data" / "runs",
         settings_path=app_dir / "data" / "settings.json",
     )

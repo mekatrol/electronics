@@ -111,37 +111,11 @@
               {{ submitting ? 'Submitting…' : 'Run tool' }}
             </button>
           </form>
-        </article>
-        <article v-else class="panel empty">
-          <h2>Select a tool</h2>
-          <p>Its metadata-generated form will appear here.</p>
-        </article>
-      </section>
-      <section v-else-if="tab === 'Runs'" class="runs-layout">
-        <div class="panel history">
-          <div class="panel-heading">
-            <h2>Run history</h2>
-            <button @click="loadRuns">Refresh</button>
-          </div>
-          <button
-            v-for="run in runs"
-            :key="run.id"
-            :class="['run-row', { selected: activeRun?.id === run.id }]"
-            @click="showRun(run)"
-          >
-            <span
-              ><strong>{{ moduleName(run.module_id) }}</strong
-              ><small>{{ formatDate(run.created_at) }}</small></span
-            ><span :class="['status', run.status]">{{ run.status }}</span>
-          </button>
-          <p v-if="runs.length === 0" class="muted">No runs yet.</p>
-        </div>
-        <article class="panel output">
-          <template v-if="activeRun"
-            ><div class="panel-heading">
+          <section v-if="activeRun" class="output last-run">
+            <div class="panel-heading">
               <div>
-                <h2>{{ moduleName(activeRun.module_id) }}</h2>
-                <code>{{ activeRun.id }}</code>
+                <h3>Last run</h3>
+                <small>{{ formatDate(activeRun.created_at) }}</small>
               </div>
               <button v-if="isActive(activeRun)" @click="cancelRun">Cancel</button>
             </div>
@@ -155,11 +129,12 @@
             <h3>Standard output</h3>
             <pre>{{ output.stdout || 'No output.' }}</pre>
             <h3>Standard error</h3>
-            <pre class="stderr">{{ output.stderr || 'No errors.' }}</pre></template
-          ><template v-else
-            ><h2>Run details</h2>
-            <p class="muted">Select a run to inspect its state and logs.</p></template
-          >
+            <pre class="stderr">{{ output.stderr || 'No errors.' }}</pre>
+          </section>
+        </article>
+        <article v-else class="panel empty">
+          <h2>Select a tool</h2>
+          <p>Its metadata-generated form will appear here.</p>
         </article>
       </section>
       <section v-else-if="tab === 'Readiness'" class="panel readiness">
@@ -184,21 +159,13 @@
           ><label
             >KiCad CLI executable<input v-model="settings.kicad_cli_executable" required
           /></label>
-          <div class="columns">
-            <label
-              >Maximum concurrent runs<input
-                v-model.number="settings.max_concurrent_runs"
-                type="number"
-                min="1"
-                max="16" /></label
-            ><label
-              >History limit<input
-                v-model.number="settings.history_limit"
-                type="number"
-                min="1"
-                max="10000"
-            /></label>
-          </div>
+          <label
+            >Maximum concurrent runs<input
+              v-model.number="settings.max_concurrent_runs"
+              type="number"
+              min="1"
+              max="16"
+          /></label>
           <button class="primary" type="submit">Save settings</button>
         </form>
       </section>
@@ -216,10 +183,9 @@ import {
   type RunOutput,
   type RunRecord
 } from '@/api';
-const tabs = ['Modules', 'Runs', 'Readiness', 'Settings'] as const;
+const tabs = ['Modules', 'Readiness', 'Settings'] as const;
 const tab = ref<(typeof tabs)[number]>('Modules');
 const modules = ref<ModuleDefinition[]>([]);
-const runs = ref<RunRecord[]>([]);
 const selected = ref<ModuleDefinition>();
 const activeRun = ref<RunRecord>();
 const output = ref<RunOutput>({ stdout: '', stderr: '' });
@@ -276,7 +242,6 @@ const formatDate = (value: string): string =>
   new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(
     new Date(value)
   );
-const moduleName = (id: string): string => modules.value.find((item) => item.id === id)?.name ?? id;
 const isActive = (run: RunRecord): boolean => run.status === 'queued' || run.status === 'running';
 const report = (caught: unknown): void => {
   error.value = caught instanceof Error ? caught.message : 'Unexpected error';
@@ -320,20 +285,11 @@ const submitRun = async (): Promise<void> => {
   submitting.value = true;
   try {
     const run = await api.start(selected.value.id, parameters(), confirmed.value);
-    await loadRuns();
     await showRun(run);
-    tab.value = 'Runs';
   } catch (caught) {
     report(caught);
   } finally {
     submitting.value = false;
-  }
-};
-const loadRuns = async (): Promise<void> => {
-  try {
-    runs.value = await api.runs();
-  } catch (caught) {
-    report(caught);
   }
 };
 const showRun = async (run: RunRecord): Promise<void> => {
@@ -352,7 +308,6 @@ const cancelRun = async (): Promise<void> => {
   try {
     activeRun.value = await api.cancel(activeRun.value.id);
     await showRun(activeRun.value);
-    await loadRuns();
   } catch (caught) {
     report(caught);
   }
@@ -376,16 +331,16 @@ onMounted(async () => {
   try {
     const [moduleData, runData, healthData, settingsData] = await Promise.all([
       api.modules(),
-      api.runs(),
+      api.latestRun(),
       api.health(),
       api.settings()
     ]);
     modules.value = moduleData;
-    runs.value = runData;
     health.value = healthData;
     settings.value = settingsData;
     rootsText.value = settingsData.allowed_roots.join('\n');
     if (moduleData[0]) selectModule(moduleData[0]);
+    if (runData) await showRun(runData);
   } catch (caught) {
     report(caught);
   }
@@ -470,8 +425,7 @@ nav button.active {
   background: #263a30;
   color: #fff;
 }
-.catalogue,
-.runs-layout {
+.catalogue {
   display: grid;
   grid-template-columns: 310px 1fr;
   gap: 20px;
@@ -490,8 +444,7 @@ small {
   text-transform: uppercase;
   margin: 22px 0 8px;
 }
-.module-button,
-.run-row {
+.module-button {
   display: flex;
   width: 100%;
   justify-content: space-between;
@@ -499,12 +452,10 @@ small {
   text-align: left;
   margin-bottom: 6px;
 }
-.module-button span,
-.run-row strong {
+.module-button span {
   display: block;
 }
-.module-button small,
-.run-row small {
+.module-button small {
   display: block;
   margin-top: 4px;
 }
@@ -625,15 +576,6 @@ textarea {
   text-align: center;
   padding-top: 100px;
 }
-.history {
-  padding: 18px;
-}
-.run-row {
-  border: 0;
-  border-bottom: 1px solid #e2e2da;
-  border-radius: 0;
-  background: transparent;
-}
 .output pre {
   background: #18201b;
   color: #dfe7e1;
@@ -650,6 +592,11 @@ textarea {
 .output code {
   font-size: 0.7rem;
   color: #69716b;
+}
+.last-run {
+  border-top: 1px solid #e2e2da;
+  margin-top: 28px;
+  padding-top: 24px;
 }
 .checks {
   display: grid;
@@ -696,8 +643,7 @@ textarea {
   .shell {
     padding: 20px 15px;
   }
-  .catalogue,
-  .runs-layout {
+  .catalogue {
     grid-template-columns: 1fr;
   }
   header {

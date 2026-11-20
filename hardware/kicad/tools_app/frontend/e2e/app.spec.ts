@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('loads backend modules and opens readiness', async ({ page }) => {
   const settings = {
     allowed_roots: ['/projects'], python_executable: '/python', kicad_executable: 'kicad',
-    kicad_cli_executable: 'kicad-cli', max_concurrent_runs: 2, history_limit: 200, frontend_origin: 'http://localhost:5173',
+    kicad_cli_executable: 'kicad-cli', max_concurrent_runs: 2, frontend_origin: 'http://localhost:5173',
   };
   const health = {
     status: 'ok', python: { configured: '/python', available: true, resolved: '/python' },
@@ -17,7 +17,7 @@ test('loads backend modules and opens readiness', async ({ page }) => {
       id: 'report', name: 'Board report', description: 'Inspect the board.', category: 'analysis', execution_type: 'read_only',
       requires_kicad: true, requires_pcb_editor: true, requires_kicad_api: true, timeout_seconds: 60, parameters: [],
       risk: { level: 'low', summary: 'Read only.', confirmation_required: false },
-    }] : path === '/api/runs' ? [] : path === '/api/health' ? health : settings;
+    }] : path === '/api/runs/latest' ? null : path === '/api/health' ? health : settings;
     await route.fulfill({ json: body });
   });
   await page.goto('/');

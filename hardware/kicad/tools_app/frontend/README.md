@@ -40,8 +40,8 @@ npm run dev
 ```
 
 Start the backend on `127.0.0.1:8000` first. Vite proxies `/api` requests to
-that address. Run history and active logs can be reopened from the Runs tab,
-while active runs are polled once per second.
+that address. The latest run and active logs appear beneath the module form,
+while an active run is polled once per second.
 
 ### Type-Check, Compile and Minify for Production
 

@@ -43,8 +43,6 @@ class RunRecord(BaseModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     exit_code: int | None = None
-    stdout_path: str
-    stderr_path: str
     artifacts: list[str] = Field(default_factory=list)
     error_summary: str | None = None
 
@@ -65,5 +63,4 @@ class AppSettings(BaseModel):
     kicad_executable: str = "kicad"
     kicad_cli_executable: str = "kicad-cli"
     max_concurrent_runs: int = Field(default=2, ge=1, le=16)
-    history_limit: int = Field(default=200, ge=1, le=10_000)
     frontend_origin: str = "http://localhost:5173"

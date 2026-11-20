@@ -18,7 +18,6 @@ class AppPaths:
     index_path: Path
     schema_path: Path
     data_dir: Path
-    runs_dir: Path
     settings_path: Path
 
 
@@ -31,7 +30,6 @@ def default_paths(app_dir: Path | None = None) -> AppPaths:
         index_path=root / "module_index.json",
         schema_path=root / "schemas" / "module_index.schema.json",
         data_dir=root / "data",
-        runs_dir=root / "data" / "runs",
         settings_path=root / "data" / "settings.json",
     )
 

@@ -10,7 +10,7 @@ The application will use:
 - A Python backend, because the existing tools are Python modules and several
   use KiCad's `kipy` IPC client.
 - A Vue.js frontend supplied separately from the user's preferred template.
-- JSON files for module definitions, application settings, and run history.
+- JSON files for module definitions, application settings, and the latest run.
 - Separate subprocesses for script execution, providing isolation between the
   server and each KiCad tool.
 
@@ -317,13 +317,7 @@ for live output without changing the underlying execution model.
 
 ### 2.4 File-based persistence
 
-Store one metadata file and separate output logs for each run:
-
-```text
-data/runs/{run_id}.json
-data/runs/{run_id}.stdout.log
-data/runs/{run_id}.stderr.log
-```
+Keep the latest run metadata and output in backend memory only.
 
 Run metadata will include:
 
@@ -342,7 +336,7 @@ Persistence rules will include:
 - Write to a temporary file and atomically rename it.
 - Use UUIDs for run IDs.
 - Recover interrupted `queued` or `running` records during startup.
-- Apply a configurable history-retention limit.
+- Replace the in-memory latest run when a module is submitted.
 - Never store secrets in module parameters or logs.
 - Keep application settings in `data/settings.json`.
 
@@ -429,7 +423,7 @@ running GUI and API server.
 ### Phase 2 deliverables
 
 - FastAPI backend
-- File-based settings and run history
+- File-based settings and latest-run state
 - Safe subprocess runner
 - REST API and generated OpenAPI document
 - Health and KiCad readiness checks
@@ -443,7 +437,7 @@ running GUI and API server.
 - A supported module can be launched and monitored through the API.
 - Invalid parameters cannot reach the subprocess runner.
 - Arbitrary commands and out-of-root paths cannot be submitted.
-- Runs survive a backend restart as historical records.
+- Run state is intentionally cleared when the backend restarts.
 - Mutating KiCad tasks cannot overlap unintentionally.
 
 ## Phase 3: Integrate the Vue.js frontend
@@ -451,7 +445,7 @@ running GUI and API server.
 **Status: Complete (2026-11-13).** The supplied Vue template is integrated
 with the backend through a typed API client. It provides metadata-driven
 parameter forms, risk confirmations, submission and polling, persistent run
-history and logs, cancellation, readiness, settings, clear API errors, a
+latest-run status and logs, cancellation, readiness, settings, clear API errors, a
 development proxy, responsive styling, and unit and browser tests. Frontend
 and backend quality checks pass. Continue with Phase 4 by refactoring and
 approving additional module candidates.
@@ -466,7 +460,7 @@ frontend design.
 - Module details and a dynamically generated parameter form
 - Confirmation page for mutating operations
 - Active-run view with standard output and standard error
-- Run history
+- Latest module run
 - Application and KiCad readiness status
 - Settings page for allowed roots and executable configuration
 
@@ -513,7 +507,7 @@ proxy.
 5. Add validation messages from backend responses.
 6. Add run submission and status polling.
 7. Add log display and cancellation.
-8. Add run history and readiness views.
+8. Add latest-run and readiness views.
 9. Add confirmations for mutating and destructive actions.
 10. Add frontend linting, type checking, unit tests, and a small end-to-end
     suite.

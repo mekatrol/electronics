@@ -49,7 +49,6 @@ export interface AppSettings {
   kicad_executable: string;
   kicad_cli_executable: string;
   max_concurrent_runs: number;
-  history_limit: number;
   frontend_origin: string;
 }
 interface ExecutableStatus {
@@ -82,7 +81,7 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
 export const api = {
   modules: (): Promise<ModuleDefinition[]> => request('/api/modules'),
   health: (): Promise<HealthReport> => request('/api/health'),
-  runs: (): Promise<RunRecord[]> => request('/api/runs'),
+  latestRun: (): Promise<RunRecord | null> => request('/api/runs/latest'),
   run: (id: string): Promise<RunRecord> => request(`/api/runs/${id}`),
   output: (id: string): Promise<RunOutput> => request(`/api/runs/${id}/output`),
   start: (

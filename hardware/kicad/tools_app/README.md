@@ -35,12 +35,12 @@ python3 -m venv .venv
 ```
 
 Interactive API documentation is available at `http://127.0.0.1:8000/docs`.
-Settings and run history are written atomically below `data/` and ignored by
-Git. Runs from the previous server process that were still queued or running
-are marked failed on startup.
+Settings are written atomically below `data/` and ignored by Git. The latest
+module run and its output exist only in backend memory, are replaced by the
+next run, and disappear when the backend restarts.
 
 The initial API includes health/readiness, module catalogue, run submission,
-polling, output, cancellation, history, and settings endpoints. Mutating runs
+polling, output, cancellation, latest-run, and settings endpoints. Mutating runs
 require explicit confirmation; KiCad-board mutations are serialized.
 
 The backend and KiCad tools intentionally use separate Python environments.

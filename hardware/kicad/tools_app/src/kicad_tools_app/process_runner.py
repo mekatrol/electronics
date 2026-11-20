@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import os
 import signal
-from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -31,12 +30,11 @@ class ProcessRunner:
         cwd: Path,
         timeout: int,
         mutates_kicad: bool,
-        on_finished: Callable[[], None] | None = None,
     ) -> None:
         """Schedule a validated command and return immediately to the caller."""
         self.store.save(record)
         task = asyncio.create_task(
-            self._execute(record, command, cwd, timeout, mutates_kicad, on_finished)
+            self._execute(record, command, cwd, timeout, mutates_kicad)
         )
         self._tasks[record.id] = task
 
@@ -64,7 +62,6 @@ class ProcessRunner:
         cwd: Path,
         timeout: int,
         mutates_kicad: bool,
-        on_finished: Callable[[], None] | None,
     ) -> None:
         lock = self._mutation_lock if mutates_kicad else _NullAsyncLock()
         try:
@@ -72,44 +69,44 @@ class ProcessRunner:
                 record.status = RunStatus.RUNNING
                 record.started_at = datetime.now(UTC)
                 self.store.save(record)
-                with (
-                    self.store.stdout(record.id).open("wb") as stdout,
-                    self.store.stderr(record.id).open("wb") as stderr,
-                ):
-                    # A new session lets cancellation and timeout terminate the entire
-                    # descendant process group rather than leaving tool children behind.
-                    process = await asyncio.create_subprocess_exec(
-                        *command,
-                        cwd=cwd,
-                        env={
-                            **os.environ,
-                            "PYTHONPATH": os.pathsep.join(
-                                filter(
-                                    None,
-                                    (str(cwd), os.environ.get("PYTHONPATH", "")),
-                                )
-                            ),
-                        },
-                        stdout=stdout,
-                        stderr=stderr,
-                        start_new_session=True,
+                # Pipes keep output ephemeral; a new session lets cancellation and
+                # timeout terminate the complete descendant process group.
+                process = await asyncio.create_subprocess_exec(
+                    *command,
+                    cwd=cwd,
+                    env={
+                        **os.environ,
+                        "PYTHONPATH": os.pathsep.join(
+                            filter(None, (str(cwd), os.environ.get("PYTHONPATH", "")))
+                        ),
+                    },
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    start_new_session=True,
+                )
+                self._processes[record.id] = process
+                try:
+                    stdout, stderr = await asyncio.wait_for(
+                        process.communicate(), timeout
                     )
-                    self._processes[record.id] = process
-                    try:
-                        record.exit_code = await asyncio.wait_for(
-                            process.wait(), timeout
-                        )
-                        record.status = (
-                            RunStatus.SUCCEEDED
-                            if record.exit_code == 0
-                            else RunStatus.FAILED
-                        )
-                    except TimeoutError:
-                        os.killpg(process.pid, signal.SIGTERM)
-                        await process.wait()
-                        record.status = RunStatus.TIMED_OUT
-                        record.error_summary = f"Execution exceeded {timeout} seconds."
+                    self.store.set_output(record.id, stdout, stderr)
+                    record.exit_code = process.returncode
+                    record.status = (
+                        RunStatus.SUCCEEDED
+                        if record.exit_code == 0
+                        else RunStatus.FAILED
+                    )
+                except TimeoutError:
+                    os.killpg(process.pid, signal.SIGTERM)
+                    stdout, stderr = await process.communicate()
+                    self.store.set_output(record.id, stdout, stderr)
+                    record.status = RunStatus.TIMED_OUT
+                    record.error_summary = f"Execution exceeded {timeout} seconds."
         except asyncio.CancelledError:
+            cancelled_process = self._processes.get(record.id)
+            if cancelled_process is not None:
+                stdout, stderr = await cancelled_process.communicate()
+                self.store.set_output(record.id, stdout, stderr)
             record.status = RunStatus.CANCELLED
             record.error_summary = "Cancelled by the user."
             raise
@@ -121,8 +118,6 @@ class ProcessRunner:
             self.store.save(record)
             self._processes.pop(record.id, None)
             self._tasks.pop(record.id, None)
-            if on_finished:
-                on_finished()
 
 
 class _NullAsyncLock:

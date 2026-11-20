@@ -35,8 +35,7 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
     settings = settings_store.load()
     static_dir = Path(__file__).parent / "static"
     static_index = static_dir / "index.html"
-    runs = RunStore(locations.runs_dir)
-    runs.recover_interrupted()
+    runs = RunStore()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -117,7 +116,6 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
             raise HTTPException(status_code=503, detail=blocker)
         command = build_command(module, values, settings.python_executable)
         run_id = str(uuid4())
-        store: RunStore = request.app.state.runs
         record = RunRecord(
             id=run_id,
             module_id=body.module_id,
@@ -126,8 +124,6 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
             arguments=command,
             status=RunStatus.QUEUED,
             created_at=datetime.now(UTC),
-            stdout_path=str(store.stdout(run_id)),
-            stderr_path=str(store.stderr(run_id)),
         )
         request.app.state.runner.submit(
             record,
@@ -135,15 +131,14 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
             cwd=_working_directory(module, values, request.app.state.paths),
             timeout=module["timeout_seconds"],
             mutates_kicad=module["execution_type"] == "kicad_modify",
-            on_finished=lambda: store.prune(settings.history_limit),
         )
         return record
 
-    @app.get("/api/runs", response_model=list[RunRecord])
-    async def list_runs(request: Request) -> list[RunRecord]:
-        """Return persisted run history, newest first."""
+    @app.get("/api/runs/latest", response_model=RunRecord | None)
+    async def latest_run(request: Request) -> RunRecord | None:
+        """Return the latest module run, if one has been submitted."""
         store = cast(RunStore, request.app.state.runs)
-        return store.list()
+        return store.latest()
 
     @app.get("/api/runs/{run_id}", response_model=RunRecord)
     async def get_run(run_id: str, request: Request) -> RunRecord:
@@ -155,10 +150,8 @@ def create_app(paths: AppPaths | None = None) -> FastAPI:
         """Return captured logs without accepting any client-defined path."""
         _get_run(request, run_id)
         store: RunStore = request.app.state.runs
-        return RunOutput(
-            stdout=_read_log(store.stdout(run_id)),
-            stderr=_read_log(store.stderr(run_id)),
-        )
+        stdout, stderr = store.output(run_id)
+        return RunOutput(stdout=stdout, stderr=stderr)
 
     @app.post("/api/runs/{run_id}/cancel", response_model=RunRecord)
     async def cancel_run(run_id: str, request: Request) -> RunRecord:
@@ -212,13 +205,6 @@ def _get_run(request: Request, run_id: str) -> RunRecord:
         return store.get(run_id)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Run not found") from exc
-
-
-def _read_log(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8", errors="replace")
-    except FileNotFoundError:
-        return ""
 
 
 def _static_response(path: Path) -> Response:
