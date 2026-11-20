@@ -248,6 +248,29 @@
       "risk": {"level": "critical", "summary": "Removes all routed copper and zones in one undoable PCB Editor transaction."}
     },
     {
+      "id": "edge-via-stitch",
+      "name": "Stitch Vias Around Board Edge",
+      "description": "Place ground vias around the outer Edge.Cuts contour while avoiding components, routed copper, keepouts, zones, and other board geometry.",
+      "script": "../modules/design/board/edge_via_stitch.py",
+      "enabled": true,
+      "category": "board-editing",
+      "execution_type": "kicad_modify",
+      "requires_kicad": true,
+      "requires_pcb_editor": true,
+      "requires_kicad_api": true,
+      "working_directory": "repository_root",
+      "timeout_seconds": 180,
+      "parameters": [
+        {"name": "edge_offset", "label": "Edge offset", "description": "Distance from the Edge.Cuts centreline to each via centre, in millimetres.", "kind": "option", "flag": "--edge-offset", "type": "number", "required": false, "default": 0.6, "minimum": 0.01},
+        {"name": "spacing", "label": "Via spacing", "description": "Target centre-to-centre spacing measured along the board perimeter, in millimetres.", "kind": "option", "flag": "--spacing", "type": "number", "required": false, "default": 2.5, "minimum": 0.01},
+        {"name": "clearance", "label": "Item clearance", "description": "Minimum edge-to-edge clearance between a new via and existing board items, in millimetres.", "kind": "option", "flag": "--clearance", "type": "number", "required": false, "default": 0.25, "minimum": 0},
+        {"name": "via_diameter", "label": "Via diameter", "description": "Copper diameter of each stitching via, in millimetres.", "kind": "option", "flag": "--via-diameter", "type": "number", "required": false, "default": 0.6, "minimum": 0.01},
+        {"name": "drill_diameter", "label": "Drill diameter", "description": "Drill diameter of each stitching via, in millimetres.", "kind": "option", "flag": "--drill-diameter", "type": "number", "required": false, "default": 0.3, "minimum": 0.01},
+        {"name": "net_name", "label": "Ground net", "description": "Existing board net assigned to every stitching via.", "kind": "option", "flag": "--net-name", "type": "string", "required": false, "default": "GND"}
+      ],
+      "risk": {"level": "high", "summary": "Adds many through-vias to the live board in one undoable PCB Editor transaction."}
+    },
+    {
       "id": "create-board-outline-and-zones",
       "name": "Create Board Outline and Zones",
       "description": "Replace the board outline and configured zones using the dimensions embedded in the module.",

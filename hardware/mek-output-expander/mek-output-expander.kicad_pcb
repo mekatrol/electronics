@@ -6982,7 +6982,7 @@
 		(descr "Tag-Connect programming header; http://www.tag-connect.com/Materials/TC2030-IDC-NL.pdf")
 		(tags "tag connect programming header pogo pins")
 		(property "Reference" "J2"
-			(at -4.482143 -0.065 0)
+			(at 0.07 -2.065 180)
 			(layer "F.SilkS")
 			(uuid "d0723666-11e5-4147-9198-0be429b36b7d")
 			(effects
@@ -9710,7 +9710,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C16"
-			(at 3.14825 -0.1 90)
+			(at 1.7 -2.3 180)
 			(layer "F.SilkS")
 			(uuid "276588a5-aa19-4eea-a1bc-65a80d154f15")
 			(effects
@@ -11381,7 +11381,7 @@
 		(descr "5.0mm x 5.0mm Addressable RGB LED NeoPixel, https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf")
 		(tags "LED RGB NeoPixel PLCC-4 5050")
 		(property "Reference" "D4"
-			(at 0 -3.59825 90)
+			(at 4.2 -0.1 180)
 			(layer "F.SilkS")
 			(uuid "203628fb-d1c0-404e-93e6-88fefa72a71b")
 			(effects
@@ -13357,7 +13357,7 @@
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(property "Reference" "J3"
-			(at -2.7 7.105 180)
+			(at -2.7 6.005 180)
 			(layer "F.SilkS")
 			(uuid "e8dff9b1-e41c-4eb3-b700-7498acf5a134")
 			(effects
@@ -15396,7 +15396,7 @@
 		(descr "SMD capacitor, aluminum electrolytic, Nichicon, 6.3x7.7mm")
 		(tags "capacitor electrolytic")
 		(property "Reference" "C6"
-			(at 5.54825 -2.4 90)
+			(at 2.7 -4.625 180)
 			(layer "F.SilkS")
 			(uuid "4b98e6eb-ffa3-401e-bf8f-bf6397f6f43c")
 			(effects
@@ -17592,7 +17592,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC-7351 nominal, (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf)")
 		(tags "capacitor")
 		(property "Reference" "C22"
-			(at 3.14825 0 90)
+			(at -1.075 -2.1 180)
 			(layer "F.SilkS")
 			(uuid "087a0fb5-52b3-4322-96b4-29e357dd2b0d")
 			(effects
@@ -19868,14 +19868,6 @@
 			)
 			(justify left bottom)
 		)
-	)
-	(via
-		(at 224.5 58.2)
-		(size 0.6)
-		(drill 0.3)
-		(layers "F.Cu" "B.Cu")
-		(net "")
-		(uuid "55aebeb8-4424-4e85-b555-a6978366b120")
 	)
 	(segment
 		(start 149.475 113.8)
