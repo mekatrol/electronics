@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import runpy
 import unittest
 from pathlib import Path
 
@@ -86,6 +87,23 @@ class ModuleIndexTests(unittest.TestCase):
                         self.assertLessEqual(default, parameter["maximum"])
                     if "choices" in parameter:
                         self.assertIn(default, parameter["choices"])
+
+    def test_edge_via_defaults_match_shared_via_rules(self) -> None:
+        """Prevent application defaults from drifting from via validation rules."""
+        settings = runpy.run_path(
+            str(REPOSITORY_ROOT / "modules" / "shared" / "via_settings.py")
+        )
+        module = next(
+            item for item in self.index["modules"] if item["id"] == "edge-via-stitch"
+        )
+        defaults = {
+            parameter["name"]: parameter["default"]
+            for parameter in module["parameters"]
+        }
+        self.assertEqual(defaults["via_diameter"], settings["DEFAULT_VIA_DIAMETER_MM"])
+        self.assertEqual(
+            defaults["drill_diameter"], settings["DEFAULT_DRILL_DIAMETER_MM"]
+        )
 
     def test_enabled_modules_have_execution_safety_metadata(self) -> None:
         """Require descriptions, timeouts, and explicit risk on runnable entries."""

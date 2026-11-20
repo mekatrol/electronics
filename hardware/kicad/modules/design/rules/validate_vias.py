@@ -36,6 +36,12 @@ from modules.shared.kicad_ipc import (
     run_live_board_drc,
     to_mm,
 )
+from modules.shared.via_settings import (
+    MINIMUM_ANNULAR_RING_MM,
+    MINIMUM_DIAMETER_MM,
+    MINIMUM_DRILL_MM,
+    REQUIRE_THROUGH_VIAS,
+)
 
 # ============================================================
 # User settings
@@ -47,22 +53,6 @@ SET_VIAS = False
 # Run the full KiCad DRC after settings are applied. DRC uses an isolated copy
 # of the live board, so the real board remains open and unsaved for review.
 RUN_DRC_AFTER_SET = True
-
-# These conservative dimensions avoid JLCPCB's surcharge for drills below
-# 0.30 mm and agree with this repository's smallest configured net-class via.
-# Values are minimums, so intentionally larger signal or power vias pass.
-MINIMUM_DRILL_MM = 0.30
-MINIMUM_DIAMETER_MM = 0.50
-
-# JLCPCB prefers the diameter to be at least 0.15 mm larger than the hole. A
-# 0.10 mm ring on each side is more conservative and gives a total difference
-# of 0.20 mm between the via and drill diameters.
-MINIMUM_ANNULAR_RING_MM = 0.10
-
-# JLCPCB's standard rigid-PCB service supports through-vias, not blind, buried,
-# or microvias. Disable this only for a board using a separately confirmed
-# special process.
-REQUIRE_THROUGH_VIAS = True
 
 
 @dataclass(frozen=True)

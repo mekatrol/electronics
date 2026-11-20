@@ -11,6 +11,7 @@ the live board is left unsaved for review.
 from __future__ import annotations
 
 import argparse
+import json
 import math
 from collections import Counter
 from collections.abc import Sequence
@@ -18,6 +19,7 @@ from dataclasses import dataclass
 from itertools import pairwise
 
 from kipy.board_types import Via
+from kipy.errors import ApiError
 from kipy.proto.board.board_types_pb2 import ViaType
 
 # Ruff: noqa: E402
@@ -36,12 +38,18 @@ if __package__ in {None, ""}:
 from modules.shared.kicad_geometry import edge_contours
 from modules.shared.kicad_ipc import (
     BoardLayer,
+    board_document_path,
     box_edges,
     connect_board,
     editor_commit,
     footprint_reference,
     from_mm,
+    to_mm,
     vector,
+)
+from modules.shared.via_settings import (
+    DEFAULT_DRILL_DIAMETER_MM,
+    DEFAULT_VIA_DIAMETER_MM,
 )
 
 
@@ -52,8 +60,8 @@ class ModuleOptions:
     edge_offset: float = 0.60
     spacing: float = 2.50
     clearance: float = 0.25
-    via_diameter: float = 0.60
-    drill_diameter: float = 0.30
+    via_diameter: float = DEFAULT_VIA_DIAMETER_MM
+    drill_diameter: float = DEFAULT_DRILL_DIAMETER_MM
     net_name: str = "GND"
 
 
@@ -104,6 +112,65 @@ def point_on_board(x: float, y: float, outer, holes) -> bool:
     return point_in_polygon(x, y, outer) and not any(
         point_in_polygon(x, y, hole) for hole in holes
     )
+
+
+def point_segment_distance(x: float, y: float, first, second) -> float:
+    """Return the shortest distance from a point to a contour segment."""
+    delta_x = second.x - first.x
+    delta_y = second.y - first.y
+    length_squared = delta_x * delta_x + delta_y * delta_y
+    if length_squared == 0:
+        return math.hypot(x - first.x, y - first.y)
+    projection = ((x - first.x) * delta_x + (y - first.y) * delta_y) / length_squared
+    projection = min(1.0, max(0.0, projection))
+    nearest_x = first.x + projection * delta_x
+    nearest_y = first.y + projection * delta_y
+    return math.hypot(x - nearest_x, y - nearest_y)
+
+
+def via_envelope_inside_board(point, radius_nm: int, outer, holes) -> bool:
+    """Return whether a circular via clearance envelope lies inside Edge.Cuts."""
+    if not point_on_board(point.x, point.y, outer, holes):
+        return False
+    # ``edge_contours`` approximates curved primitives with short chords. For
+    # convex rounded corners those chords lie just inside the real outline, so
+    # this distance test is slightly conservative and cannot admit an overlap.
+    return all(
+        point_segment_distance(point.x, point.y, first, second) >= radius_nm
+        for contour in (outer, *holes)
+        for first, second in pairwise(contour)
+    )
+
+
+def board_copper_edge_clearance(board) -> int:
+    """Read the board-level copper-to-edge clearance in nanometres.
+
+    KiCad 11 exposes design rules through IPC. KiCad 10 returns an explicit
+    unsupported-command error, so read the same value from the matching
+    project file for that version.
+    """
+    try:
+        return board.get_design_rules().rules.constraints.copper_edge_clearance
+    except ApiError as error:
+        if "no handler available" not in str(error).lower():
+            raise
+
+    project_path = board_document_path(board.document).with_suffix(".kicad_pro")
+    if not project_path.is_file():
+        raise RuntimeError(
+            "KiCad IPC cannot report design rules and the matching .kicad_pro "
+            "file was not found; copper-to-edge clearance is unknown"
+        )
+    project = json.loads(project_path.read_text(encoding="utf-8"))
+    try:
+        clearance_mm = project["board"]["design_settings"]["rules"][
+            "min_copper_edge_clearance"
+        ]
+    except (KeyError, TypeError) as error:
+        raise RuntimeError(
+            f"could not read copper-to-edge clearance from {project_path}"
+        ) from error
+    return from_mm(float(clearance_mm))
 
 
 def contour_lengths(contour):
@@ -249,16 +316,40 @@ def run(options: ModuleOptions) -> int:
     outer = max(contours, key=lambda contour: abs(signed_area(contour)))
     holes = [contour for contour in contours if contour is not outer]
 
-    envelope_radius_nm = from_mm(options.via_diameter / 2 + options.clearance)
+    via_radius_nm = from_mm(options.via_diameter / 2)
+    edge_clearance_nm = board_copper_edge_clearance(board)
+    # Stay one micron beyond the exact rule boundary so integer rounding and
+    # curved-edge chord approximation cannot produce a marginal DRC failure.
+    edge_envelope_radius_nm = via_radius_nm + edge_clearance_nm + from_mm(0.001)
+    requested_edge_offset_nm = from_mm(options.edge_offset)
+    effective_edge_offset_nm = max(
+        requested_edge_offset_nm,
+        edge_envelope_radius_nm,
+    )
+    if effective_edge_offset_nm > requested_edge_offset_nm:
+        print(
+            f"Raised via-centre edge offset from {options.edge_offset:.3f} mm to "
+            f"{to_mm(effective_edge_offset_nm):.3f} mm to satisfy the board's "
+            f"{to_mm(edge_clearance_nm):.3f} mm copper-to-edge rule."
+        )
+    envelope_radius_nm = via_radius_nm + from_mm(options.clearance)
     obstacles = collect_obstacles(board, options.net_name)
     accepted = []
     skipped = Counter()
     for point in candidate_points(
         outer,
         holes,
-        from_mm(options.edge_offset),
+        effective_edge_offset_nm,
         from_mm(options.spacing),
     ):
+        if not via_envelope_inside_board(
+            point,
+            edge_envelope_radius_nm,
+            outer,
+            holes,
+        ):
+            skipped["board-edge"] += 1
+            continue
         reason = collision_reason(board, point, envelope_radius_nm, obstacles)
         if reason is not None:
             skipped[reason.split(" ", 1)[0]] += 1
@@ -336,11 +427,14 @@ def parse_args(argv: Sequence[str] | None = None) -> ModuleOptions:
     parser.add_argument(
         "--via-diameter",
         type=float,
-        default=0.60,
+        default=DEFAULT_VIA_DIAMETER_MM,
         help="finished via copper diameter, in mm",
     )
     parser.add_argument(
-        "--drill-diameter", type=float, default=0.30, help="via drill diameter, in mm"
+        "--drill-diameter",
+        type=float,
+        default=DEFAULT_DRILL_DIAMETER_MM,
+        help="via drill diameter, in mm",
     )
     parser.add_argument(
         "--net-name", default="GND", help="net assigned to the stitching vias"
