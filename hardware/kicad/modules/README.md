@@ -108,7 +108,7 @@ The editor history labels are:
 
 | Script | Undo/Redo entry |
 | --- | --- |
-| `component_reference_text.py` | Update component references |
+| `update_text.py` | Update board text / Update component text |
 | `align_connector_pin_text.py` | Align connector pin labels |
 | `align_groups.py` | Align repeated component groups |
 | `align_holes.py` | Align mounting holes |
@@ -217,21 +217,28 @@ Closed-cutout construction uses the GEOS geometry library (`libgeos_c`). The
 script stops with an explicit error if GEOS is unavailable rather than emitting
 an invalid or ambiguous routed outline.
 
-### `component_reference_text.py`
+### `update_text.py`
 
-Positions each visible footprint reference outside its component courtyard.
+Set `TEXT_TYPE` to `"component_reference"` to update visible footprint
+references, or to `"board_text"` to update free-standing board text. Board text
+owned by a footprint—including reference designators—is excluded from
+`"board_text"` mode. Free-standing text is resized in place and is not aligned
+to a courtyard. In component-reference mode, the script positions each
+reference outside its component courtyard.
 It independently replaces matching label widths and heights using
 `MATCH_WIDTH_MM`/`NEW_WIDTH_MM` and `MATCH_HEIGHT_MM`/`NEW_HEIGHT_MM`; set both
 values for an axis to `None` to leave that dimension unchanged. For example,
 `MATCH_HEIGHT_MM = 1.0` and `NEW_HEIGHT_MM = 0.8` changes only labels whose
 current height is 1 mm. Width matching is independent of height matching.
-It retains the reference's current side and existing position along that side:
-top/bottom references move only vertically, while left/right references move
-only horizontally. It applies the configured clearance and skips placements
+Stroke thickness is independently matched and replaced using
+`MATCH_THICKNESS_MM`/`NEW_THICKNESS_MM` in the same way.
+It retains the text's current side and existing position along that side:
+top/bottom text moves only vertically, while left/right text moves only
+horizontally. It applies the configured clearance and skips placements
 that would collide with another courtyard on the same PCB side. Set
-`IGNORE_REFERENCES` for manually positioned labels and review
-`REFERENCE_OFFSET_MM`, `OTHER_COURTYARD_CLEARANCE_MM`, and
-`CENTRED_REFERENCE_SIDE`. It deliberately leaves saving to PCB Editor.
+`IGNORE_TEXT` for text values that should remain unchanged, and
+review `TEXT_OFFSET_MM`, `OTHER_COURTYARD_CLEARANCE_MM`, and
+`CENTRED_TEXT_SIDE`. It deliberately leaves saving to PCB Editor.
 
 ### `align_connector_pin_text.py`
 

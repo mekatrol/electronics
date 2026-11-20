@@ -24,9 +24,21 @@ from kicad_ipc import (
     vector,
 )
 from kipy.board_types import BoardText
-from kipy.proto.common.types.enums_pb2 import KiCadObjectType
+from kipy.proto.common.types.enums_pb2 import HorizontalAlignment, KiCadObjectType
 
-CONNECTOR_REFERENCES = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
+CONNECTOR_REFERENCES = [
+    # "J1",
+    "J2",
+    "J3",
+    # "J4",
+    "J5",
+    "J6",
+    "J7",
+    "J8",
+    "J9",
+    "J10",
+    "J11",
+]
 FRONT_LABEL_OFFSET_MM = 0.3
 FRONT_COURTYARD_CLEARANCE_MM = 0.0
 FRONT_LABEL_PROXIMITY_MM = 10.0
@@ -167,6 +179,32 @@ def assess_candidate(text, pad, row_orientation, direction, courtyard, client):
     return (inline, distance(center, pad.position)), "eligible"
 
 
+def candidate_direction(client, text, row_orientation, courtyard, fallback):
+    """Return the side of the connector on which a label already resides."""
+    center = box_center(text_box(client, text))
+    left, right, top, bottom = box_edges(courtyard)
+    if row_orientation == "vertical":
+        connector_center = (left + right) // 2
+        if center.x != connector_center:
+            return -1 if center.x < connector_center else 1
+    else:
+        connector_center = (top + bottom) // 2
+        if center.y != connector_center:
+            return -1 if center.y < connector_center else 1
+    return fallback
+
+
+def assess_existing_side(text, pad, row_orientation, fallback, courtyard, client):
+    """Assess a label on its current connector side and retain that side."""
+    direction = candidate_direction(
+        client, text, row_orientation, courtyard, fallback
+    )
+    metric, reason = assess_candidate(
+        text, pad, row_orientation, direction, courtyard, client
+    )
+    return metric, reason, direction, text
+
+
 def target_center(client, text, pad, row_orientation, direction, courtyard):
     """Return a front courtyard-based or back pin-based label centre."""
     bounds = text_box(client, text)
@@ -190,6 +228,26 @@ def target_center(client, text, pad, row_orientation, direction, courtyard):
     else:
         y = top - normal if direction < 0 else bottom + normal
     return vector(pad.position.x, y)
+
+
+def align_text_toward_pins(text, row_orientation, direction):
+    """Anchor a radial label at the end nearest its connector pin row.
+
+    Left/right connector rows use horizontal labels; top/bottom connector rows
+    use vertical labels.  In both cases the label baseline points away from the
+    pins when ``direction`` is positive.
+    """
+    expected_angle = 0.0 if row_orientation == "vertical" else 90.0
+    if (
+        parallel_angle_error(text.attributes.angle, expected_angle)
+        > ANGLE_TOLERANCE_DEGREES
+    ):
+        return
+    text.attributes.horizontal_alignment = (
+        HorizontalAlignment.HA_LEFT
+        if direction > 0
+        else HorizontalAlignment.HA_RIGHT
+    )
 
 
 def main():
@@ -225,21 +283,20 @@ def main():
                     print(f"  pad {pad.number}: skipped (no connected copper or zone)")
                     continue
                 assessments = [
-                    (
-                        *assess_candidate(text, pad, row, direction, courtyard, client),
-                        text,
+                    assess_existing_side(
+                        text, pad, row, direction, courtyard, client
                     )
                     for text in available
                 ]
                 matches_by_layer = {}
-                for metric, _reason, text in assessments:
+                for metric, _reason, text_direction, text in assessments:
                     if metric is not None:
                         matches_by_layer.setdefault(text.layer, []).append(
-                            (metric, text)
+                            (metric, text_direction, text)
                         )
                 if not matches_by_layer:
                     print(f"  pad {pad.number}: no suitable text")
-                    for _metric, reason, text in assessments:
+                    for _metric, reason, _text_direction, text in assessments:
                         print(
                             f'    [{layer_name(text.layer)}] "{text.value}": '
                             f"skipped ({reason})"
@@ -247,10 +304,13 @@ def main():
                     continue
                 selected = {}
                 for layer, matches in matches_by_layer.items():
-                    _metric, text = min(matches, key=lambda item: item[0])
+                    _metric, text_direction, text = min(
+                        matches, key=lambda item: item[0]
+                    )
                     selected[layer] = text
+                    align_text_toward_pins(text, row, text_direction)
                     destination = target_center(
-                        client, text, pad, row, direction, courtyard
+                        client, text, pad, row, text_direction, courtyard
                     )
                     move_text_center(client, text, destination)
                     changed.append(text)
@@ -260,7 +320,7 @@ def main():
                         f'"{text.value}" to ({to_mm(destination.x):.3f}, '
                         f"{to_mm(destination.y):.3f}) mm"
                     )
-                for metric, reason, assessed_text in assessments:
+                for metric, reason, _text_direction, assessed_text in assessments:
                     if selected.get(assessed_text.layer) is assessed_text:
                         continue
                     if metric is not None:

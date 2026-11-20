@@ -5,6 +5,228 @@
 	(uuid "9056bfb0-73ee-45f7-99d2-599308cac189")
 	(paper "A4")
 	(lib_symbols
+		(symbol "Connector:Conn_01x03_Pin"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x03_Pin"
+				(at 0 -5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x03, script generated"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_locked" ""
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "Conn_01x03_Pin_1_1"
+				(rectangle
+					(start 0.8636 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(rectangle
+					(start 0.8636 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 2.54) (xy 0.8636 2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 0) (xy 0.8636 0)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 1.27 -2.54) (xy 0.8636 -2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at 5.08 2.54 180)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 0 180)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector:Conn_01x04_Socket"
 			(pin_names
 				(offset 1.016)
@@ -3295,6 +3517,12 @@
 		(uuid "27425850-177a-45f9-83f0-e94fcb5581b5")
 	)
 	(junction
+		(at 58.42 102.87)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "29eadb3e-e133-4f89-a480-15f6d7eafbf1")
+	)
+	(junction
 		(at 138.43 143.51)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -3329,6 +3557,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "994b3db6-22d9-42b5-b54f-f33a2c8aacb3")
+	)
+	(junction
+		(at 58.42 123.19)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9f29dd5b-daf5-4bfb-b6ec-154040f30a18")
 	)
 	(junction
 		(at 151.13 132.08)
@@ -3407,10 +3641,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f0b553f4-9a69-4f0d-bb0f-29596f4812ae")
-	)
-	(no_connect
-		(at 49.53 113.03)
-		(uuid "165b9258-d8b2-43d9-bbc4-cd4bb4f57492")
 	)
 	(wire
 		(pts
@@ -3541,6 +3771,16 @@
 			(type default)
 		)
 		(uuid "16c79ce9-8bf9-476c-b68f-828bf1a823a1")
+	)
+	(wire
+		(pts
+			(xy 77.47 115.57) (xy 68.58 115.57)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "224a4c1d-151f-48cf-aac8-8e4bb003998b")
 	)
 	(wire
 		(pts
@@ -3894,7 +4134,7 @@
 	)
 	(wire
 		(pts
-			(xy 62.23 110.49) (xy 62.23 102.87)
+			(xy 58.42 110.49) (xy 58.42 102.87)
 		)
 		(stroke
 			(width 0)
@@ -3924,7 +4164,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 102.87) (xy 62.23 102.87)
+			(xy 41.91 102.87) (xy 68.58 102.87)
 		)
 		(stroke
 			(width 0)
@@ -3971,6 +4211,16 @@
 			(type default)
 		)
 		(uuid "5ed6d740-e25d-403a-b09a-8200cdabf37f")
+	)
+	(wire
+		(pts
+			(xy 68.58 115.57) (xy 68.58 123.19)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "60537e92-b4b6-4cc7-a3cf-0acf4f5ab10a")
 	)
 	(wire
 		(pts
@@ -4254,7 +4504,17 @@
 	)
 	(wire
 		(pts
-			(xy 62.23 123.19) (xy 41.91 123.19)
+			(xy 68.58 110.49) (xy 68.58 102.87)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "87fe4b6b-9a80-4496-818b-e4d142cc2c87")
+	)
+	(wire
+		(pts
+			(xy 41.91 123.19) (xy 68.58 123.19)
 		)
 		(stroke
 			(width 0)
@@ -4271,6 +4531,16 @@
 			(type default)
 		)
 		(uuid "8b20b807-cc3b-4391-a9da-738482a457ca")
+	)
+	(wire
+		(pts
+			(xy 77.47 110.49) (xy 68.58 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8cea386b-74ea-4f44-a9cb-5d57b13acdb1")
 	)
 	(wire
 		(pts
@@ -4664,7 +4934,7 @@
 	)
 	(wire
 		(pts
-			(xy 62.23 115.57) (xy 62.23 123.19)
+			(xy 58.42 115.57) (xy 58.42 123.19)
 		)
 		(stroke
 			(width 0)
@@ -4954,6 +5224,16 @@
 	)
 	(wire
 		(pts
+			(xy 49.53 113.03) (xy 53.34 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f0352178-2165-4f95-8e41-5f79125cdb18")
+	)
+	(wire
+		(pts
 			(xy 80.01 162.56) (xy 102.87 162.56)
 		)
 		(stroke
@@ -4961,6 +5241,16 @@
 			(type default)
 		)
 		(uuid "f0eb06d9-56dd-4df0-9ca5-35e5178a2f35")
+	)
+	(wire
+		(pts
+			(xy 74.93 113.03) (xy 77.47 113.03)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f0fecd6d-8ffe-4ba0-9811-fdefed6033b8")
 	)
 	(wire
 		(pts
@@ -5001,6 +5291,16 @@
 			(type default)
 		)
 		(uuid "f512c3b1-d220-44d9-b195-51d7bc9d7026")
+	)
+	(wire
+		(pts
+			(xy 53.34 113.03) (xy 53.34 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f6cd0310-2bb9-44ab-927e-bc06a63b2c2b")
 	)
 	(wire
 		(pts
@@ -5105,6 +5405,30 @@
 		(uuid "012d4118-9174-4291-84fb-72c2f11fb10f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 210.0119 81.28 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+	)
+	(global_label "L_DO"
+		(shape input)
+		(at 74.93 113.03 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "099d0d0b-3f66-42c2-b0cd-7cc5ce072974")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 67.3486 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5401,6 +5725,30 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+			)
+		)
+	)
+	(global_label "L_DO"
+		(shape input)
+		(at 53.34 114.3 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "57d00585-c433-463a-b1db-c309b54b3260")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 53.34 121.8814 90)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 	)
@@ -5968,7 +6316,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "013445ec-53b3-4746-8e76-cc9f9f2542a1")
-		(property "Reference" "C16"
+		(property "Reference" "C17"
 			(at 63.5 144.7862 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6065,7 +6413,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "C16")
+					(reference "C17")
 					(unit 1)
 				)
 			)
@@ -6222,6 +6570,89 @@
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
 					(reference "#PWR038")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:Conn_01x03_Pin")
+		(at 82.55 113.03 0)
+		(mirror y)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "09f1291c-c87b-4c0f-99b3-9031dbd3abc3")
+		(property "Reference" "J3"
+			(at 80.518 106.934 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x03_Pin"
+			(at 80.518 117.856 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical"
+			(at 82.55 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 82.55 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated"
+			(at 82.55 113.03 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "2"
+			(uuid "ee02dd1f-ccab-4188-8900-e7c615c93758")
+		)
+		(pin "3"
+			(uuid "67f67212-4a37-4552-b327-6a48e1ae9533")
+		)
+		(pin "1"
+			(uuid "10d81dba-4f2a-421b-b1a0-e0b7b9cdf5e6")
+		)
+		(instances
+			(project "mek-output-expander"
+				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
+					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -6585,7 +7016,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "19c18b02-56c7-467b-bc5c-c77c306b335e")
-		(property "Reference" "J11"
+		(property "Reference" "J12"
 			(at 265.43 104.1399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6666,7 +7097,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J11")
+					(reference "J12")
 					(unit 1)
 				)
 			)
@@ -6918,7 +7349,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2447c4f3-f173-44f9-94b5-138c4406c7a0")
-		(property "Reference" "J8"
+		(property "Reference" "J9"
 			(at 265.43 27.9399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6999,7 +7430,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J8")
+					(reference "J9")
 					(unit 1)
 				)
 			)
@@ -8155,7 +8586,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "4d98a88d-d91a-451b-80fb-2990c4c67a8c")
-		(property "Reference" "J10"
+		(property "Reference" "J11"
 			(at 265.43 78.7399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8236,7 +8667,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J10")
+					(reference "J11")
 					(unit 1)
 				)
 			)
@@ -8538,7 +8969,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "53d18df0-8b2f-4e32-bcff-ffb12255e7e4")
-		(property "Reference" "J5"
+		(property "Reference" "J6"
 			(at 231.14 53.3399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -8619,7 +9050,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J5")
+					(reference "J6")
 					(unit 1)
 				)
 			)
@@ -9477,7 +9908,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "6da782a4-2d8b-4e84-8ceb-948a1665a027")
-		(property "Reference" "J4"
+		(property "Reference" "J5"
 			(at 231.14 27.9399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9558,7 +9989,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J4")
+					(reference "J5")
 					(unit 1)
 				)
 			)
@@ -10419,7 +10850,7 @@
 		(in_pos_files yes)
 		(dnp no)
 		(uuid "944ccaa3-9bff-4ae9-8b27-1ab7ad90abed")
-		(property "Reference" "J3"
+		(property "Reference" "J4"
 			(at 107.95 159.766 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10514,7 +10945,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J3")
+					(reference "J4")
 					(unit 1)
 				)
 			)
@@ -10803,7 +11234,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "b5fa917e-d22d-462f-aee8-5a47001272c7")
-		(property "Reference" "J9"
+		(property "Reference" "J10"
 			(at 265.43 53.3399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10884,7 +11315,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J9")
+					(reference "J10")
 					(unit 1)
 				)
 			)
@@ -11556,7 +11987,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c4438f16-6fbe-4235-865e-1e2bf680af78")
-		(property "Reference" "J7"
+		(property "Reference" "J8"
 			(at 231.14 104.1399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11637,7 +12068,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J7")
+					(reference "J8")
 					(unit 1)
 				)
 			)
@@ -11655,7 +12086,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "c9bfacdf-d173-42ee-abe9-83b369cb4578")
-		(property "Reference" "J6"
+		(property "Reference" "J7"
 			(at 231.14 78.7399 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -11736,7 +12167,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "J6")
+					(reference "J7")
 					(unit 1)
 				)
 			)
@@ -13651,7 +14082,7 @@
 	)
 	(symbol
 		(lib_id "Device:C_Small")
-		(at 62.23 113.03 0)
+		(at 58.42 113.03 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -13661,8 +14092,8 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "fcbfb173-b75a-41bf-9a5b-277e6c240b1a")
-		(property "Reference" "C17"
-			(at 64.77 111.7662 0)
+		(property "Reference" "C16"
+			(at 60.96 111.7662 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13673,7 +14104,7 @@
 			)
 		)
 		(property "Value" "100n"
-			(at 64.77 114.3062 0)
+			(at 60.96 114.3062 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -13684,7 +14115,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric"
-			(at 62.23 113.03 0)
+			(at 58.42 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13695,7 +14126,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.lcsc.com/datasheet/C110255.pdf"
-			(at 62.23 113.03 0)
+			(at 58.42 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13706,7 +14137,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
-			(at 62.23 113.03 0)
+			(at 58.42 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13717,7 +14148,7 @@
 			)
 		)
 		(property "LCSC Part #" "C110255"
-			(at 62.23 113.03 0)
+			(at 58.42 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13728,7 +14159,7 @@
 			)
 		)
 		(property "KLC_S3.3" ""
-			(at 62.23 113.03 0)
+			(at 58.42 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13739,7 +14170,7 @@
 			)
 		)
 		(property "KLC_S4.1" ""
-			(at 62.23 113.03 0)
+			(at 58.42 113.03 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -13758,7 +14189,7 @@
 		(instances
 			(project "mek-output-expander"
 				(path "/6e845ea1-f2a7-48ba-9f80-ad9c1d1036b9/3faf0709-b75d-4529-9a59-5fde1c27ee5b"
-					(reference "C17")
+					(reference "C16")
 					(unit 1)
 				)
 			)

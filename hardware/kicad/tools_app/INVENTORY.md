@@ -25,7 +25,7 @@ being runnable does not make it web-accessible.
 
 These scripts remain outside the allow-list after Phase 4 review:
 
-- `align_connector_pin_text.py`, `component_reference_text.py`,
+- `align_connector_pin_text.py`, `update_text.py`,
   `resize_matching_text.py`, and `zone_outline_45_90.py` depend on broad
   heuristic matching. They need dry-run previews and stable selection reports
   before browser execution is safe.
