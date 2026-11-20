@@ -63,14 +63,15 @@ Frontend quality checks are `npm run lint`, `npm run type-check`,
 
 ## Adding a module
 
-1. Classify the file in `INVENTORY.md`. Do not expose tests, legacy files,
-   support libraries, or scripts that still require source-code edits.
+1. Classify the file in `INVENTORY.md`. Do not expose tests, legacy files, or
+   support libraries. Every direct command-line entry point must be indexed.
 2. Give the script a normal `argparse` interface backed by a callable
    `run(options)` function where practical. Browser-configurable settings must
    be explicit arguments; module-level constants are not configurable.
 3. Add one entry to `module_index.json`. Use a repository-relative static
    script path, a conservative timeout, accurate KiCad requirements, and a
-   risk statement. System-control entries must be disabled.
+   risk statement. System-control entries require critical risk and explicit
+   confirmation metadata.
 4. Describe every accepted argument. Options need a literal long-form flag;
    path inputs need appropriate extensions and `may_create` only for outputs.
 5. Install `tools_app/requirements-dev.txt`, then run the development commands

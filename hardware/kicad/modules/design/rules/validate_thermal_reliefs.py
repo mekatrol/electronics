@@ -17,6 +17,7 @@ partially routed board, and leaves the real board unsaved for review.
 import sys
 from dataclasses import dataclass
 
+from kipy.errors import ApiError
 from kipy.proto.board.board_types_pb2 import (
     IslandRemovalMode,
     ZoneConnectionStyle,
@@ -40,6 +41,7 @@ from modules.shared.kicad_ipc import (
     connect_board,
     editor_commit,
     from_mm,
+    retry_when_kicad_busy,
     run_live_board_drc,
     to_mm,
 )
@@ -225,8 +227,19 @@ def print_problems(zones):
 def main():
     """Check matching zones and optionally correct their settings."""
     _client, board = connect_board()
-    zones = matching_zones(board)
-    footprints, pads = matching_footprints_and_pads(board)
+    try:
+        zones = retry_when_kicad_busy(lambda: matching_zones(board))
+        footprints, pads = retry_when_kicad_busy(
+            lambda: matching_footprints_and_pads(board)
+        )
+    except ApiError as error:
+        if "busy and cannot respond" not in str(error).lower():
+            raise
+        raise SystemExit(
+            "PCB Editor remained busy for 30 seconds. Finish or cancel any "
+            "active tool, close modal dialogs, and wait for zone filling to "
+            "finish before running Validate Thermal Reliefs again."
+        ) from None
     missing_names = missing_zone_net_names(zones)
     for name in missing_names:
         print(

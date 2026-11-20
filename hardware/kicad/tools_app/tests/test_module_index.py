@@ -97,11 +97,30 @@ class ModuleIndexTests(unittest.TestCase):
                 self.assertGreater(module["timeout_seconds"], 0)
                 self.assertTrue(module["risk"]["summary"].strip())
 
-    def test_system_control_is_disabled_by_default(self) -> None:
-        """Never make process-control actions available without administrator review."""
+    def test_system_control_requires_critical_confirmation(self) -> None:
+        """Keep exposed process-control actions behind the strongest warning."""
         for module in self.index["modules"]:
             if module["execution_type"] == "system_control":
-                self.assertFalse(module["enabled"])
+                self.assertEqual(module["risk"]["level"], "critical")
+                self.assertTrue(module["risk"]["confirmation_required"])
+
+    def test_every_command_module_is_indexed_and_enabled(self) -> None:
+        """Expose every direct entry point while excluding libraries and tests."""
+        modules_root = REPOSITORY_ROOT / "modules"
+        commands = {
+            path.resolve()
+            for path in modules_root.rglob("*.py")
+            if "shared" not in path.parts
+            and "tests" not in path.parts
+            and path.name != "__init__.py"
+            and "__main__" in path.read_text(encoding="utf-8")
+        }
+        indexed = {
+            (APP_DIR / module["script"]).resolve()
+            for module in self.index["modules"]
+            if module["enabled"]
+        }
+        self.assertEqual(commands, indexed)
 
     def test_board_edits_require_confirmation_and_preflight(self) -> None:
         """Keep every enabled KiCad mutation confirmed and readiness-gated."""

@@ -12,12 +12,15 @@ import math
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
 from kipy import KiCad
 from kipy.common_types import Commit
+from kipy.errors import ApiError
 from kipy.errors import ConnectionError as KiCadConnectionError
 from kipy.geometry import Box2, Vector2
 from kipy.proto.board.board_types_pb2 import BoardLayer
@@ -32,6 +35,31 @@ from kipy.proto.common.types import ItemHeader
 from kipy.util.units import from_mm, to_mm
 
 from modules.shared.kicad_discovery import find_kicad_cli
+
+
+def retry_when_kicad_busy(operation, *, attempts=31, delay_seconds=1.0):
+    """Run an IPC operation again while PCB Editor reports that it is busy.
+
+    KiCad can accept a connection and ping while a zone refill, canvas update,
+    or another command briefly prevents subsequent API requests. Only the
+    explicit busy response is retried; all other API failures are raised
+    immediately so genuine errors are not hidden.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            return operation()
+        except ApiError as error:
+            is_busy = "busy and cannot respond" in str(error).lower()
+            if not is_busy or attempt == attempts:
+                raise
+            if attempt == 1 or attempt % 5 == 0:
+                waited = attempt * delay_seconds
+                print(
+                    f"PCB Editor is busy; waiting for IPC ({waited:g}s elapsed)...",
+                    file=sys.stderr,
+                    flush=True,
+                )
+            time.sleep(delay_seconds)
 
 
 def connect_board():
@@ -451,6 +479,7 @@ __all__ = [
     "move_text_center",
     "point_from_mm",
     "refill_all_zones",
+    "retry_when_kicad_busy",
     "same_point",
     "text_box",
     "to_mm",
