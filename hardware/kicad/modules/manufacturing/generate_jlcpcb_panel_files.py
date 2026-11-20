@@ -1,0 +1,262 @@
+"""Generate JLCPCB files from a generated panelized PCB (no schematic needed).
+
+Run from the repository root with::
+
+    python3 hardware/kicad/modules/manufacturing/generate_jlcpcb_panel_files.py hardware/mek-sub-triac/mek-sub-triac_routed_panel_2x2.kicad_pcb
+    python3 hardware/kicad/modules/manufacturing/generate_jlcpcb_panel_files.py --help
+
+This script is specifically for ``*_panel_*.kicad_pcb`` files produced by the
+panelization scripts. It does not run schematic ERC/parity. The BOM is built
+from the LCSC properties retained in the panel footprints. The source PCB is
+validated, its zones are refilled, and fabrication and assembly outputs are
+written to a dedicated directory beside the panel board.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+import zipfile
+from pathlib import Path
+
+from modules.manufacturing.generate_jlcpcb_files import (
+    GERBER_LAYERS,
+    convert_positions,
+    copper_layers,
+    reject_newer_autosaves,
+    reject_unsaved_open_board,
+    validate_assembly_references,
+    write_board_bom,
+)
+from modules.manufacturing.generate_jlcpcb_files import (
+    find_kicad_cli as find_common_kicad_cli,
+)
+from modules.manufacturing.generate_jlcpcb_files import (
+    run_command as run,
+)
+
+
+def find_panel_kicad_cli(override: str | None = None) -> list[str]:
+    """Detect KiCad like the shared exporter, plus its standard Windows path."""
+    if override:
+        return [override]
+    windows = Path(r"C:\Program Files\KiCad\10.0\bin\kicad-cli.exe")
+    if windows.is_file():
+        return [str(windows)]
+    return find_common_kicad_cli()
+
+
+def validate_panel_name(board: Path) -> None:
+    """Prevent accidental use on the editable single-board design."""
+    if "panel" not in board.stem.lower():
+        raise ValueError(
+            "this exporter is only for generated panelized PCB files; "
+            "the filename must contain 'panel'"
+        )
+
+
+def check_panel_drc(board: Path, cli: list[str], report: Path) -> None:
+    """Refill/save and reject every DRC or connectivity finding."""
+    completed = subprocess.run(
+        [
+            *cli,
+            "pcb",
+            "drc",
+            "--refill-zones",
+            "--save-board",
+            "--format",
+            "json",
+            "--output",
+            str(report),
+            str(board),
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode or not report.is_file():
+        print(completed.stdout, end="")
+        print(completed.stderr, end="", file=sys.stderr)
+        raise RuntimeError("KiCad could not validate the panel PCB")
+    data = json.loads(report.read_text(encoding="utf-8"))
+    unexpected = data.get("violations", [])
+    unconnected = data.get("unconnected_items", [])
+    if unexpected or unconnected:
+        types = sorted({str(item.get("type", "unknown")) for item in unexpected})
+        detail = ", ".join(types) if types else "none"
+        raise RuntimeError(
+            f"panel DRC failed: {len(unexpected)} non-tab violation(s) "
+            f"({detail}); {len(unconnected)} unconnected item(s). "
+            f"See {report}"
+        )
+    report.unlink(missing_ok=True)
+
+
+def archive_panel_files(
+    output_dir: Path, archive: Path, board_stem: str | None = None
+) -> None:
+    """Create a ZIP containing only this isolated output directory's fab files."""
+    extensions = {
+        ".gbr",
+        ".gbl",
+        ".gbo",
+        ".gbp",
+        ".gbs",
+        ".gm1",
+        ".gml",
+        ".gko",
+        ".gtl",
+        ".gto",
+        ".gtp",
+        ".gts",
+        ".drl",
+    }
+    files = sorted(
+        path
+        for path in output_dir.iterdir()
+        if path.is_file()
+        and (board_stem is None or path.name.startswith(board_stem))
+        and (
+            path.suffix.lower() in extensions
+            or (path.suffix.lower().startswith(".g") and path.suffix[2:].isdigit())
+        )
+    )
+    if not files:
+        raise RuntimeError("KiCad produced no Gerber or drill files")
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as bundle:
+        for path in files:
+            bundle.write(path, path.name)
+
+
+def remove_stale_panel_drill_files(output_dir: Path, board_stem: str) -> None:
+    """Remove drill outputs from an earlier export before regenerating them."""
+    for path in output_dir.glob(f"{board_stem}*.drl"):
+        if path.is_file():
+            path.unlink()
+
+
+def export_panel_drills(board: Path, cli: list[str], output_dir: Path) -> None:
+    """Export separate plated and non-plated Excellon drill files."""
+    # A previous exporter version produced one mixed-plating drill file.  Do
+    # not leave it in the fabrication ZIP when regenerating separate files.
+    remove_stale_panel_drill_files(output_dir, board.stem)
+    run(
+        [
+            *cli,
+            "pcb",
+            "export",
+            "drill",
+            "--output",
+            str(output_dir),
+            "--format",
+            "excellon",
+            "--excellon-units",
+            "mm",
+            "--excellon-separate-th",
+            str(board),
+        ]
+    )
+
+
+def default_output_directory(board: Path) -> Path:
+    """Keep panels already in manufacture there; otherwise create it beside them."""
+    if board.parent.name == "manufacture":
+        return board.parent
+    return board.parent / "manufacture"
+
+
+def generate_panel(board: Path, cli: list[str], output_dir: Path | None = None) -> Path:
+    board = board.resolve()
+    if not board.is_file() or board.suffix.lower() != ".kicad_pcb":
+        raise FileNotFoundError(f"panel .kicad_pcb not found: {board}")
+    validate_panel_name(board)
+    reject_unsaved_open_board(board)
+    reject_newer_autosaves([board])
+    destination = (
+        output_dir.resolve() if output_dir else default_output_directory(board)
+    )
+    destination.mkdir(parents=True, exist_ok=True)
+    report = destination / f"{board.stem}-panel-drc.json"
+    check_panel_drc(board, cli, report)
+    print("Panel DRC passed with no violations or unconnected items.")
+
+    layers = copper_layers(board) + list(GERBER_LAYERS[2:])
+    run(
+        [
+            *cli,
+            "pcb",
+            "export",
+            "gerbers",
+            "--output",
+            str(destination),
+            "--layers",
+            ",".join(layers),
+            "--check-zones",
+            str(board),
+        ]
+    )
+    export_panel_drills(board, cli, destination)
+
+    raw_positions = destination / f".{board.stem}-positions-kicad.csv"
+    position_references: set[str] = set()
+    try:
+        run(
+            [
+                *cli,
+                "pcb",
+                "export",
+                "pos",
+                "--output",
+                str(raw_positions),
+                "--format",
+                "csv",
+                "--units",
+                "mm",
+                "--side",
+                "both",
+                str(board),
+            ]
+        )
+        position_references = convert_positions(
+            raw_positions, destination / f"{board.stem}-cpl.csv"
+        )
+        (destination / f"{board.stem}-positions.csv").unlink(missing_ok=True)
+    finally:
+        raw_positions.unlink(missing_ok=True)
+
+    bom_references = write_board_bom(board, destination / f"{board.stem}-bom.csv")
+    validate_assembly_references(bom_references, position_references)
+
+    archive = destination / f"{board.stem}-gerbers.zip"
+    archive_panel_files(destination, archive, board.stem)
+    print(f"Panel fabrication package: {archive}")
+    print(f"Panel BOM: {destination / f'{board.stem}-bom.csv'}")
+    print(f"Panel CPL: {destination / f'{board.stem}-cpl.csv'}")
+    return destination
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("panel", type=Path, help="generated panelized .kicad_pcb")
+    parser.add_argument("--output-dir", type=Path, help="dedicated output directory")
+    parser.add_argument("--kicad-cli", help="path to KiCad 10 kicad-cli")
+    args = parser.parse_args()
+    try:
+        generate_panel(
+            args.panel, find_panel_kicad_cli(args.kicad_cli), args.output_dir
+        )
+    except (
+        FileNotFoundError,
+        RuntimeError,
+        ValueError,
+        subprocess.CalledProcessError,
+    ) as error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

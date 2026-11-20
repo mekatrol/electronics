@@ -96,7 +96,12 @@ def test_align_component_edge_center_contract() -> None:
 
     assert build_command(module, values, sys.executable) == [
         str(Path(sys.executable).absolute()),
-        str((repository_root / "modules/align_component_edge_center.py").resolve()),
+        str(
+            (
+                repository_root
+                / "modules/design/layout/center_footprint_between_edges.py"
+            ).resolve()
+        ),
         "J12",
         "--alignment",
         "vertical",

@@ -1,60 +1,52 @@
 # Module inventory
 
-This inventory records the Phase 1 review of every non-legacy Python file in
-`modules/`. The executable index remains the authoritative allow-list: a file
-being runnable does not make it web-accessible.
+The user-facing module catalogue is organised by workflow under `modules/`.
+The executable index remains the authoritative web-application allow-list.
 
 ## Approved and indexed
 
 | Module | Classification | Index state |
 | --- | --- | --- |
-| `report_board_dimensions.py` | User-facing, read-only IPC report | Enabled |
-| `check_bom_stock.py` | User-facing, read-only report | Enabled |
-| `generate_jlcpcb.py` | User-facing file generator | Enabled |
-| `panelize_routed_pcb.py` | User-facing file generator | Enabled |
-| `manufacture_jlcpcb.py` | User-facing file generator | Enabled |
-| `align_component_edge_center.py` | User-facing, undoable IPC board editor | Enabled |
-| `align_holes.py` | User-facing, undoable IPC board editor | Enabled |
-| `center_and_distribute_items.py` | User-facing, undoable IPC board editor | Enabled |
-| `center_components_inside_edge.py` | User-facing, undoable IPC board editor | Enabled |
-| `center_edge_around_components.py` | User-facing, undoable IPC board editor | Enabled |
-| `space_components.py` | User-facing, undoable IPC board editor | Enabled |
-| `kill_kicad.py` | User-facing system control | Disabled |
+| `inspection/report_board_dimensions.py` | Read-only IPC report | Enabled |
+| `manufacturing/check_bom_stock.py` | Read-only procurement report | Enabled |
+| `manufacturing/generate_jlcpcb_files.py` | Fabrication/assembly file generator | Enabled |
+| `manufacturing/create_routed_panel.py` | Routed panel generator | Enabled |
+| `manufacturing/prepare_jlcpcb_panel_package.py` | Complete panel manufacturing workflow | Enabled |
+| `design/layout/center_footprint_between_edges.py` | Undoable layout editor | Enabled |
+| `design/layout/position_mounting_holes.py` | Undoable layout editor | Enabled |
+| `design/layout/center_and_distribute_footprints.py` | Undoable layout editor | Enabled |
+| `design/layout/center_routed_design_in_outline.py` | Undoable whole-design editor | Enabled |
+| `design/layout/center_outline_around_design.py` | Undoable outline editor | Enabled |
+| `design/layout/set_footprint_spacing.py` | Undoable layout editor | Enabled |
+| `system/stop_kicad.py` | External process control | Disabled |
 
-## Reviewed but not approved
+## Reviewed but not indexed
 
-These scripts remain outside the allow-list after Phase 4 review:
+The remaining scripts are intentionally outside the browser allow-list:
 
-- `align_connector_pin_text.py`, `update_text.py`,
-  `resize_matching_text.py`, and `zone_outline_45_90.py` depend on broad
-  heuristic matching. They need dry-run previews and stable selection reports
-  before browser execution is safe.
-- `align_groups.py` reconstructs routed tracks and vias from a project-specific
-  group map. It needs a portable group schema and artifact-level integration
-  tests before approval.
-- `check_fiducials.py` and `check_motherboard_interface.py` mix analysis with
-  optional repair. They need separate read-only and mutating actions so the
-  displayed risk accurately describes the selected operation.
-- `configure_jlcpcb_netclasses.py` changes project configuration outside the
-  board-edit transaction model and needs explicit file persistence and backup
-  semantics.
-- `pcb_edge.py` replaces Edge.Cuts and can replace zones; `remove_items.py`
-  deletes broad item classes. Both need a preview of exact deletion targets.
-- `thermal_reliefs.py` and `vias.py` combine board mutation with optional
-  external DRC execution. They need separate mutation and validation actions.
+- `design/layout/align_connector_labels.py`,
+  `design/layout/update_board_text.py`,
+  `design/layout/resize_matching_board_text.py`, and
+  `design/board/snap_zone_outlines_to_45_and_90_degrees.py` use configurable matching
+  or geometry heuristics and need stable previews before browser execution.
+- `design/layout/arrange_repeated_footprint_groups.py` uses a project-specific
+  group map and reconstructs routed tracks and vias.
+- `design/rules/validate_fiducials.py` and
+  `inspection/validate_motherboard_interface.py` combine checking with optional
+  repair and therefore cannot have one fixed browser risk classification.
+- `design/rules/configure_jlcpcb_routing_rules.py` persists project settings.
+- `design/board/create_board_outline_and_zones.py` and
+  `design/board/clear_routing_and_zones.py` replace broad classes of geometry.
+- `design/rules/validate_thermal_reliefs.py` and
+  `design/rules/validate_vias.py` combine optional mutation with DRC execution.
 
-This list is intentionally resolved rather than a queue of implicitly approved
-candidates. A future catalogue phase must address the stated safety prerequisite
-before moving any item into the executable index.
+`system/find_open_schematic.py` and
+`inspection/check_board_has_unsaved_changes.py` are internal read-only helpers.
+`manufacturing/generate_jlcpcb_panel_files.py` is an internal stage of the
+complete manufacturing workflow.
 
-`find_open_schematic.py` and `check_kicad_unsaved.py` are internal read-only
-subprocess helpers. `generate_jlcpcb_panel.py` is an internal stage of the
-approved manufacturing workflow. They are deliberately not separate web
-actions.
+## Libraries and tests
 
-## Support libraries and tests
-
-`kicad_discovery.py`, `kicad_ipc.py`, `kicad_netlist_reader.py`,
-`kicad_utils.py`, and `xlsx_reader.py` are shared libraries and are never
-entry points. Files named `test_*.py` are tests. Everything under
-`modules/legacy/` is legacy code. None may appear in the module index.
+Everything in `shared/` is reusable implementation code and never an entry
+point. Everything in `tests/` is test code. Neither directory may appear in the
+executable index.

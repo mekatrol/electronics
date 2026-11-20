@@ -1,0 +1,458 @@
+"""Shared helpers for KiCad's supported ``kipy`` IPC API.
+
+All dimensions in the IPC protocol are integer nanometres.  Mutating scripts
+must use :func:`editor_commit`: it groups their updates into one named PCB
+Editor transaction, making the entire script operation available through the
+normal Undo and Redo commands.  Dropping a failed transaction prevents partial
+changes from remaining in the editor.
+"""
+
+import json
+import math
+import re
+import shutil
+import subprocess
+import tempfile
+from contextlib import contextmanager
+from pathlib import Path
+
+from kipy import KiCad
+from kipy.common_types import Commit
+from kipy.errors import ConnectionError as KiCadConnectionError
+from kipy.geometry import Box2, Vector2
+from kipy.proto.board.board_types_pb2 import BoardLayer
+from kipy.proto.common.commands.editor_commands_pb2 import (
+    BeginCommit,
+    BeginCommitResponse,
+    CommitAction,
+    EndCommit,
+    EndCommitResponse,
+)
+from kipy.proto.common.types import ItemHeader
+from kipy.util.units import from_mm, to_mm
+
+from modules.shared.kicad_discovery import find_kicad_cli
+
+
+def connect_board():
+    """Connect to the running PCB Editor and return its client and open board.
+
+    The official client automatically detects both native and Flatpak socket
+    paths.
+    We intentionally do not call ``check_version`` because the latest released
+    binding targets KiCad 10.0.1 and rejects compatible newer 10.0.x patches.
+    """
+    try:
+        client = KiCad(timeout_ms=5000)
+        client.ping()
+        return client, client.get_board()
+    except (KiCadConnectionError, OSError) as error:
+        raise SystemExit(
+            "Could not communicate with PCB Editor through KiCad IPC. Ensure "
+            "the board is open in PCB Editor (not only the project manager), "
+            "close any modal dialogs, and try again. If it still times out, "
+            "quit every KiCad window and start one KiCad instance, then reopen "
+            "the board.\n"
+            f"KiCad IPC error: {error}"
+        ) from None
+
+
+def board_document_path(document):
+    """Return the absolute file path represented by an IPC PCB document."""
+    board_path = Path(document.board_filename)
+    if board_path.is_absolute():
+        return board_path.resolve()
+    return (Path(document.project.path) / board_path).resolve()
+
+
+def _normalized_board_tokens(contents):
+    """Tokenize PCB content while ignoring IPC serializer-only differences."""
+    tokens = re.findall(r'"(?:\\.|[^"\\])*"|[()]|[^\s()]+', contents)
+    ignored_expressions = {
+        "filled_polygon",
+        "generator",
+        "generator_version",
+        "version",
+    }
+    normalized = []
+    index = 0
+    while index < len(tokens):
+        if (
+            tokens[index] == "("
+            and index + 1 < len(tokens)
+            and tokens[index + 1] in ignored_expressions
+        ):
+            depth = 0
+            while index < len(tokens):
+                if tokens[index] == "(":
+                    depth += 1
+                elif tokens[index] == ")":
+                    depth -= 1
+                index += 1
+                if depth == 0:
+                    break
+            continue
+        normalized.append(tokens[index])
+        index += 1
+    return normalized
+
+
+def board_has_unsaved_changes(board, saved_path=None):
+    """Return whether an open board differs meaningfully from its saved file.
+
+    KiCad's ``get_as_string`` output uses different whitespace and adds
+    serializer metadata to embedded footprints, even immediately after Save.
+    It can also omit cached zone-fill polygons written by ``kicad-cli``.
+    Comparing normalized S-expression tokens avoids those false positives
+    while retaining changes to editable board content and zone outlines.
+    """
+    path = (
+        Path(saved_path).resolve()
+        if saved_path is not None
+        else board_document_path(board.document)
+    )
+    live_tokens = _normalized_board_tokens(board.get_as_string())
+    saved_tokens = _normalized_board_tokens(path.read_text(encoding="utf-8"))
+    return live_tokens != saved_tokens
+
+
+def _print_drc_entries(title, entries):
+    """Print all entries from one section of KiCad's JSON DRC report."""
+    if not entries:
+        return
+    print(f"{title} ({len(entries)}):")
+    for index, entry in enumerate(entries, start=1):
+        severity = entry.get("severity", "error").upper()
+        kind = entry.get("type", "unknown rule")
+        description = entry.get("description", "No description supplied")
+        print(f"  {index}. [{severity}] {kind}: {description}")
+
+        # Include involved objects and coordinates so the terminal output is
+        # useful without opening the temporary board in PCB Editor.
+        for item in entry.get("items", []):
+            item_description = item.get("description", "board item")
+            position = item.get("pos")
+            if isinstance(position, dict) and "x" in position and "y" in position:
+                item_description += f" at ({position['x']}, {position['y']})"
+            print(f"       - {item_description}")
+
+
+def run_live_board_drc(board, *, fail_on_unconnected=True):
+    """Run full KiCad DRC on a temporary copy of the live, unsaved board.
+
+    KiCad 10's IPC API does not expose the DRC engine. Serializing the live
+    board into an isolated temporary project lets ``kicad-cli`` inspect editor
+    changes without saving or otherwise touching the real board. Every finding
+    is printed. By default the returned error count includes both violations
+    and unconnected items; callers that intentionally operate on a partially
+    routed board can set ``fail_on_unconnected=False``.
+    """
+    cli = find_kicad_cli()
+    if not cli:
+        raise RuntimeError("KiCad 10 kicad-cli was not found; DRC could not run")
+
+    source_board = board_document_path(board.document)
+    # Flatpak applications have a private /tmp, so a host-created file there
+    # is invisible to a Flatpak kicad-cli even though it receives the same
+    # pathname.  Keep the transient project in this repository-visible
+    # directory so native and Flatpak CLIs can both open it.
+    with tempfile.TemporaryDirectory(
+        prefix=".kicad-live-drc-", dir=Path(__file__).resolve().parent
+    ) as temporary:
+        temporary_dir = Path(temporary)
+        temporary_board = temporary_dir / source_board.name
+        report_path = temporary_dir / "drc.json"
+
+        # Preserve the basename so KiCad finds matching project and custom-rule
+        # files by its normal conventions inside the isolated directory.
+        temporary_board.write_text(board.get_as_string(), encoding="utf-8")
+        for suffix in (".kicad_pro", ".kicad_dru"):
+            source_settings = source_board.with_suffix(suffix)
+            if source_settings.is_file():
+                shutil.copy2(source_settings, temporary_dir / source_settings.name)
+
+        completed = subprocess.run(
+            cli
+            + [
+                "pcb",
+                "drc",
+                "--refill-zones",
+                "--format",
+                "json",
+                "--output",
+                str(report_path),
+                str(temporary_board),
+            ],
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        if completed.returncode or not report_path.is_file():
+            details = "\n".join(
+                output.strip()
+                for output in (completed.stdout, completed.stderr)
+                if output.strip()
+            )
+            raise RuntimeError(
+                "KiCad could not run DRC on the live board copy"
+                + (f":\n{details}" if details else "")
+            )
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+
+    violations = report.get("violations", [])
+    unconnected = report.get("unconnected_items", [])
+    print("KiCad DRC results for the updated live board:")
+    _print_drc_entries("Violations", violations)
+    _print_drc_entries("Unconnected items", unconnected)
+    total = len(violations) + (len(unconnected) if fail_on_unconnected else 0)
+    if total:
+        unconnected_status = (
+            f"{len(unconnected)} unconnected item(s)"
+            if fail_on_unconnected
+            else f"{len(unconnected)} unconnected item(s) ignored"
+        )
+        print(f"DRC FAILED: {len(violations)} violation(s), {unconnected_status}.")
+    elif unconnected:
+        print(
+            f"DRC PASSED: no violations; "
+            f"{len(unconnected)} unconnected item(s) ignored."
+        )
+    else:
+        print("DRC PASSED: no violations or unconnected items.")
+    return total
+
+
+def _encode_varint(value):
+    """Encode a non-negative protobuf integer without private protobuf APIs."""
+    encoded = bytearray()
+    while value > 0x7F:
+        encoded.append((value & 0x7F) | 0x80)
+        value >>= 7
+    encoded.append(value)
+    return bytes(encoded)
+
+
+def _set_commit_document(command, field_number, document):
+    """Attach the document header added by KiCad 10.0.7.
+
+    kicad-python 0.7/0.8 was generated before these fields were added. Protobuf
+    preserves unknown fields, so older bindings can still send the new header
+    using its stable wire representation. Prefer the regular generated field
+    once a newer binding provides it.
+    """
+    if hasattr(command, "header"):
+        command.header.document.CopyFrom(document)
+        return
+
+    header = ItemHeader()
+    header.document.CopyFrom(document)
+    payload = header.SerializeToString()
+    tag = (field_number << 3) | 2  # length-delimited embedded message
+    command.MergeFromString(
+        _encode_varint(tag) + _encode_varint(len(payload)) + payload
+    )
+
+
+def _begin_board_commit(board):
+    command = BeginCommit()
+    _set_commit_document(command, 1, board.document)
+    return Commit(board.client.send(command, BeginCommitResponse).id)
+
+
+def _end_board_commit(board, commit, action, message=""):
+    command = EndCommit()
+    command.id.CopyFrom(commit.id)
+    command.action = action
+    command.message = message
+    _set_commit_document(command, 4, board.document)
+    board.client.send(command, EndCommitResponse)
+
+
+@contextmanager
+def editor_commit(board, message, refill_zones=False):
+    """Wrap board changes in one atomic PCB Editor undo/redo transaction.
+
+    Callers modify retrieved item wrappers and send them with
+    ``board.update_items`` (or create/remove calls) inside this context.  A
+    successful exit pushes a single named entry to the editor history.  Any
+    exception raised while staging changes drops the transaction before
+    re-raising it.
+
+    Set ``refill_zones`` when the staged edits affect zone outlines, board
+    edges, pads, tracks, or other copper connectivity. KiCad does not expose
+    staged items to the zone filler, so the blocking all-zone refill must run
+    after ``push_commit`` publishes them. Centralizing that ordering here keeps
+    every mutating script consistent with PCB Editor's B / Fill All Zones
+    operation.
+    """
+    commit = _begin_board_commit(board)
+    try:
+        yield
+    except Exception:
+        _end_board_commit(board, commit, CommitAction.CMA_DROP)
+        raise
+    else:
+        _end_board_commit(board, commit, CommitAction.CMA_COMMIT, message)
+        if refill_zones:
+            refill_all_zones(board)
+
+
+def refill_all_zones(board):
+    """Block until KiCad rebuilds every zone against the live board state.
+
+    An empty zone list in KiCad's IPC ``RefillZones`` request means all zones;
+    ``kipy`` exposes that operation as ``Board.refill_zones``. Blocking avoids
+    returning control while the editor is still busy and ensures its copper
+    fills and connectivity/ratsnest display have been recalculated before the
+    script reports success.
+
+    This function must be called only after any related editor commit has been
+    pushed. Items inside an open commit are staged and invisible to the filler.
+    Prefer ``editor_commit(..., refill_zones=True)`` over calling it directly.
+    """
+    board.refill_zones(block=True)
+
+
+def vector(x, y):
+    """Create an IPC point/vector from integer nanometre coordinates."""
+    return Vector2.from_xy(int(x), int(y))
+
+
+def point_from_mm(x_mm, y_mm):
+    """Create an IPC point from human-readable millimetre coordinates."""
+    return Vector2.from_xy_mm(x_mm, y_mm)
+
+
+def distance(first, second):
+    """Return Euclidean point distance in nanometres."""
+    return math.hypot(first.x - second.x, first.y - second.y)
+
+
+def same_point(first, second):
+    """Return whether two IPC points have identical coordinates."""
+    return first.x == second.x and first.y == second.y
+
+
+def is_horizontal(first, second):
+    """Return whether a segment has no Y-axis change."""
+    return first.y == second.y
+
+
+def is_vertical(first, second):
+    """Return whether a segment has no X-axis change."""
+    return first.x == second.x
+
+
+def box_edges(box):
+    """Return left, right, top and bottom coordinates for an IPC ``Box2``.
+
+    KiCad uses screen-style coordinates: X increases rightwards and Y
+    downwards, so the top edge has the smaller Y value.  IPC may represent a
+    rotated or reversed shape with a negative box width or height.  Sorting
+    each endpoint pair guarantees geometric left/right/top/bottom ordering
+    regardless of the sign of ``box.size``.
+    """
+    first_x = box.pos.x
+    second_x = box.pos.x + box.size.x
+    first_y = box.pos.y
+    second_y = box.pos.y + box.size.y
+    return (
+        min(first_x, second_x),
+        max(first_x, second_x),
+        min(first_y, second_y),
+        max(first_y, second_y),
+    )
+
+
+def box_center(box):
+    """Return the integer centre point of an IPC bounding box."""
+    left, right, top, bottom = box_edges(box)
+    return vector((left + right) // 2, (top + bottom) // 2)
+
+
+def merge_boxes(boxes):
+    """Return the smallest box containing every non-empty input box."""
+    boxes = list(boxes)
+    if not boxes:
+        raise RuntimeError("no geometry was available for a bounding box")
+    left = min(box_edges(box)[0] for box in boxes)
+    right = max(box_edges(box)[1] for box in boxes)
+    top = min(box_edges(box)[2] for box in boxes)
+    bottom = max(box_edges(box)[3] for box in boxes)
+    return Box2.from_xywh(left, top, right - left, bottom - top)
+
+
+def board_edge_bounds(board):
+    """Return the bounds of all board graphics on the Edge.Cuts layer."""
+    boxes = [
+        shape.bounding_box()
+        for shape in board.get_shapes()
+        if shape.layer == BoardLayer.BL_Edge_Cuts
+    ]
+    return box_edges(merge_boxes(boxes))
+
+
+def footprint_reference(footprint):
+    """Return the displayed reference string of an IPC footprint instance."""
+    return footprint.reference_field.text.value
+
+
+def footprints_by_reference(board):
+    """Index all board footprints by their reference designator."""
+    return {footprint_reference(fp): fp for fp in board.get_footprints()}
+
+
+def courtyard_box(footprint):
+    """Return the merged courtyard graphics box for a footprint instance.
+
+    Footprint child geometry received through IPC already uses absolute board
+    coordinates.  Front footprints use F.CrtYd and back footprints B.CrtYd.
+    """
+    layer = (
+        BoardLayer.BL_B_CrtYd
+        if footprint.layer == BoardLayer.BL_B_Cu
+        else BoardLayer.BL_F_CrtYd
+    )
+    return merge_boxes(
+        shape.bounding_box()
+        for shape in footprint.definition.shapes
+        if shape.layer == layer
+    )
+
+
+def text_box(client, text):
+    """Ask KiCad for the rendered bounding box of a board-text object."""
+    return client.get_text_extents(text.as_text())
+
+
+def move_text_center(client, text, target_center):
+    """Move text so its rendered box centre reaches ``target_center``."""
+    current_center = box_center(text_box(client, text))
+    text.position = text.position + (target_center - current_center)
+
+
+__all__ = [
+    "BoardLayer",
+    "board_document_path",
+    "board_edge_bounds",
+    "board_has_unsaved_changes",
+    "box_center",
+    "box_edges",
+    "connect_board",
+    "courtyard_box",
+    "distance",
+    "editor_commit",
+    "footprint_reference",
+    "footprints_by_reference",
+    "from_mm",
+    "is_horizontal",
+    "is_vertical",
+    "merge_boxes",
+    "move_text_center",
+    "point_from_mm",
+    "refill_all_zones",
+    "same_point",
+    "text_box",
+    "to_mm",
+    "vector",
+]

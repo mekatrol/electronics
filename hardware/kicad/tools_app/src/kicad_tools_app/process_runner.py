@@ -81,6 +81,15 @@ class ProcessRunner:
                     process = await asyncio.create_subprocess_exec(
                         *command,
                         cwd=cwd,
+                        env={
+                            **os.environ,
+                            "PYTHONPATH": os.pathsep.join(
+                                filter(
+                                    None,
+                                    (str(cwd), os.environ.get("PYTHONPATH", "")),
+                                )
+                            ),
+                        },
                         stdout=stdout,
                         stderr=stderr,
                         start_new_session=True,

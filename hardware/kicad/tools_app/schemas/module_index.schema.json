@@ -23,7 +23,7 @@
       "required": ["id", "name", "description", "script", "enabled", "category", "execution_type", "requires_kicad", "requires_pcb_editor", "requires_kicad_api", "working_directory", "timeout_seconds", "parameters", "risk"],
       "properties": {
         "id": {"$ref": "#/$defs/id"}, "name": {"type": "string", "minLength": 1}, "description": {"type": "string", "minLength": 1},
-        "script": {"type": "string", "pattern": "^\\.\\./modules/[A-Za-z0-9_]+\\.py$"}, "enabled": {"type": "boolean"}, "category": {"$ref": "#/$defs/id"},
+        "script": {"type": "string", "pattern": "^\\.\\./modules/(?:[A-Za-z0-9_]+/)*[A-Za-z0-9_]+\\.py$"}, "enabled": {"type": "boolean"}, "category": {"$ref": "#/$defs/id"},
         "execution_type": {"enum": ["read_only", "kicad_modify", "file_generate", "system_control"]},
         "requires_kicad": {"type": "boolean"}, "requires_pcb_editor": {"type": "boolean"}, "requires_kicad_api": {"type": "boolean"},
         "working_directory": {"enum": ["repository_root", "script_directory", "input_parent", "temporary_directory"]},

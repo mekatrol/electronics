@@ -17,7 +17,7 @@ SUPPORT_MODULES = {
     "kicad_discovery.py",
     "kicad_ipc.py",
     "kicad_netlist_reader.py",
-    "kicad_utils.py",
+    "kicad_geometry.py",
     "xlsx_reader.py",
 }
 

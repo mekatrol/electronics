@@ -89,7 +89,7 @@ An example entry is:
   "id": "panelize-routed-pcb",
   "name": "Panelize Routed PCB",
   "description": "Create a routed mouse-bite production panel from a KiCad PCB.",
-  "script": "../modules/panelize_routed_pcb.py",
+  "script": "../modules/manufacturing/create_routed_panel.py",
   "enabled": true,
   "category": "manufacturing",
   "execution_type": "file_generate",
@@ -149,7 +149,7 @@ extensions, enum choices, required status, and whether a path may be created.
 The existing scripts currently use two interface styles:
 
 - Command-line arguments, as used by scripts such as
-  `panelize_routed_pcb.py`, `generate_jlcpcb.py`, and `check_bom_stock.py`.
+  `create_routed_panel.py`, `generate_jlcpcb_files.py`, and `check_bom_stock.py`.
 - Module-level settings, as used by several IPC board-editing scripts.
 
 The application must not rewrite Python source files to change module-level
@@ -362,7 +362,7 @@ The backend can execute local programs, so it must enforce strict boundaries:
 - Do not pass unrecognised parameters.
 - Do not invoke a shell.
 - Require explicit confirmation metadata for mutating or destructive modules.
-- Keep `kill_kicad.py` and similar modules disabled unless deliberately
+- Keep `stop_kicad.py` and similar modules disabled unless deliberately
   enabled.
 - Bind to localhost by default.
 
@@ -566,8 +566,8 @@ implicitly pending or configurable through source rewriting.
 Begin with three representative modules:
 
 1. `report_board_dimensions.py` for read-only IPC execution.
-2. `generate_jlcpcb.py` for file generation with a simple argument interface.
-3. `panelize_routed_pcb.py` for complex validation and generated output.
+2. `generate_jlcpcb_files.py` for file generation with a simple argument interface.
+3. `create_routed_panel.py` for complex validation and generated output.
 
 Once the module index, subprocess runner, persistence, and frontend contract
 work for these three cases, add the remaining scripts one category at a time.
