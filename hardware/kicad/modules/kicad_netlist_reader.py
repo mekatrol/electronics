@@ -10,20 +10,18 @@
 #
 
 """
-    @package
-    Helper module for interpreting generic netlist and build custom
-    bom generators or netlists in foreign format
+@package
+Helper module for interpreting generic netlist and build custom
+bom generators or netlists in foreign format
 """
 
-
-from __future__ import print_function
-import sys
-import xml.sax as sax
 import re
-import pdb
 import string
+import sys
+from xml import sax
+from xml.sax.handler import ContentHandler
 
-#-----<Configure>----------------------------------------------------------------
+# -----<Configure>----------------------------------------------------------------
 
 # excluded_fields is a list of regular expressions.  If any one matches a field
 # from either a component or a libpart, then that will not be included as a
@@ -33,7 +31,7 @@ import string
 # unconditionally as columns, and may not be removed.
 excluded_fields = [
     #'Price@1000'
-    ]
+]
 
 
 # You may exclude components from the BOM by either:
@@ -49,7 +47,7 @@ excluded_fields = [
 # are to be excluded from the BOM.
 excluded_references = [
     # 'TP[0-9]+'              # all test points
-    ]
+]
 
 
 # regular expressions which match component 'Value' fields of components that
@@ -59,23 +57,24 @@ excluded_values = [
     # 'SCOPETEST',
     # 'MOUNT_HOLE',
     # 'SOLDER_BRIDGE.*'
-    ]
+]
 
 
 # regular expressions which match component 'Footprint' fields of components that
 # are to be excluded from the BOM.
 excluded_footprints = [
     #'MOUNTHOLE'
-    ]
+]
 
-#-----</Configure>---------------------------------------------------------------
+# -----</Configure>---------------------------------------------------------------
 
 
-class xmlElement():
+class xmlElement:
     """xml element which can represent all nodes of the netlist tree.  It can be
     used to easily generate various output formats by propagating format
     requests to children recursively.
     """
+
     def __init__(self, name, parent=None):
         self.name = name
         self.attributes = {}
@@ -84,10 +83,15 @@ class xmlElement():
         self.children = []
 
     def __str__(self):
-        """String representation of this netlist element
-
-        """
-        return self.name + "[" + self.chars + "]" + " attr_count:" + str(len(self.attributes))
+        """String representation of this netlist element"""
+        return (
+            self.name
+            + "["
+            + self.chars
+            + "]"
+            + " attr_count:"
+            + str(len(self.attributes))
+        )
 
     def formatXML(self, nestLevel=0, amChild=False):
         """Return this element formatted as XML
@@ -104,11 +108,11 @@ class xmlElement():
             indent += "    "
 
         if not amChild:
-            s = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            s = '<?xml version="1.0" encoding="utf-8"?>\n'
 
         s += indent + "<" + self.name
         for a in self.attributes:
-            s += " " + a + "=\"" + self.attributes[a] + "\""
+            s += " " + a + '="' + self.attributes[a] + '"'
 
         if (len(self.chars) == 0) and (len(self.children) == 0):
             s += "/>"
@@ -117,9 +121,9 @@ class xmlElement():
 
         for c in self.children:
             s += "\n"
-            s += c.formatXML(nestLevel+1, True)
+            s += c.formatXML(nestLevel + 1, True)
 
-        if (len(self.children) > 0):
+        if len(self.children) > 0:
             s += "\n" + indent
 
         if (len(self.children) > 0) or (len(self.chars) > 0):
@@ -166,7 +170,8 @@ class xmlElement():
 
     def addAttribute(self, attr, value):
         """Add an attribute to this element"""
-        if type(value) != str: value = value.encode('utf-8')
+        if type(value) != str:
+            value = value.encode("utf-8")
         self.attributes[attr] = value
 
     def setAttribute(self, attr, value):
@@ -215,54 +220,58 @@ class xmlElement():
             return self.children
 
     def get(self, elemName, attribute="", attrmatch=""):
-        """Return the text data for either an attribute or an xmlElement
-        """
-        if (self.name == elemName):
+        """Return the text data for either an attribute or an xmlElement"""
+        if self.name == elemName:
             if attribute != "":
                 try:
                     if attrmatch != "":
                         if self.attributes[attribute] == attrmatch:
                             ret = self.chars
-                            if type(ret) != str: ret = ret.encode('utf-8')
+                            if type(ret) != str:
+                                ret = ret.encode("utf-8")
                             return ret
                     else:
                         ret = self.attributes[attribute]
-                        if type(ret) != str: ret = ret.encode('utf-8')
+                        if type(ret) != str:
+                            ret = ret.encode("utf-8")
                         return ret
                 except AttributeError:
                     ret = ""
-                    if type(ret) != str: ret = ret.encode('utf-8')
+                    if type(ret) != str:
+                        ret = ret.encode("utf-8")
                     return ret
             else:
                 ret = self.chars
-                if type(ret) != str: ret = ret.encode('utf-8')
+                if type(ret) != str:
+                    ret = ret.encode("utf-8")
                 return ret
 
         for child in self.children:
             ret = child.get(elemName, attribute, attrmatch)
             if ret != "":
-                if type(ret) != str: ret = ret.encode('utf-8')
+                if type(ret) != str:
+                    ret = ret.encode("utf-8")
                 return ret
 
         ret = ""
-        if type(ret) != str: ret = ret.encode('utf-8')
+        if type(ret) != str:
+            ret = ret.encode("utf-8")
         return ret
 
 
-
-class libpart():
+class libpart:
     """Class for a library part, aka 'libpart' in the xml netlist file.
     (Components in eeschema are instantiated from library parts.)
     This part class is implemented by wrapping an xmlElement with accessors.
     This xmlElement instance is held in field 'element'.
     """
+
     def __init__(self, xml_element):
-        #
         self.element = xml_element
 
-    #def __str__(self):
-        # simply print the xmlElement associated with this part
-        #return str(self.element)
+    # def __str__(self):
+    # simply print the xmlElement associated with this part
+    # return str(self.element)
 
     def getLibName(self):
         return self.element.get("libpart", "lib")
@@ -277,24 +286,18 @@ class libpart():
         return self.element.get("field", "name", name)
 
     def getFieldNames(self):
-        """Return a list of field names in play for this libpart.
-        """
+        """Return a list of field names in play for this libpart."""
         fieldNames = []
-        fields = self.element.getChild('fields')
+        fields = self.element.getChild("fields")
         if fields:
             for f in fields.getChildren():
-                fieldNames.append( f.get('field','name') )
+                fieldNames.append(f.get("field", "name"))
         return fieldNames
 
     def getPinList(self):
-        """Return a list of pins in play for this libpart.
-        """
-        pinList = []
-        pins = self.element.getChild('pins')
-        if pins:
-            for f in pins.getChildren():
-                pinList.append( f )
-        return pinList
+        """Return a list of pins in play for this libpart."""
+        pins = self.element.getChild("pins")
+        return list(pins.getChildren()) if pins else []
 
     def getDatasheet(self):
         return self.getField("Datasheet")
@@ -310,12 +313,12 @@ class libpart():
             children = aliases.getChildren()
             # grab the text out of each child:
             for child in children:
-                ret.append( child.get("alias") )
+                ret.append(child.get("alias"))
             return ret
         return None
 
 
-class comp():
+class comp:
     """Class for a component, aka 'comp' in the xml netlist file.
     This component class is implemented by wrapping an xmlElement instance
     with accessors.  The xmlElement is held in field 'element'.
@@ -329,26 +332,26 @@ class comp():
         self.grouped = False
 
     def __eq__(self, other):
-        """ Equivalency operator, remember this can be easily overloaded
-            2 components are equivalent ( i.e. can be grouped
-            if they have same value and same footprint
+        """Equivalency operator, remember this can be easily overloaded
+        2 components are equivalent ( i.e. can be grouped
+        if they have same value and same footprint
 
-            Override the component equivalence operator must be done before
-            loading the netlist, otherwise all components will have the original
-            equivalency operator.
+        Override the component equivalence operator must be done before
+        loading the netlist, otherwise all components will have the original
+        equivalency operator.
 
-            You have to define a comparison module (for instance named myEqu)
-            and add the line;
-                kicad_netlist_reader.comp.__eq__ = myEqu
-            in your bom generator script before calling the netliste reader by something like:
-                net = kicad_netlist_reader.netlist(sys.argv[1])
+        You have to define a comparison module (for instance named myEqu)
+        and add the line;
+            kicad_netlist_reader.comp.__eq__ = myEqu
+        in your bom generator script before calling the netliste reader by something like:
+            net = kicad_netlist_reader.netlist(sys.argv[1])
         """
-        result = False
-        if self.getValue() == other.getValue():
-            if self.getFootprint() == other.getFootprint():
-                if self.getRef().rstrip(string.digits) == other.getRef().rstrip(string.digits):
-                    result = True
-        return result
+        return (
+            self.getValue() == other.getValue()
+            and self.getFootprint() == other.getFootprint()
+            and self.getRef().rstrip(string.digits)
+            == other.getRef().rstrip(string.digits)
+        )
 
     def setLibPart(self, part):
         self.libpart = part
@@ -371,7 +374,7 @@ class comp():
     def getValue(self):
         return self.element.get("value")
 
-    def getField(self, name, aLibraryToo = True):
+    def getField(self, name, aLibraryToo=True):
         """
         Return the value of a field named name. The component is first
         checked for the field, and then the components library part is checked
@@ -396,20 +399,21 @@ class comp():
         is empty, it will not be present in the returned list.
         """
         fieldNames = []
-        fields = self.element.getChild('fields')
+        fields = self.element.getChild("fields")
         if fields:
             for f in fields.getChildren():
-                fieldNames.append( f.get('field','name') )
+                fieldNames.append(f.get("field", "name"))
         return fieldNames
 
     def getRef(self):
         return self.element.get("comp", "ref")
 
-    '''
+    """
     return the footprint name. if empty and aLibraryToo = True, return the
     footprint name from libary
-    '''
-    def getFootprint(self, aLibraryToo = True):
+    """
+
+    def getFootprint(self, aLibraryToo=True):
         ret = self.element.get("footprint")
 
         if ret == "" and aLibraryToo and self.libpart:
@@ -417,11 +421,12 @@ class comp():
 
         return ret
 
-    '''
+    """
     return the datasheet name. if empty and aLibraryToo = True, return the
     datasheet name from libary
-    '''
-    def getDatasheet(self, aLibraryToo = True):
+    """
+
+    def getDatasheet(self, aLibraryToo=True):
         ret = self.element.get("datasheet")
         if ret == "" and aLibraryToo and self.libpart:
             ret = self.libpart.getDatasheet()
@@ -441,32 +446,28 @@ class comp():
     def getDescription(self):
         return self.element.get("libsource", "description")
 
-    '''
+    """
     return the netname of the pin aPinNum in netlist aNetlist
     if aSkipEmptyNet = True, net having only one pin will return a empty name
-    '''
+    """
+
     def getPinNetname(self, aPinNum, aNetlist, aSkipEmptyNet):
         ref = self.getRef()
 
         for net in aNetlist.nets:
-            net_name = net.get( "net", "name" )
+            net_name = net.get("net", "name")
 
-            item_cnt = 1
             netitems = net.children
 
             for node in netitems:
-                curr_item_ref = node.get( "node", "ref" )
+                curr_item_ref = node.get("node", "ref")
 
                 if curr_item_ref == ref:
-                    curr_pin = node.get( "node", "pin" )
+                    curr_pin = node.get("node", "pin")
 
                     if aPinNum == curr_pin:
-                        if aSkipEmptyNet:   #ensure at least 2 pins are in net
-                            pin_count = 0
-
-                            for curr_node in netitems:
-                                pin_count += 1
-
+                        if aSkipEmptyNet:  # ensure at least 2 pins are in net
+                            for pin_count, curr_node in enumerate(netitems, start=1):
                                 if pin_count > 1:
                                     return net_name
 
@@ -477,12 +478,13 @@ class comp():
         return "?"
 
 
-class netlist():
-    """ Kicad generic netlist class. Generally loaded from a kicad generic
+class netlist:
+    """Kicad generic netlist class. Generally loaded from a kicad generic
     netlist file. Includes several helper functions to ease BOM creating
     scripts
 
     """
+
     def __init__(self, fname=""):
         """Initialiser for the genericNetlist class
 
@@ -490,16 +492,16 @@ class netlist():
         fname -- The name of the generic netlist file to open (Optional)
 
         """
-        self.design = None
-        self.components = []
-        self.libparts = []
-        self.libraries = []
-        self.nets = []
+        self.design: xmlElement | None = None
+        self.components: list[comp] = []
+        self.libparts: list[libpart] = []
+        self.libraries: list[xmlElement] = []
+        self.nets: list[xmlElement] = []
 
         # The entire tree is loaded into self.tree
-        self.tree = []
+        self.tree: xmlElement | None = None
 
-        self._curr_element = None
+        self._curr_element: xmlElement | None = None
 
         # component blacklist regexs, made from excluded_* above.
         self.excluded_references = []
@@ -511,38 +513,42 @@ class netlist():
 
     def addChars(self, content):
         """Add characters to the current element"""
+        if self._curr_element is None:
+            raise RuntimeError("character data received outside an XML element")
         self._curr_element.addChars(content)
 
     def addElement(self, name):
         """Add a new kicad generic element to the list"""
         if self._curr_element is None:
-            self.tree = xmlElement(name)
-            self._curr_element = self.tree
+            element = xmlElement(name)
+            self.tree = element
         else:
-            self._curr_element = self._curr_element.addChild(
-                xmlElement(name, self._curr_element))
+            element = self._curr_element.addChild(
+                xmlElement(name, self._curr_element)
+            )
+        self._curr_element = element
 
         # If this element is a component, add it to the components list
-        if self._curr_element.name == "comp":
-            self.components.append(comp(self._curr_element))
+        if element.name == "comp":
+            self.components.append(comp(element))
 
         # Assign the design element
-        if self._curr_element.name == "design":
-            self.design = self._curr_element
+        if element.name == "design":
+            self.design = element
 
         # If this element is a library part, add it to the parts list
-        if self._curr_element.name == "libpart":
-            self.libparts.append(libpart(self._curr_element))
+        if element.name == "libpart":
+            self.libparts.append(libpart(element))
 
         # If this element is a net, add it to the nets list
-        if self._curr_element.name == "net":
-            self.nets.append(self._curr_element)
+        if element.name == "net":
+            self.nets.append(element)
 
         # If this element is a library, add it to the libraries list
-        if self._curr_element.name == "library":
-            self.libraries.append(self._curr_element)
+        if element.name == "library":
+            self.libraries.append(element)
 
-        return self._curr_element
+        return element
 
     def endDocument(self):
         """Called when the netlist document has been fully parsed"""
@@ -557,13 +563,17 @@ class netlist():
                         break
                     else:
                         aliases = p.getAliases()
-                        if aliases and self.aliasMatch( c.getPartName(), aliases ):
+                        if aliases and self.aliasMatch(c.getPartName(), aliases):
                             c.setLibPart(p)
-                            break;
+                            break
 
             if not c.getLibPart():
-                print( 'missing libpart for ref:', c.getRef(), c.getPartName(), c.getLibName() )
-
+                print(
+                    "missing libpart for ref:",
+                    c.getRef(),
+                    c.getPartName(),
+                    c.getLibName(),
+                )
 
     def aliasMatch(self, partName, aliasList):
         for alias in aliasList:
@@ -573,66 +583,72 @@ class netlist():
 
     def endElement(self):
         """End the current element and switch to its parent"""
+        if self._curr_element is None:
+            raise RuntimeError("end element received without a current XML element")
         self._curr_element = self._curr_element.getParent()
 
     def getDate(self):
         """Return the date + time string generated by the tree creation tool"""
+        if self.design is None:
+            return ""
         return self.design.get("date")
 
     def getSource(self):
         """Return the source string for the design"""
+        if self.design is None:
+            return ""
         return self.design.get("source")
 
     def getTool(self):
         """Return the tool string which was used to create the netlist tree"""
+        if self.design is None:
+            return ""
         return self.design.get("tool")
 
     def getNets(self):
-        """Return the nets """
+        """Return the nets"""
         return self.nets
 
     def gatherComponentFieldUnion(self, components=None):
-        """Gather the complete 'set' of unique component fields, fields found in any component.
-        """
+        """Gather the complete 'set' of unique component fields, fields found in any component."""
         if not components:
-            components=self.components
+            components = self.components
 
         s = set()
         for c in components:
-            s.update( c.getFieldNames() )
+            s.update(c.getFieldNames())
 
         # omit anything matching any regex in excluded_fields
         ret = set()
         for field in s:
             exclude = False
             for rex in excluded_fields:
-                if re.match( rex, field ):
+                if re.match(rex, field):
                     exclude = True
                     break
             if not exclude:
                 ret.add(field)
 
-        return ret       # this is a python 'set'
+        return ret  # this is a python 'set'
 
     def gatherLibPartFieldUnion(self):
-        """Gather the complete 'set' of part fields, fields found in any part.
-        """
+        """Gather the complete 'set' of part fields, fields found in any part."""
         s = set()
         for p in self.libparts:
-            s.update( p.getFieldNames() )
+            s.update(p.getFieldNames())
 
         # omit anything matching any regex in excluded_fields
         ret = set()
         for field in s:
             exclude = False
             for rex in excluded_fields:
-                if re.match( rex, field ):
+                if re.match(rex, field):
                     exclude = True
                     break
             if not exclude:
                 ret.add(field)
 
-        return ret       # this is a python 'set'
+        return ret  # this is a python 'set'
 
     def getInterestingComponents(self):
         """Return a subset of all components, those that should show up in the BOM.
@@ -648,13 +664,13 @@ class netlist():
         del self.excluded_footprints[:]
 
         for rex in excluded_references:
-            self.excluded_references.append( re.compile( rex ) )
+            self.excluded_references.append(re.compile(rex))
 
         for rex in excluded_values:
-            self.excluded_values.append( re.compile( rex ) )
+            self.excluded_values.append(re.compile(rex))
 
         for rex in excluded_footprints:
-            self.excluded_footprints.append( re.compile( rex ) )
+            self.excluded_footprints.append(re.compile(rex))
 
         # the subset of components to return, considered as "interesting".
         ret = []
@@ -667,23 +683,22 @@ class netlist():
                 for refs in self.excluded_references:
                     if refs.match(c.getRef()):
                         exclude = True
-                        break;
+                        break
             if not exclude:
                 for vals in self.excluded_values:
                     if vals.match(c.getValue()):
                         exclude = True
-                        break;
+                        break
             if not exclude:
                 for mods in self.excluded_footprints:
                     if mods.match(c.getFootprint()):
                         exclude = True
-                        break;
+                        break
 
-            if not exclude:
-                # This is a fairly personal way to flag DNS (Do Not Stuff).  NU for
-                # me means Normally Uninstalled.  You can 'or in' another expression here.
-                if c.getField( "Installed" ) == 'NU':
-                    exclude = True
+            # This is a fairly personal way to flag DNS (Do Not Stuff).  NU for
+            # me means Normally Uninstalled.  You can 'or in' another expression here.
+            if not exclude and c.getField("Installed") == "NU":
+                exclude = True
 
             if not exclude:
                 ret.append(c)
@@ -691,16 +706,16 @@ class netlist():
         # The key to sort the components in the BOM
         # This sorts using a natural sorting order (e.g. 100 after 99), and if it wasn't used
         # the normal sort would place 100 before 99 since it only would look at the first digit.
-        def sortKey( str ):
-            return [ int(t) if t.isdigit() else t.lower()
-        for t in re.split( r'(\d+)', str ) ]
+        def sortKey(str):
+            return [
+                int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", str)
+            ]
 
         ret.sort(key=lambda g: sortKey(g.getRef()))
 
         return ret
 
-
-    def groupComponents(self, components = None):
+    def groupComponents(self, components=None):
         """Return a list of component lists. Components are grouped together
         when the value, library and part identifiers match.
 
@@ -737,12 +752,13 @@ class netlist():
         # The key to sort the components in the BOM
         # This sorts using a natural sorting order (e.g. 100 after 99), and if it wasn't used
         # the normal sort would place 100 before 99 since it only would look at the first digit.
-        def sortKey( str ):
-            return [ int(t) if t.isdigit() else t.lower()
-        for t in re.split( r'(\d+)', str ) ]
+        def sortKey(str):
+            return [
+                int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", str)
+            ]
 
         for g in groups:
-            #g = sorted(g, key=lambda g: sortKey(g.getRef()))
+            # g = sorted(g, key=lambda g: sortKey(g.getRef()))
             g.sort(key=lambda g: sortKey(g.getRef()))
 
         # Finally, sort the groups to order the references alphabetically
@@ -757,12 +773,12 @@ class netlist():
         """
         for c in group:
             ret = c.getField(field, False)
-            if ret != '':
+            if ret != "":
                 return ret
 
         libpart = group[0].getLibPart()
         if not libpart:
-            return ''
+            return ""
 
         return libpart.getField(field)
 
@@ -791,14 +807,18 @@ class netlist():
             return group[0].getLibPart().getDatasheet()
         else:
             print("NULL!")
-        return ''
+        return ""
 
     def formatXML(self):
         """Return the whole netlist formatted in XML"""
+        if self.tree is None:
+            return ""
         return self.tree.formatXML()
 
     def formatHTML(self):
         """Return the whole netlist formatted in HTML"""
+        if self.tree is None:
+            return ""
         return self.tree.formatHTML()
 
     def load(self, fname):
@@ -812,17 +832,17 @@ class netlist():
             self._reader = sax.make_parser()
             self._reader.setContentHandler(_gNetReader(self))
             self._reader.parse(fname)
-        except IOError as e:
-            print( __file__, ":", e, file=sys.stderr )
+        except OSError as e:
+            print(__file__, ":", e, file=sys.stderr)
             sys.exit(-1)
 
 
-
-class _gNetReader(sax.handler.ContentHandler):
+class _gNetReader(ContentHandler):
     """SAX kicad generic netlist content handler - passes most of the work back
     to the 'netlist' class which builds a complete tree in RAM for the design
 
     """
+
     def __init__(self, aParent):
         self.parent = aParent
 
@@ -830,8 +850,8 @@ class _gNetReader(sax.handler.ContentHandler):
         """Start of a new XML element event"""
         element = self.parent.addElement(name)
 
-        for name in attrs.getNames():
-            element.addAttribute(name, attrs.getValue(name))
+        for attribute_name in attrs.getNames():
+            element.addAttribute(attribute_name, attrs.getValue(attribute_name))
 
     def endElement(self, name):
         self.parent.endElement()

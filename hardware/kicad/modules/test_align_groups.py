@@ -1,8 +1,6 @@
 import unittest
 from types import SimpleNamespace
-
-from kipy.geometry import Box2
-from kipy.board_types import ArcTrack, Net, Track, Via
+from typing import Any
 
 from align_groups import (
     connected_route_sets,
@@ -12,9 +10,11 @@ from align_groups import (
     group_local_vias,
 )
 from kicad_ipc import vector
+from kipy.board_types import ArcTrack, Net, Track, Via
+from kipy.geometry import Box2
 
 
-def make_track(start, end, net="local", layer=0, width=250_000):
+def make_track(start, end, net="local", layer: Any = 0, width=250_000):
     track = Track()
     track.start = vector(*start)
     track.end = vector(*end)
@@ -27,9 +27,7 @@ def make_track(start, end, net="local", layer=0, width=250_000):
 class AlignGroupsTrackTests(unittest.TestCase):
     def test_group_local_vias_finds_zone_connected_same_net_via(self):
         footprint = SimpleNamespace(
-            definition=SimpleNamespace(
-                pads=[SimpleNamespace(net=Net(name="zone-net"))]
-            )
+            definition=SimpleNamespace(pads=[SimpleNamespace(net=Net(name="zone-net"))])
         )
         selected = Via()
         selected.position = vector(5, 5)

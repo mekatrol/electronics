@@ -7,15 +7,16 @@ normal Undo and Redo commands.  Dropping a failed transaction prevents partial
 changes from remaining in the editor.
 """
 
-from contextlib import contextmanager
 import json
 import math
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import tempfile
+from contextlib import contextmanager
+from pathlib import Path
 
+from kicad_discovery import find_kicad_cli
 from kipy import KiCad
 from kipy.common_types import Commit
 from kipy.errors import ConnectionError as KiCadConnectionError
@@ -30,8 +31,6 @@ from kipy.proto.common.commands.editor_commands_pb2 import (
 )
 from kipy.proto.common.types import ItemHeader
 from kipy.util.units import from_mm, to_mm
-
-from kicad_discovery import find_kicad_cli
 
 
 def connect_board():
@@ -133,7 +132,7 @@ def _print_drc_entries(title, entries):
             item_description = item.get("description", "board item")
             position = item.get("pos")
             if isinstance(position, dict) and "x" in position and "y" in position:
-                item_description += f' at ({position["x"]}, {position["y"]})'
+                item_description += f" at ({position['x']}, {position['y']})"
             print(f"       - {item_description}")
 
 
@@ -432,10 +431,27 @@ def move_text_center(client, text, target_center):
 
 
 __all__ = [
-    "BoardLayer", "board_document_path", "board_edge_bounds",
-    "board_has_unsaved_changes", "box_center", "box_edges", "connect_board",
-    "courtyard_box", "distance", "editor_commit", "footprint_reference",
-    "footprints_by_reference", "from_mm", "is_horizontal", "is_vertical",
-    "merge_boxes", "move_text_center", "point_from_mm", "refill_all_zones",
-    "same_point", "text_box", "to_mm", "vector",
+    "BoardLayer",
+    "board_document_path",
+    "board_edge_bounds",
+    "board_has_unsaved_changes",
+    "box_center",
+    "box_edges",
+    "connect_board",
+    "courtyard_box",
+    "distance",
+    "editor_commit",
+    "footprint_reference",
+    "footprints_by_reference",
+    "from_mm",
+    "is_horizontal",
+    "is_vertical",
+    "merge_boxes",
+    "move_text_center",
+    "point_from_mm",
+    "refill_all_zones",
+    "same_point",
+    "text_box",
+    "to_mm",
+    "vector",
 ]

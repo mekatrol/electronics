@@ -85,7 +85,7 @@ class BomPart:
     datasheet: str
 
 
-def is_excluded_from_bom(component: object) -> bool:
+def is_excluded_from_bom(component: kicad_netlist_reader.comp) -> bool:
     """Return whether KiCad marked a netlist component as excluded from BOMs."""
     return any(
         prop.attributes.get("name") == "exclude_from_bom"

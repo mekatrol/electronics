@@ -5,13 +5,15 @@ from kicad_discovery import find_fiducial_library_file
 from panelize_routed_pcb import (
     Bounds,
     build_routed_panel,
-    fiducial as make_fiducial,
     first_child,
     load_fiducial_template,
     make_reference_unique,
     parse_sexpr,
     tab_edge_orientation,
     validation_summary,
+)
+from panelize_routed_pcb import (
+    fiducial as make_fiducial,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -72,7 +74,10 @@ class RoutedPanelTests(unittest.TestCase):
 
         reference = footprint[2]
         self.assertEqual(reference[2], '"J2_X4Y3"')
-        self.assertEqual(first_child(reference, "hide")[1:], ["yes"])
+        hide = first_child(reference, "hide")
+        self.assertIsNotNone(hide)
+        assert hide is not None
+        self.assertEqual(hide[1:], ["yes"])
         rendered = footprint[3]
         self.assertEqual(rendered[:3], ["fp_text", "user", '"J2"'])
         self.assertNotIn('"old-property-uuid"', str(rendered))
@@ -122,6 +127,7 @@ class RoutedPanelTests(unittest.TestCase):
             fiducial_path=Path("Fiducial_1mm_Mask2mm.kicad_mod"),
             drc_checked=True,
         )
+        assert summary is not None
         self.assertIn("2 columns x 2 rows = 4 identical PCBs", summary)
         self.assertIn("Breakaway tabs: 8 total", summary)
         self.assertIn("Mouse bites: 5 holes/tab, 40 holes total", summary)

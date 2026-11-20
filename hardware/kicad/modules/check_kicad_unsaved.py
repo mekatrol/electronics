@@ -12,11 +12,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from kicad_ipc import board_document_path, board_has_unsaved_changes
 from kipy import KiCad
 from kipy.board import Board
 from kipy.proto.common.types import DocumentType
-
-from kicad_ipc import board_document_path, board_has_unsaved_changes
 
 
 def main() -> int:
@@ -30,7 +29,7 @@ def main() -> int:
                 continue
             board = Board(client._client, document)
             return 2 if board_has_unsaved_changes(board, target) else 0
-    except Exception:
+    except Exception:  # noqa: BLE001 -- any IPC failure must preserve fallback checks
         # IPC is an optional enhancement. The caller retains its filesystem
         # autosave check when KiCad is closed, busy, or otherwise unavailable.
         return 0

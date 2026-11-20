@@ -2,13 +2,17 @@
 
 import math
 import os
-
-from kipy.board_types import (
-    BoardArc, BoardBezier, BoardCircle, BoardPolygon, BoardRectangle,
-    BoardSegment,
-)
+from itertools import pairwise
 
 from kicad_ipc import vector
+from kipy.board_types import (
+    BoardArc,
+    BoardBezier,
+    BoardCircle,
+    BoardPolygon,
+    BoardRectangle,
+    BoardSegment,
+)
 
 
 def open_file_write(path, mode):
@@ -92,10 +96,15 @@ def _edge_pieces(edge_items):
             right = max(item.top_left.x, item.bottom_right.x)
             top = min(item.top_left.y, item.bottom_right.y)
             bottom = max(item.top_left.y, item.bottom_right.y)
-            pieces.append([
-                vector(left, top), vector(right, top), vector(right, bottom),
-                vector(left, bottom), vector(left, top),
-            ])
+            pieces.append(
+                [
+                    vector(left, top),
+                    vector(right, top),
+                    vector(right, bottom),
+                    vector(left, bottom),
+                    vector(left, top),
+                ]
+            )
         elif isinstance(item, BoardCircle):
             radius = math.hypot(
                 item.radius_point.x - item.center.x,
@@ -119,16 +128,22 @@ def _edge_pieces(edge_items):
             for index in range(41):
                 t = index / 40
                 u = 1 - t
-                points.append(vector(
-                    u**3 * item.start.x + 3*u*u*t * item.control1.x
-                    + 3*u*t*t * item.control2.x + t**3 * item.end.x,
-                    u**3 * item.start.y + 3*u*u*t * item.control1.y
-                    + 3*u*t*t * item.control2.y + t**3 * item.end.y,
-                ))
+                points.append(
+                    vector(
+                        u**3 * item.start.x
+                        + 3 * u * u * t * item.control1.x
+                        + 3 * u * t * t * item.control2.x
+                        + t**3 * item.end.x,
+                        u**3 * item.start.y
+                        + 3 * u * u * t * item.control1.y
+                        + 3 * u * t * t * item.control2.y
+                        + t**3 * item.end.y,
+                    )
+                )
             points[0], points[-1] = item.start, item.end
             pieces.append(points)
         else:
-            raise RuntimeError(f"unsupported Edge.Cuts item {type(item).__name__}")
+            raise TypeError(f"unsupported Edge.Cuts item {type(item).__name__}")
     return [piece for piece in pieces if piece]
 
 
@@ -140,12 +155,15 @@ def edge_contours(edge_items):
         contour = pieces.pop(0)
         while contour[-1] != contour[0]:
             endpoint = contour[-1]
-            match = next((
-                (index, reverse)
-                for index, piece in enumerate(pieces)
-                for reverse in (False, True)
-                if (piece[-1] if reverse else piece[0]) == endpoint
-            ), None)
+            match = next(
+                (
+                    (index, reverse)
+                    for index, piece in enumerate(pieces)
+                    for reverse in (False, True)
+                    if (piece[-1] if reverse else piece[0]) == endpoint
+                ),
+                None,
+            )
             if match is None:
                 raise RuntimeError("Edge.Cuts contains an open contour")
             index, reverse = match
@@ -159,7 +177,7 @@ def edge_contours(edge_items):
 
 def _area_centroid(points):
     twice_area = weighted_x = weighted_y = 0
-    for first, second in zip(points, points[1:]):
+    for first, second in pairwise(points):
         cross = first.x * second.y - second.x * first.y
         twice_area += cross
         weighted_x += (first.x + second.x) * cross
@@ -183,6 +201,6 @@ def edge_cuts_centroid(edge_items):
     total_area = outer_area - sum(area for area, _x, _y in parts[1:])
     if total_area <= 0:
         raise RuntimeError("Edge.Cuts cut-outs consume the outer contour")
-    x = (outer_area * outer_x - sum(a*x for a, x, _y in parts[1:])) / total_area
-    y = (outer_area * outer_y - sum(a*y for a, _x, y in parts[1:])) / total_area
+    x = (outer_area * outer_x - sum(a * x for a, x, _y in parts[1:])) / total_area
+    y = (outer_area * outer_y - sum(a * y for a, _x, y in parts[1:])) / total_area
     return vector(x, y)

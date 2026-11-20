@@ -41,9 +41,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from kipy.board_types import PSS_CIRCLE
-from kipy.proto.board.board_types_pb2 import FMS_SMD
-
 from kicad_ipc import (
     BoardLayer,
     board_edge_bounds,
@@ -55,7 +52,7 @@ from kicad_ipc import (
     to_mm,
     vector,
 )
-
+from kipy.proto.board.board_types_pb2 import FMS_SMD, PSS_CIRCLE
 
 # ============================================================
 # User settings: required fiducials and coordinate alignment
@@ -116,10 +113,10 @@ class Bounds:
     top: int
     bottom: int
 
-    def moved(self, dx: int, dy: int) -> "Bounds":
+    def moved(self, dx: int, dy: int) -> Bounds:
         return Bounds(self.left + dx, self.right + dx, self.top + dy, self.bottom + dy)
 
-    def expanded(self, amount: int) -> "Bounds":
+    def expanded(self, amount: int) -> Bounds:
         return Bounds(
             self.left - amount,
             self.right + amount,
@@ -127,7 +124,7 @@ class Bounds:
             self.bottom + amount,
         )
 
-    def overlaps(self, other: "Bounds") -> bool:
+    def overlaps(self, other: Bounds) -> bool:
         return not (
             self.right <= other.left
             or other.right <= self.left
@@ -138,7 +135,7 @@ class Bounds:
 
 def snap_coordinate(value: int, grid: int) -> int:
     """Round an integer nanometre coordinate to its nearest grid point."""
-    return int(round(value / grid)) * grid
+    return round(value / grid) * grid
 
 
 def bounds_of(box) -> Bounds:
@@ -170,10 +167,7 @@ def populated_sides(footprints) -> set:
         for footprint in footprints
         if not is_fiducial(footprint)
         and not footprint.attributes.do_not_populate
-        and (
-            not CHECK_SMD_ONLY
-            or footprint.attributes.mounting_style == FMS_SMD
-        )
+        and (not CHECK_SMD_ONLY or footprint.attributes.mounting_style == FMS_SMD)
     }
 
 
@@ -204,16 +198,18 @@ def validate_dimensions(footprint) -> list[str]:
     mask_x = diameter_x + 2 * margin
     mask_y = diameter_y + 2 * margin
     tolerance = DIMENSION_TOLERANCE_MM
-    if abs(diameter_x - COPPER_DIAMETER_MM) > tolerance or abs(
-        diameter_y - COPPER_DIAMETER_MM
-    ) > tolerance:
+    if (
+        abs(diameter_x - COPPER_DIAMETER_MM) > tolerance
+        or abs(diameter_y - COPPER_DIAMETER_MM) > tolerance
+    ):
         problems.append(
             f"{reference}: copper is {diameter_x:.3f} x {diameter_y:.3f} mm; "
             f"expected {COPPER_DIAMETER_MM:.3f} mm diameter"
         )
-    if abs(mask_x - MASK_OPENING_DIAMETER_MM) > tolerance or abs(
-        mask_y - MASK_OPENING_DIAMETER_MM
-    ) > tolerance:
+    if (
+        abs(mask_x - MASK_OPENING_DIAMETER_MM) > tolerance
+        or abs(mask_y - MASK_OPENING_DIAMETER_MM) > tolerance
+    ):
         problems.append(
             f"{reference}: mask opening is {mask_x:.3f} x {mask_y:.3f} mm; "
             f"expected {MASK_OPENING_DIAMETER_MM:.3f} mm diameter"
@@ -230,7 +226,9 @@ def safe_target(
         return False, "KiCad supplied no footprint bounding box"
     dx = target.x - footprint.position.x
     dy = target.y - footprint.position.y
-    envelope = bounds_of(current_box).moved(dx, dy).expanded(from_mm(PLACEMENT_CLEARANCE_MM))
+    envelope = (
+        bounds_of(current_box).moved(dx, dy).expanded(from_mm(PLACEMENT_CLEARANCE_MM))
+    )
     if (
         envelope.left < board_bounds.left
         or envelope.right > board_bounds.right
@@ -238,10 +236,13 @@ def safe_target(
         or envelope.bottom > board_bounds.bottom
     ):
         return False, "clearance envelope would cross Edge.Cuts"
-    geometry_tolerance = max(
-        envelope.right - envelope.left,
-        envelope.bottom - envelope.top,
-    ) // 2
+    geometry_tolerance = (
+        max(
+            envelope.right - envelope.left,
+            envelope.bottom - envelope.top,
+        )
+        // 2
+    )
     for item_id, label, obstacle, courtyard_items in obstacles:
         if item_id == footprint.id.value:
             continue

@@ -78,7 +78,13 @@ def run(options: ModuleOptions) -> int:
         print("Edge.Cuts is already centered around the components.")
         return 0
 
-    edge_bounds = box_edges(merge_boxes(shape.bounding_box() for shape in edge_items))
+    edge_boxes = []
+    for shape in edge_items:
+        box = board.get_item_bounding_box(shape)
+        if box is None:
+            raise RuntimeError("KiCad returned no bounding box for an Edge.Cuts item")
+        edge_boxes.append(box)
+    edge_bounds = box_edges(merge_boxes(edge_boxes))
     board_zones = [
         zone
         for zone in board.get_zones()

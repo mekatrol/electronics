@@ -7,11 +7,9 @@ Run from the repository root with::
 The update appears as one item in PCB Editor's Undo/Redo history.
 """
 
+from kicad_ipc import connect_board, editor_commit, from_mm
 from kipy.board_types import BoardText
 from kipy.geometry import Vector2
-
-from kicad_ipc import connect_board, editor_commit, from_mm
-
 
 TEXT_STRINGS = ["GND", "5V", "D", "JLCJLCJLCJLC"]
 TEXT_WIDTH_MM = 0.8
@@ -23,7 +21,8 @@ def main():
     """Resize matching text and push one undoable editor transaction."""
     _client, board = connect_board()
     targets = [
-        text for text in board.get_text()
+        text
+        for text in board.get_text()
         if isinstance(text, BoardText) and text.value in set(TEXT_STRINGS)
     ]
     if not targets:

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Generate JLCPCB fabrication and assembly files from a KiCad project.
 
 The output is written to a ``manufacture`` directory beside the board:
@@ -85,8 +87,10 @@ def print_failure(error: Exception) -> None:
             messages = ["ERROR: Schematic ERC failed; fix the errors in KiCad."]
         elif "pcb" in command and "drc" in command:
             messages = [
-                "ERROR: PCB validation failed. Run Update PCB from Schematic, "
-                "then fix any remaining PCB DRC errors in KiCad."
+                (
+                    "ERROR: PCB validation failed. Run Update PCB from Schematic, "
+                    "then fix any remaining PCB DRC errors in KiCad."
+                )
             ]
 
     lines = [
@@ -525,9 +529,7 @@ def run(options: ModuleOptions) -> int:
     file, command, and validation failures are printed and return status 1.
     """
     try:
-        output_dir = generate(
-            options.project, find_kicad_cli(options.kicad_cli)
-        )
+        output_dir = generate(options.project, find_kicad_cli(options.kicad_cli))
     except subprocess.CalledProcessError as error:
         print_failure(error)
         return 1

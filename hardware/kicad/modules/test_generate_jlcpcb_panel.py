@@ -1,10 +1,11 @@
+import csv
 import tempfile
 import unittest
 import zipfile
-import csv
 from pathlib import Path
 from unittest.mock import patch
 
+from generate_jlcpcb import validate_assembly_references, write_board_bom
 from generate_jlcpcb_panel import (
     archive_panel_files,
     default_output_directory,
@@ -12,7 +13,6 @@ from generate_jlcpcb_panel import (
     remove_stale_panel_drill_files,
     validate_panel_name,
 )
-from generate_jlcpcb import validate_assembly_references, write_board_bom
 
 
 class PanelGeneratorTests(unittest.TestCase):
@@ -62,9 +62,7 @@ class PanelGeneratorTests(unittest.TestCase):
     def test_requires_every_bom_reference_in_positions(self):
         validate_assembly_references({"D1_X1Y1"}, {"D1_X1Y1", "J1_X1Y1"})
         with self.assertRaisesRegex(ValueError, "D1_X2Y1"):
-            validate_assembly_references(
-                {"D1_X1Y1", "D1_X2Y1"}, {"D1_X1Y1"}
-            )
+            validate_assembly_references({"D1_X1Y1", "D1_X2Y1"}, {"D1_X1Y1"})
 
     def test_requires_panel_filename(self):
         with self.assertRaises(ValueError):

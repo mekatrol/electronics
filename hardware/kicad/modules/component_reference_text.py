@@ -9,12 +9,19 @@ left unsaved so the editor remains the authority for Undo, Redo, and Save.
 """
 
 from kicad_ipc import (
-    box_center, box_edges, connect_board, courtyard_box,
-    editor_commit, footprint_reference, from_mm, move_text_center, text_box,
-    to_mm, vector,
+    box_center,
+    box_edges,
+    connect_board,
+    courtyard_box,
+    editor_commit,
+    footprint_reference,
+    from_mm,
+    move_text_center,
+    text_box,
+    to_mm,
+    vector,
 )
 from kipy.geometry import Vector2
-
 
 IGNORE_REFERENCES = []
 MATCH_WIDTH_MM = 0.8
@@ -116,8 +123,10 @@ def intersects(proposed, courtyard, clearance):
     left, right, top, bottom = proposed
     c_left, c_right, c_top, c_bottom = box_edges(courtyard)
     return not (
-        right < c_left - clearance or left > c_right + clearance or
-        bottom < c_top - clearance or top > c_bottom + clearance
+        right < c_left - clearance
+        or left > c_right + clearance
+        or bottom < c_top - clearance
+        or top > c_bottom + clearance
     )
 
 
@@ -154,7 +163,8 @@ def main():
             collisions = [
                 other_reference
                 for other, other_reference, other_courtyard in records
-                if other is not footprint and other.layer == same_board_side
+                if other is not footprint
+                and other.layer == same_board_side
                 and intersects(proposed, other_courtyard, clearance)
             ]
             if collisions:
